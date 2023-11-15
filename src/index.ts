@@ -3,12 +3,15 @@ import Fs from "fs/promises";
 import Child from "child_process";
 import { Ast } from "#compiler/ast";
 import { ParseCinderblock } from "./parser";
+import { LinkCinderblock } from "./linker";
+import { WriteCinderblock } from "./writer";
 
 type Target = "linux" | "macos" | "windows" | "android" | "ios" | "wasm";
 
 type File = string | Partial<Record<Target, string>>;
 
 type Project = {
+  name: string;
   files: Array<File>;
   libs?: Array<string>;
   targets: Array<Target>;
@@ -21,14 +24,16 @@ type Library = {
   supported: Target;
 };
 
-function Clone(git: string, path: string) {
+function Exec(command: string, cwd: string) {
   return new Promise<void>(async (res, rej) => {
-    await Fs.mkdir(path, { recursive: true });
-
-    Child.exec(`git clone ${git} .`, { cwd: path }, (err) =>
-      err ? rej(err) : res()
-    );
+    Child.exec(command, { cwd }, (err) => (err ? rej(err) : res()));
   });
+}
+
+async function Clone(git: string, path: string) {
+  await Fs.mkdir(path, { recursive: true });
+
+  await Exec(`git clone ${git} .`, path);
 }
 
 function LibraryUrl(cache_dir: string, url: string) {
@@ -65,20 +70,22 @@ export async function Compile(root_dir: string) {
     }
   }
 
-  let result = new Ast();
-
   for (const target of project.targets) {
+    let parsed = new Ast();
+
     for (const url of project.libs ?? []) {
       const path = LibraryUrl(cache_dir, url);
 
-      const library_project: Library = await ReadJson(path);
+      const library_project: Library = await ReadJson(
+        Path.join(path, "cinder.json")
+      );
 
       if (!library_project.supported.includes(target))
         throw new Error(`Library ${url} does not support target ${target}`);
 
       for (const file of library_project.files) {
         if (typeof file === "string") {
-          result = result.with(
+          parsed = parsed.with(
             ParseCinderblock(
               await ReadText(Path.resolve(path, file)),
               Path.resolve(path, file)
@@ -87,7 +94,7 @@ export async function Compile(root_dir: string) {
         } else {
           const targeted = file[target];
           if (targeted)
-            result = result.with(
+            parsed = parsed.with(
               ParseCinderblock(
                 await ReadText(Path.resolve(path, targeted)),
                 Path.resolve(path, targeted)
@@ -99,7 +106,7 @@ export async function Compile(root_dir: string) {
 
     for (const file of project.files) {
       if (typeof file === "string") {
-        result = result.with(
+        parsed = parsed.with(
           ParseCinderblock(
             await ReadText(Path.resolve(root_dir, file)),
             Path.resolve(root_dir, file)
@@ -108,13 +115,31 @@ export async function Compile(root_dir: string) {
       } else {
         const targeted = file[target];
         if (targeted)
-          result = result.with(
+          parsed = parsed.with(
             ParseCinderblock(
               await ReadText(Path.resolve(root_dir, targeted)),
               Path.resolve(root_dir, targeted)
             )
           );
       }
+    }
+
+    const linked = LinkCinderblock(parsed);
+
+    const c_code = WriteCinderblock(linked);
+
+    const dir = Path.resolve(root_dir, project.bin, target);
+    await Fs.mkdir(dir, { recursive: true });
+
+    await Fs.writeFile(Path.join(dir, "main.c"), c_code);
+
+    switch (target) {
+      case "linux":
+        await Exec(`gcc main.c -o ${project.name}`, dir);
+      default:
+        throw new Error(
+          "Currently, only compiling for linux on linux is supported. Expect more when the compiler is written in cinderblock"
+        );
     }
   }
 }
