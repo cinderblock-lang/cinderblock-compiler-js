@@ -1,0 +1,29 @@
+{
+  "name": "house-brick",
+  "version": "0.0.1",
+  "description": "A new programming language",
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PaulPopat/house-brick.git"
+  },
+  "author": "Paul Taylor",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PaulPopat/house-brick/issues"
+  },
+  "homepage": "https://github.com/PaulPopat/house-brick#readme",
+  "devDependencies": {
+    "@types/node": "^20.8.10",
+    "typescript": "^5.2.2"
+  },
+  "imports": {
+    "#compiler/ast": "./dist/ast/index.js",
+    "#compiler/parser": "./dist/parser/index.js",
+    "#compiler/location": "./dist/location/index.js",
+    "#compiler/linker": "./dist/linker/index.js",
+    "#compiler/writer": "./dist/writer/index.js"
+  }
+}
