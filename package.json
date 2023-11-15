@@ -5,16 +5,20 @@
   "scripts": {
     "build": "tsc"
   },
+  "private": true,
+  "bin": {
+    "cinderblock": "./bin/index.js"
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PaulPopat/house-brick.git"
+    "url": "git+https://github.com/cinderblock-lang/cinderblock-compiler.git"
   },
   "author": "Paul Taylor",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/PaulPopat/house-brick/issues"
+    "url": "https://github.com/cinderblock-lang/cinderblock-compiler/issues"
   },
-  "homepage": "https://github.com/PaulPopat/house-brick#readme",
+  "homepage": "https://github.com/cinderblock-lang/cinderblock-compiler#readme",
   "devDependencies": {
     "@types/node": "^20.8.10",
     "typescript": "^5.2.2"
@@ -25,5 +29,8 @@
     "#compiler/location": "./dist/location/index.js",
     "#compiler/linker": "./dist/linker/index.js",
     "#compiler/writer": "./dist/writer/index.js"
+  },
+  "dependencies": {
+    "yargs": "^17.7.2"
   }
 }
