@@ -15,6 +15,15 @@ export class Property extends Component {
     this.#optional = optional;
   }
 
+  copy() {
+    return new Property(
+      this.Location,
+      this.Name,
+      this.Type.copy(),
+      this.#optional
+    );
+  }
+
   get Name() {
     return this.#name;
   }
@@ -55,6 +64,15 @@ export class FunctionParameter extends Component {
     this.#name = name;
     this.#type = type?.Index;
     this.#optional = optional;
+  }
+
+  copy() {
+    return new FunctionParameter(
+      this.Location,
+      this.Name,
+      this.Type?.copy(),
+      this.Optional
+    );
   }
 
   get Name() {

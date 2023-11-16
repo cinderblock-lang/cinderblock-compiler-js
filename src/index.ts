@@ -13,9 +13,10 @@ type File = string | Partial<Record<Target, string>>;
 type Project = {
   name: string;
   files: Array<File>;
-  libs?: Array<string>;
+  libs?: Array<[string, string]>;
   targets: Array<Target>;
   bin: string;
+  std_tag?: string;
 };
 
 type Library = {
@@ -30,10 +31,15 @@ function Exec(command: string, cwd: string) {
   });
 }
 
-async function Clone(git: string, path: string) {
+async function Clone(git: string, version: string, path: string) {
   await Fs.mkdir(path, { recursive: true });
 
-  await Exec(`git clone ${git} .`, path);
+  await Exec(
+    `git clone --depth=1 ${
+      version !== "*" ? `--branch ${version}` : ""
+    } ${git} .`,
+    path
+  );
 }
 
 function LibraryUrl(cache_dir: string, url: string) {
@@ -56,7 +62,12 @@ export async function Compile(root_dir: string) {
 
   const cache_dir = Path.resolve(root_dir, ".cinder_cache");
 
-  for (const url of project.libs ?? []) {
+  const libs = (project.libs ?? []).concat([
+    "https://github.com/cinderblock-lang/cinderblock-std.git",
+    project.std_tag ?? "*",
+  ]);
+
+  for (const [url, tag] of libs) {
     const path = LibraryUrl(cache_dir, url);
     try {
       const stat = await Fs.stat(path);
@@ -66,14 +77,14 @@ export async function Compile(root_dir: string) {
     } catch {
       console.log(`Could not use cache for ${url}, pulling from remote`);
 
-      await Clone(url, path);
+      await Clone(url, tag, path);
     }
   }
 
   for (const target of project.targets) {
     let parsed = new Ast();
 
-    for (const url of project.libs ?? []) {
+    for (const [url] of libs) {
       const path = LibraryUrl(cache_dir, url);
 
       const library_project: Library = await ReadJson(

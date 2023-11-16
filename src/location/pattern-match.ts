@@ -27,3 +27,12 @@ export function PatternMatch<
     };
   };
 }
+
+export function RequireType<T extends Component>(
+  target: abstract new (...args: Array<any>) => T,
+  item: Component
+): asserts item is T {
+  if (!(item instanceof target)) {
+    throw new LinkerError(item.Location, "Invalid type");
+  }
+}

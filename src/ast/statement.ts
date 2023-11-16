@@ -18,6 +18,15 @@ export class StoreStatement extends Statement {
     this.#type = type?.Index;
   }
 
+  copy() {
+    return new StoreStatement(
+      this.Location,
+      this.Name,
+      this.Equals.copy(),
+      this.Type
+    );
+  }
+
   get Name() {
     return this.#name;
   }
@@ -52,6 +61,10 @@ export class ReturnStatement extends Statement {
     this.#value = value.Index;
   }
 
+  copy() {
+    return new ReturnStatement(this.Location, this.Value.copy());
+  }
+
   get Value() {
     return ComponentStore.Get(this.#value);
   }
@@ -76,6 +89,10 @@ export class AssignStatement extends Statement {
     super(ctx);
     this.#name = name;
     this.#equals = equals.Index;
+  }
+
+  copy() {
+    return new AssignStatement(this.Location, this.Name, this.Equals.copy());
   }
 
   get Name() {
@@ -105,6 +122,10 @@ export class PanicStatement extends Statement {
   constructor(ctx: Location, value: Expression) {
     super(ctx);
     this.#value = value.Index;
+  }
+
+  copy() {
+    return new PanicStatement(this.Location, this.Value.copy());
   }
 
   get Value() {

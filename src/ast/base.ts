@@ -59,6 +59,8 @@ export abstract class Component {
 
   abstract get extra_json(): Record<never, never>;
 
+  abstract copy(): Component;
+
   get json(): unknown {
     return {
       ...this.extra_json,
@@ -176,6 +178,10 @@ export class ComponentGroup {
   *iterator() {
     for (const component of this.#components)
       yield ComponentStore.Get(component);
+  }
+
+  copy() {
+    return new ComponentGroup(...[...this.iterator()].map((c) => c.copy()));
   }
 }
 

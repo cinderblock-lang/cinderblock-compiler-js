@@ -19,6 +19,15 @@ export class Namespace extends Component {
     this.#contents = contents;
   }
 
+  copy() {
+    return new Namespace(
+      this.Location,
+      this.Exported,
+      this.Name,
+      this.#contents.copy()
+    );
+  }
+
   get Name() {
     return this.#name;
   }

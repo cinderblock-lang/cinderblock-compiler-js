@@ -48,6 +48,17 @@ export class FunctionEntity extends Entity {
     this.#content = content;
   }
 
+  copy() {
+    return new FunctionEntity(
+      this.Location,
+      this.Exported,
+      this.#name,
+      this.#parameters.copy(),
+      this.Returns?.copy(),
+      this.#content.copy()
+    );
+  }
+
   get Name() {
     return this.#name;
   }
@@ -91,6 +102,15 @@ export class StructEntity extends Entity {
     super(ctx, exported);
     this.#name = name;
     this.#properties = properties;
+  }
+
+  copy() {
+    return new StructEntity(
+      this.Location,
+      this.Exported,
+      this.#name,
+      this.Properties.copy()
+    );
   }
 
   get Name() {
@@ -144,6 +164,10 @@ export class SchemaEntity extends Entity {
     this.#properties = properties;
   }
 
+  copy() {
+    return this;
+  }
+
   get Name() {
     return this.#name;
   }
@@ -184,6 +208,10 @@ export class UsingEntity extends Entity {
     this.#name = name;
   }
 
+  copy() {
+    return new UsingEntity(this.Location, this.Exported, this.#name);
+  }
+
   get Name() {
     return this.#name;
   }
@@ -215,6 +243,15 @@ export class ExternalFunctionDeclaration extends Component {
     this.#name = name;
     this.#parameters = parameters;
     this.#returns = returns.Index;
+  }
+
+  copy() {
+    return new ExternalFunctionDeclaration(
+      this.Location,
+      this.#name,
+      this.#parameters.copy(),
+      this.Returns.copy()
+    );
   }
 
   get Name() {
@@ -254,6 +291,15 @@ export class LibEntity extends Entity {
     this.#content = content;
   }
 
+  copy() {
+    return new LibEntity(
+      this.Location,
+      this.Exported,
+      this.Name.copy(),
+      this.#content.copy()
+    );
+  }
+
   get Name() {
     return ComponentStore.Get(this.#name);
   }
@@ -277,6 +323,10 @@ export class SystemEntity extends Entity {
   constructor(ctx: Location, exported: boolean, content: ComponentGroup) {
     super(ctx, exported);
     this.#content = content;
+  }
+
+  copy() {
+    return new SystemEntity(this.Location, this.Exported, this.#content.copy());
   }
 
   get type_name() {

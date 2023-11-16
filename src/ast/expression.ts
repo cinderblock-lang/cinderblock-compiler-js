@@ -24,6 +24,10 @@ export class LiteralExpression extends Expression {
     this.#value = value;
   }
 
+  copy() {
+    return new LiteralExpression(this.Location, this.#type, this.#value);
+  }
+
   get Type() {
     return this.#type;
   }
@@ -57,7 +61,7 @@ export const Operators = [
   ">=",
   "++",
   "&&",
-  "||"
+  "||",
 ] as const;
 export type Operator = (typeof Operators)[number];
 
@@ -77,6 +81,15 @@ export class OperatorExpression extends Expression {
     this.#left = left.Index;
     this.#operator = operator;
     this.#right = right.Index;
+  }
+
+  copy() {
+    return new OperatorExpression(
+      this.Location,
+      this.Left.copy(),
+      this.#operator,
+      this.Right.copy()
+    );
   }
 
   get Left() {
@@ -122,6 +135,15 @@ export class IfExpression extends Expression {
     this.#else = on_else;
   }
 
+  copy() {
+    return new IfExpression(
+      this.Location,
+      this.Check.copy(),
+      this.#if.copy(),
+      this.#else.copy()
+    );
+  }
+
   get Check() {
     return ComponentStore.Get(this.#check);
   }
@@ -156,7 +178,11 @@ export class EmptyExpression extends Expression {
     this.#of = of.Index;
   }
 
-  get To() {
+  copy() {
+    return new EmptyExpression(this.Location, this.Of.copy());
+  }
+
+  get Of() {
     return ComponentStore.Get(this.#of);
   }
 
@@ -187,6 +213,15 @@ export class IterateExpression extends Expression {
     this.#over = over.Index;
     this.#as = as;
     this.#using = using;
+  }
+
+  copy() {
+    return new IterateExpression(
+      this.Location,
+      this.Over.copy(),
+      this.#as,
+      this.#using.copy()
+    );
   }
 
   get Over() {
@@ -236,6 +271,17 @@ export class ReduceExpression extends Expression {
     this.#using = using;
     this.#init = init.Index;
     this.#init_as = init_as;
+  }
+
+  copy() {
+    return new ReduceExpression(
+      this.Location,
+      this.Over.copy(),
+      this.#as,
+      this.With.copy(),
+      this.WithAs,
+      this.#using.copy()
+    );
   }
 
   get Over() {
@@ -289,6 +335,15 @@ export class MakeExpression extends Expression {
     this.#struct_entity = struct_entity?.Index;
   }
 
+  copy() {
+    return new MakeExpression(
+      this.Location,
+      this.#struct,
+      this.Using.copy(),
+      this.StructEntity?.copy()
+    );
+  }
+
   get Struct() {
     return this.#struct;
   }
@@ -326,6 +381,10 @@ export class IsExpression extends Expression {
     this.#right = right.Index;
   }
 
+  copy() {
+    return new IsExpression(this.Location, this.Left.copy(), this.Right.copy());
+  }
+
   get Left() {
     return ComponentStore.Get(this.#left);
   }
@@ -357,6 +416,10 @@ export class ReferenceExpression extends Expression {
     this.#references = references?.Index;
   }
 
+  copy() {
+    return new ReferenceExpression(this.Location, this.Name, this.References);
+  }
+
   get Name() {
     return this.#name;
   }
@@ -386,6 +449,10 @@ export class BracketsExpression extends Expression {
     this.#expression = expression.Index;
   }
 
+  copy() {
+    return new BracketsExpression(this.Location, this.Expression.copy());
+  }
+
   get Expression() {
     return ComponentStore.Get(this.#expression);
   }
@@ -410,6 +477,14 @@ export class LambdaExpression extends Expression {
     super(ctx);
     this.#parameters = parameters;
     this.#body = body;
+  }
+
+  copy() {
+    return new LambdaExpression(
+      this.Location,
+      this.Parameters.copy(),
+      this.#body.copy()
+    );
   }
 
   get Parameters() {
@@ -443,6 +518,14 @@ export class InvokationExpression extends Expression {
     this.#parameters = parameters;
   }
 
+  copy() {
+    return new InvokationExpression(
+      this.Location,
+      this.Subject.copy(),
+      this.Parameters.copy()
+    );
+  }
+
   get Subject() {
     return ComponentStore.Get(this.#subject);
   }
@@ -472,6 +555,14 @@ export class AccessExpression extends Expression {
     super(ctx);
     this.#subject = subject.Index;
     this.#target = target;
+  }
+
+  copy() {
+    return new AccessExpression(
+      this.Location,
+      this.Subject.copy(),
+      this.Target
+    );
   }
 
   get Subject() {

@@ -14,6 +14,14 @@ export class SchemaType extends Type {
     this.#properties = properties;
   }
 
+  copy() {
+    return this;
+  }
+
+  get Properties() {
+    return this.#properties;
+  }
+
   HasKey(key: string) {
     for (const property of this.#properties.iterator())
       if (property instanceof Property) if (property.Name === key) return true;
@@ -49,6 +57,10 @@ export class ReferenceType extends Type {
     super(ctx);
     this.#name = name;
     this.#references = references?.Index;
+  }
+
+  copy() {
+    return new ReferenceType(this.Location, this.Name, this.References);
   }
 
   get Name() {
@@ -96,6 +108,14 @@ export class PrimitiveType extends Type {
     this.#name = name;
   }
 
+  copy() {
+    return new PrimitiveType(this.Location, this.Name);
+  }
+
+  get Name() {
+    return this.#name;
+  }
+
   get type_name() {
     return "primitive_type";
   }
@@ -114,6 +134,10 @@ export class IterableType extends Type {
   constructor(ctx: Location, type: Type) {
     super(ctx);
     this.#type = type.Index;
+  }
+
+  copy() {
+    return new IterableType(this.Location, this.Type.copy());
   }
 
   get Type() {
@@ -146,6 +170,18 @@ export class FunctionType extends Type {
     this.#returns = returns.Index;
   }
 
+  copy() {
+    return new FunctionType(
+      this.Location,
+      this.Parameters.copy(),
+      this.Returns.copy()
+    );
+  }
+
+  get Parameters() {
+    return this.#parameters;
+  }
+
   get Returns() {
     return ComponentStore.Get(this.#returns);
   }
@@ -171,6 +207,10 @@ export class UseType extends Type {
     super(ctx);
     this.#name = name;
     this.#constraints = constraints;
+  }
+
+  copy() {
+    return this;
   }
 
   get Name() {

@@ -13,6 +13,7 @@ import { IterableVisitor } from "./visitor/iterable-visitor";
 import { ReduceVisitor } from "./visitor/reduce-visitor";
 import { EmptyVisitor } from "./visitor/empty-visitor";
 import { ConcatVisitor } from "./visitor/concat-visitor";
+import { GenericFlatteningVisitor } from "./visitor/generic-flattening-visitor";
 
 export function LinkCinderblock(ast: Ast) {
   const function_collector = new FunctionCollectingVisitor();
@@ -23,6 +24,8 @@ export function LinkCinderblock(ast: Ast) {
   const iterable_visitor = new IterableVisitor();
   const empty_visitor = new EmptyVisitor();
   const concat_visitor = new ConcatVisitor();
+
+  const generic_flattening_visitor = new GenericFlatteningVisitor();
 
   ast = ast
     .visited(new ReduceVisitor())
@@ -38,7 +41,13 @@ export function LinkCinderblock(ast: Ast) {
     .visited(iterate_visitor)
     .visited(lambda_visitor)
     .visited(empty_visitor)
-    .visited(concat_visitor);
+    .visited(concat_visitor)
+    .visited(generic_flattening_visitor);
+
+  while (generic_flattening_visitor.FoundAny) {
+    generic_flattening_visitor.Reset();
+    ast = ast.visited(generic_flattening_visitor);
+  }
 
   return new Ast(
     new ComponentGroup(
@@ -47,7 +56,8 @@ export function LinkCinderblock(ast: Ast) {
       iterate_visitor.Namespace,
       iterable_visitor.Namespace,
       empty_visitor.Namespace,
-      concat_visitor.Namespace
+      concat_visitor.Namespace,
+      generic_flattening_visitor.Namespace
     )
   );
 }
