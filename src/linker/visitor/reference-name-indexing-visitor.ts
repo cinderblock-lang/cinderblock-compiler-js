@@ -1,4 +1,5 @@
 import {
+  BuiltInFunction,
   Component,
   ExternalFunctionDeclaration,
   FunctionEntity,
@@ -19,7 +20,7 @@ type Local = StoreStatement | IterateExpression | FunctionParameter;
 export class ReferenceNameIndexingVisitor extends Visitor {
   readonly #functions: Record<
     string,
-    FunctionEntity | ExternalFunctionDeclaration
+    FunctionEntity | ExternalFunctionDeclaration | BuiltInFunction
   >;
   #namespace: string = "";
   #using: Array<string> = [];
@@ -27,7 +28,10 @@ export class ReferenceNameIndexingVisitor extends Visitor {
   #locals: Array<Record<string, Local>> = [{}];
 
   constructor(
-    functions: Record<string, FunctionEntity | ExternalFunctionDeclaration>
+    functions: Record<
+      string,
+      FunctionEntity | ExternalFunctionDeclaration | BuiltInFunction
+    >
   ) {
     super();
     this.#functions = functions;
@@ -38,16 +42,19 @@ export class ReferenceNameIndexingVisitor extends Visitor {
 
     if (this.#parameters[name]) return this.#parameters[name];
 
+    const possible = this.#functions[name];
+    if (possible instanceof BuiltInFunction) return possible;
+
     for (const area of this.#using) {
       const full = `${area}.${name}`;
       const possible = this.#functions[full];
       if (!possible) continue;
 
-      if (
-        area === this.#namespace ||
-        possible instanceof ExternalFunctionDeclaration
-      )
-        return possible;
+      if (possible instanceof BuiltInFunction) return possible;
+
+      if (area === this.#namespace) return possible;
+
+      if (possible instanceof ExternalFunctionDeclaration) continue;
 
       if (possible.Exported) return possible;
     }

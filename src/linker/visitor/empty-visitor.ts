@@ -71,7 +71,7 @@ export class EmptyVisitor extends Visitor {
           new Property(
             target.Location,
             "result",
-            new ReferenceType(target.Location, Namer.GetName(), empty.To),
+            new ReferenceType(target.Location, Namer.GetName(), empty.Of),
             true
           )
         )

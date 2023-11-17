@@ -2,12 +2,19 @@ import {
   AccessExpression,
   Component,
   ComponentGroup,
+  FunctionParameter,
   InvokationExpression,
   ReferenceExpression,
+  ReferenceType,
+  SchemaEntity,
+  SchemaType,
+  StoreStatement,
   StructEntity,
+  Type,
 } from "#compiler/ast";
 import { ReferenceNameIndexingVisitor } from "./reference-name-indexing-visitor";
 import { LinkerError } from "../error";
+import { ResolveExpression, ResolveType } from "./resolve";
 
 export class FunctionFlatteningVisitor extends ReferenceNameIndexingVisitor {
   get OperatesOn(): (new (...args: any[]) => Component)[] {
@@ -18,16 +25,26 @@ export class FunctionFlatteningVisitor extends ReferenceNameIndexingVisitor {
     if (target instanceof InvokationExpression) {
       const subject = target.Subject;
       if (subject instanceof AccessExpression) {
-        const accessing = subject.Subject;
+        const accessing = ResolveExpression(subject.Subject);
         if (
-          accessing instanceof ReferenceExpression &&
-          accessing.References instanceof StructEntity &&
-          accessing.References.HasKey(accessing.Name)
+          accessing instanceof StoreStatement ||
+          accessing instanceof FunctionParameter
         ) {
-          return {
-            result: undefined,
-            cleanup: () => {},
-          };
+          const type = accessing.Type;
+          if (!type)
+            throw new LinkerError(accessing.Location, "Could not find type");
+          const accessing_type = ResolveType(type);
+          if (
+            (accessing_type instanceof StructEntity ||
+              accessing_type instanceof SchemaEntity ||
+              accessing_type instanceof SchemaType) &&
+            accessing_type.HasKey(subject.Target)
+          ) {
+            return {
+              result: undefined,
+              cleanup: () => {},
+            };
+          }
         }
 
         const found = this.find(subject.Target);

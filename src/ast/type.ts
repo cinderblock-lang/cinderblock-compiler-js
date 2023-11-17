@@ -91,6 +91,7 @@ export const PrimitiveNames = [
   "bool",
   "long",
   "any",
+  "string",
 ] as const;
 
 export type PrimitiveName = (typeof PrimitiveNames)[number];

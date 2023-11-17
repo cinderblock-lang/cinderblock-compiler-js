@@ -47,9 +47,12 @@ export function ExtractProperty(tokens: TokenGroup): Property {
 }
 
 function ExtractFunction(tokens: TokenGroup) {
-  const parameters = BuildWhileOnStart(tokens, ",", ")", () =>
-    ExtractFunctionParameter(tokens)
-  );
+  let parameters: Array<FunctionParameter> = [];
+  if (tokens.peek()?.Text !== ")")
+    parameters = BuildWhileOnStart(tokens, ",", ")", () =>
+      ExtractFunctionParameter(tokens)
+    );
+  else ExpectNext(tokens, ")");
 
   ExpectNext(tokens, "->");
 

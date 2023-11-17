@@ -29,9 +29,9 @@ export function LinkCinderblock(ast: Ast) {
 
   ast = ast
     .visited(new ReduceVisitor())
+    .visited(iterable_visitor)
     .visited(function_collector)
     .visited(type_collector)
-    .visited(iterable_visitor)
     .visited(new ReferenceExpressionVisitor(function_collector.Functions))
     .visited(new ReferenceTypeVisitor(type_collector.Types))
     .visited(new FunctionFlatteningVisitor(function_collector.Functions))

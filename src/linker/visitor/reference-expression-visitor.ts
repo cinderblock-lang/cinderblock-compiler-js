@@ -1,4 +1,5 @@
 import {
+  BuiltInFunction,
   Component,
   ExternalFunctionDeclaration,
   FunctionEntity,
@@ -9,7 +10,13 @@ import { ReferenceNameIndexingVisitor } from "./reference-name-indexing-visitor"
 
 export class ReferenceExpressionVisitor extends ReferenceNameIndexingVisitor {
   constructor(
-    functions: Record<string, FunctionEntity | ExternalFunctionDeclaration>
+    functions: Record<
+      string,
+      | FunctionEntity
+      | ExternalFunctionDeclaration
+      | BuiltInFunction
+      | BuiltInFunction
+    >
   ) {
     super(functions);
   }

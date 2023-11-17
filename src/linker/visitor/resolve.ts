@@ -15,16 +15,33 @@ import {
   FunctionEntity,
   ReturnStatement,
   Type,
-  IterableType,
   PrimitiveType,
   FunctionType,
   ComponentGroup,
   FunctionParameter,
   SchemaType,
   SchemaEntity,
+  ReferenceType,
+  StoreStatement,
 } from "#compiler/ast";
 import { PatternMatch } from "#compiler/location";
 import { LinkerError } from "../error";
+
+export function ResolveType(
+  type: Type
+): StructEntity | SchemaEntity | SchemaType {
+  return PatternMatch(StructEntity, SchemaEntity, SchemaType, ReferenceType)(
+    (s) => s,
+    (s) => s,
+    (s) => s,
+    (r) => {
+      const target = r.References;
+      if (!target) throw new LinkerError(r.Location, "Missing reference");
+
+      return ResolveType(target);
+    }
+  )(type);
+}
 
 export function ResolveBlock(block: ComponentGroup) {
   for (const statement of block.iterator())
@@ -53,13 +70,6 @@ export function ResolveExpression(
     SchemaType
   )(
     (literal): Type | StructEntity | FunctionEntity | SchemaType => {
-      if (literal.Type === "string") {
-        return new IterableType(
-          literal.Location,
-          new PrimitiveType(literal.Location, "char")
-        );
-      }
-
       return new PrimitiveType(
         literal.Location,
         literal.Type === "char"
@@ -74,6 +84,8 @@ export function ResolveExpression(
           ? "long"
           : literal.Type === "bool"
           ? "bool"
+          : literal.Type === "string"
+          ? "string"
           : "any"
       );
     },
@@ -123,47 +135,10 @@ export function ResolveExpression(
       );
     },
     (invoke) => {
-      const subject = ResolveExpression(invoke.Subject);
-
-      if (subject instanceof FunctionEntity) {
-        return subject.Returns ?? ResolveBlock(subject.Content);
-      }
-
-      if (subject instanceof FunctionType) {
-        return subject.Returns;
-      }
-
-      if (subject instanceof LambdaExpression) {
-        return ResolveBlock(subject.Body);
-      }
-
-      if (subject instanceof FunctionParameter) {
-        const type = subject.Type;
-        if (type instanceof FunctionType) {
-          return type.Returns;
-        }
-      }
-
-      throw new Error("Attempting to invoke a none function");
+      return ResolveExpression(invoke.Subject);
     },
     (access) => {
-      const references = ResolveExpression(access.Subject);
-
-      if (
-        !(references instanceof StructEntity) &&
-        !(references instanceof SchemaType) &&
-        !(references instanceof SchemaEntity)
-      )
-        throw new LinkerError(
-          access.Location,
-          "Attempting to access a none struct"
-        );
-
-      const property = references.GetKey(access.Target);
-      if (!property)
-        throw new LinkerError(access.Location, "Target has no key");
-
-      return property.Type;
+      return ResolveExpression(access.Subject);
     },
     (schema) => {
       return schema;

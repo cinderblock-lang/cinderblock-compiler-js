@@ -135,6 +135,13 @@ export class ComponentStore {
     return result;
   }
 
+  static DeepJson(target: Component): any {
+    return {
+      ...(target as any).json,
+      children: target[_children].map((c) => this.DeepJson(this.Get(c))),
+    };
+  }
+
   static Clear() {
     this.#data = {};
     this.#index = 0;

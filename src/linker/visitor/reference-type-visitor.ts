@@ -21,6 +21,11 @@ export class ReferenceTypeVisitor extends TypeCollectorVisitor {
 
   Visit(target: Component) {
     if (target instanceof ReferenceType) {
+      if (target.References)
+        return {
+          result: undefined,
+          cleanup: () => {},
+        };
       const possible = this.find(target.Name);
 
       if (possible)
@@ -35,6 +40,7 @@ export class ReferenceTypeVisitor extends TypeCollectorVisitor {
           cleanup: () => {},
         };
 
+      debugger;
       throw new LinkerError(
         target.Location,
         `Could not resolve symbol: ${target.Name}`

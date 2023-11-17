@@ -1,7 +1,7 @@
 import Path from "path";
 import Fs from "fs/promises";
 import Child from "child_process";
-import { Ast } from "#compiler/ast";
+import { Ast, ComponentStore } from "#compiler/ast";
 import { ParseCinderblock } from "./parser";
 import { LinkCinderblock } from "./linker";
 import { WriteCinderblock } from "./writer";
@@ -42,8 +42,8 @@ async function Clone(git: string, version: string, path: string) {
   );
 }
 
-function LibraryUrl(cache_dir: string, url: string) {
-  const dir = Buffer.from(url).toString("hex");
+function LibraryUrl(cache_dir: string, url: string, version: string) {
+  const dir = Buffer.from(url + "#" + version).toString("hex");
   return Path.resolve(cache_dir, dir);
 }
 
@@ -63,12 +63,14 @@ export async function Compile(root_dir: string) {
   const cache_dir = Path.resolve(root_dir, ".cinder_cache");
 
   const libs = (project.libs ?? []).concat([
-    "https://github.com/cinderblock-lang/cinderblock-std.git",
-    project.std_tag ?? "*",
+    [
+      "https://github.com/cinderblock-lang/cinderblock-std.git",
+      project.std_tag ?? "*",
+    ],
   ]);
 
   for (const [url, tag] of libs) {
-    const path = LibraryUrl(cache_dir, url);
+    const path = LibraryUrl(cache_dir, url, tag);
     try {
       const stat = await Fs.stat(path);
       if (!stat.isDirectory()) throw new Error("Not found");
@@ -84,8 +86,8 @@ export async function Compile(root_dir: string) {
   for (const target of project.targets) {
     let parsed = new Ast();
 
-    for (const [url] of libs) {
-      const path = LibraryUrl(cache_dir, url);
+    for (const [url, tag] of libs) {
+      const path = LibraryUrl(cache_dir, url, tag);
 
       const library_project: Library = await ReadJson(
         Path.join(path, "cinder.json")
@@ -134,19 +136,28 @@ export async function Compile(root_dir: string) {
           );
       }
     }
+    const dir = Path.resolve(root_dir, project.bin, target);
+    await Fs.mkdir(dir, { recursive: true });
+
+    const json: Array<any> = [];
+    for (const namespace of parsed.iterator())
+      json.push(ComponentStore.DeepJson(namespace));
+
+    await Fs.writeFile(
+      Path.join(dir, "ast.json"),
+      JSON.stringify(json, undefined, 2)
+    );
 
     const linked = LinkCinderblock(parsed);
 
     const c_code = WriteCinderblock(linked);
-
-    const dir = Path.resolve(root_dir, project.bin, target);
-    await Fs.mkdir(dir, { recursive: true });
 
     await Fs.writeFile(Path.join(dir, "main.c"), c_code);
 
     switch (target) {
       case "linux":
         await Exec(`gcc main.c -o ${project.name}`, dir);
+        break;
       default:
         throw new Error(
           "Currently, only compiling for linux on linux is supported. Expect more when the compiler is written in cinderblock"

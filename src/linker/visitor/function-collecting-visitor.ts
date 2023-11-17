@@ -1,4 +1,5 @@
 import {
+  BuiltInFunction,
   Component,
   ExternalFunctionDeclaration,
   FunctionEntity,
@@ -8,7 +9,10 @@ import {
 import { LinkerError } from "../error";
 
 export class FunctionCollectingVisitor extends Visitor {
-  #functions: Record<string, FunctionEntity | ExternalFunctionDeclaration> = {};
+  #functions: Record<
+    string,
+    FunctionEntity | ExternalFunctionDeclaration | BuiltInFunction
+  > = {};
   #namespace: string = "";
 
   constructor() {
@@ -20,7 +24,12 @@ export class FunctionCollectingVisitor extends Visitor {
   }
 
   get OperatesOn(): (new (...args: any[]) => Component)[] {
-    return [Namespace, FunctionEntity, ExternalFunctionDeclaration];
+    return [
+      Namespace,
+      FunctionEntity,
+      ExternalFunctionDeclaration,
+      BuiltInFunction,
+    ];
   }
 
   Visit(target: Component) {
@@ -41,6 +50,8 @@ export class FunctionCollectingVisitor extends Visitor {
         result: undefined,
         cleanup: () => {},
       };
+    } else if (target instanceof BuiltInFunction) {
+      this.#functions[target.Name] = target;
     }
 
     throw new LinkerError(

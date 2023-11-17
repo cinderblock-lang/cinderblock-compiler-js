@@ -48,7 +48,7 @@ export class Location {
   }
 
   toString() {
-    return `\nFile: ${this.FileName}\nLine: ${this.StartLine}\nColumn: ${this.StartColumn}`;
+    return `\nFile: ${this.FileName}\nLine: ${this.StartLine + 1}\nColumn: ${this.StartColumn + 1}`;
   }
 }
 

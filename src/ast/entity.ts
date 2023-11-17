@@ -262,6 +262,10 @@ export class ExternalFunctionDeclaration extends Component {
     return ComponentStore.Get(this.#returns);
   }
 
+  get Parameters() {
+    return this.#parameters;
+  }
+
   get type_name() {
     return "external_function_declaration";
   }
@@ -304,6 +308,10 @@ export class LibEntity extends Entity {
     return ComponentStore.Get(this.#name);
   }
 
+  get Content() {
+    return this.#content;
+  }
+
   get type_name() {
     return "lib_entity";
   }
@@ -329,6 +337,10 @@ export class SystemEntity extends Entity {
     return new SystemEntity(this.Location, this.Exported, this.#content.copy());
   }
 
+  get Content() {
+    return this.#content;
+  }
+
   get type_name() {
     return "system_entity";
   }
@@ -336,6 +348,54 @@ export class SystemEntity extends Entity {
   get more_json() {
     return {
       content: this.#content.json,
+    };
+  }
+}
+
+@AstItem
+export class BuiltInFunction extends Component {
+  readonly #name: string;
+  readonly #parameters: ComponentGroup;
+  readonly #returns: number;
+
+  constructor(
+    ctx: Location,
+    name: string,
+    parameters: ComponentGroup,
+    returns: Type
+  ) {
+    super(ctx);
+    this.#name = name;
+    this.#parameters = parameters;
+    this.#returns = returns.Index;
+  }
+
+  copy() {
+    return new BuiltInFunction(
+      this.Location,
+      this.#name,
+      this.#parameters.copy(),
+      this.Returns.copy()
+    );
+  }
+
+  get Name() {
+    return this.#name;
+  }
+
+  get Returns() {
+    return ComponentStore.Get(this.#returns);
+  }
+
+  get type_name() {
+    return "external_function_declaration";
+  }
+
+  get extra_json() {
+    return {
+      name: this.#name,
+      parameters: this.#parameters.json,
+      returns: this.#returns,
     };
   }
 }

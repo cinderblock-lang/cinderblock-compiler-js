@@ -96,14 +96,16 @@ function ExtractLambda(tokens: TokenGroup, look_for: Array<string>) {
     return { parameters, body };
   }
 
+  const body = new ComponentGroup(
+    new ReturnStatement(
+      tokens.peek()?.Location ?? parameters[0].Location,
+      ExtractExpression(tokens, look_for)
+    )
+  );
+
   return {
     parameters,
-    body: new ComponentGroup(
-      new ReturnStatement(
-        tokens.peek()?.Location ?? parameters[0].Location,
-        ExtractExpression(tokens, look_for)
-      )
-    ),
+    body,
   };
 }
 
