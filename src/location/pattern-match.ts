@@ -33,6 +33,23 @@ export function RequireType<T extends Component>(
   item: Component
 ): asserts item is T {
   if (!(item instanceof target)) {
-    throw new LinkerError(item.Location, "Invalid type");
+    throw new LinkerError(
+      item.Location,
+      `Invalid type. Expected ${target.name} but recieved ${item.constructor.name}`
+    );
   }
+}
+
+export function RequireOneOfType<
+  T extends Array<abstract new (...args: Array<any>) => Component>
+>(targets: T, item: Component): asserts item is InstanceType<T[number]> {
+  for (const target of targets)
+    if (item instanceof target) {
+      return;
+    }
+
+  throw new LinkerError(
+    item.Location,
+    `Invalid type. Expected one of several types but recieved ${item.constructor.name}`
+  );
 }

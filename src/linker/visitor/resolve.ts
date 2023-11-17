@@ -18,19 +18,23 @@ import {
   PrimitiveType,
   FunctionType,
   ComponentGroup,
-  FunctionParameter,
   SchemaType,
   SchemaEntity,
   ReferenceType,
-  StoreStatement,
 } from "#compiler/ast";
 import { PatternMatch } from "#compiler/location";
 import { LinkerError } from "../error";
 
 export function ResolveType(
   type: Type
-): StructEntity | SchemaEntity | SchemaType {
-  return PatternMatch(StructEntity, SchemaEntity, SchemaType, ReferenceType)(
+): StructEntity | SchemaEntity | SchemaType | PrimitiveType {
+  return PatternMatch(
+    StructEntity,
+    SchemaEntity,
+    SchemaType,
+    ReferenceType,
+    PrimitiveType
+  )(
     (s) => s,
     (s) => s,
     (s) => s,
@@ -39,7 +43,8 @@ export function ResolveType(
       if (!target) throw new LinkerError(r.Location, "Missing reference");
 
       return ResolveType(target);
-    }
+    },
+    (p) => p
   )(type);
 }
 

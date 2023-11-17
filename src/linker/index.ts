@@ -14,6 +14,7 @@ import { ReduceVisitor } from "./visitor/reduce-visitor";
 import { EmptyVisitor } from "./visitor/empty-visitor";
 import { ConcatVisitor } from "./visitor/concat-visitor";
 import { GenericFlatteningVisitor } from "./visitor/generic-flattening-visitor";
+import { BuiltInFunctions } from "./built-in-functions";
 
 export function LinkCinderblock(ast: Ast) {
   const function_collector = new FunctionCollectingVisitor();
@@ -28,14 +29,15 @@ export function LinkCinderblock(ast: Ast) {
   const generic_flattening_visitor = new GenericFlatteningVisitor();
 
   ast = ast
+    .with(BuiltInFunctions)
     .visited(new ReduceVisitor())
     .visited(iterable_visitor)
     .visited(function_collector)
     .visited(type_collector)
     .visited(new ReferenceExpressionVisitor(function_collector.Functions))
     .visited(new ReferenceTypeVisitor(type_collector.Types))
-    .visited(new FunctionFlatteningVisitor(function_collector.Functions))
     .visited(new StoreTypeVisitor(type_collector.Types))
+    .visited(new FunctionFlatteningVisitor(function_collector.Functions))
     .visited(new NameFlatteningVisitor())
     .visited(new PartialInvokationVisitor())
     .visited(iterate_visitor)

@@ -52,11 +52,15 @@ export class FunctionCollectingVisitor extends Visitor {
       };
     } else if (target instanceof BuiltInFunction) {
       this.#functions[target.Name] = target;
+      return {
+        result: undefined,
+        cleanup: () => {},
+      };
     }
 
     throw new LinkerError(
       target.Location,
-      "Component is not a recognised type"
+      `Component is not a recognised type. Got ${target.constructor.name}`
     );
   }
 }

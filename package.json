@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "description": "A new programming language",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "npm run build && cd ../cinderblock-tests/externals && cinderblock compile"
   },
   "private": true,
   "bin": {

@@ -1,8 +1,11 @@
 import {
   AccessExpression,
+  AsmProperty,
+  AsmStatement,
   AssignStatement,
   Ast,
   BracketsExpression,
+  BuiltInFunction,
   ComponentGroup,
   Expression,
   ExternalFunctionDeclaration,
@@ -76,6 +79,8 @@ class CinderblockWriter {
               return "int " + alias;
             case "long":
               return "long " + alias;
+            case "string":
+              return "blob " + alias;
           }
         },
         (func) => {
@@ -214,7 +219,7 @@ class CinderblockWriter {
           throw new WriterError(reference.Location, "Unresolved reference");
 
         return (
-          "*" +
+          (is_left ? "" : "*") +
           PatternMatch(FunctionEntity, StoreStatement, FunctionParameter)(
             (fn) => fn.Name,
             (st) => st.Name,
@@ -243,9 +248,24 @@ class CinderblockWriter {
         const target = subject.References;
         if (!target)
           throw new WriterError(subject.Location, "Unresolved reference");
-        RequireType(FunctionEntity, target);
 
-        return `${target.Name}(${[...invokation.Parameters.iterator()]
+        if (target instanceof FunctionEntity) {
+          this.#globals.push(this.WriteFunction(target));
+        }
+
+        if (
+          !(target instanceof FunctionEntity) &&
+          !(target instanceof BuiltInFunction) &&
+          !(target instanceof ExternalFunctionDeclaration)
+        )
+          throw new WriterError(
+            target.Location,
+            "Attempting to invoke a none function"
+          );
+
+        const parameters = [...invokation.Parameters.iterator()];
+
+        return `${target.Name}(${parameters
           .map((p) => {
             RequireType(Expression, p);
 
@@ -253,7 +273,7 @@ class CinderblockWriter {
               result: res,
               stored: sto,
               final,
-            } = this.WriteExpression(p, level, false);
+            } = this.WriteExpression(p, level, true);
 
             result.push(...res);
             stored.push(...sto);
@@ -298,7 +318,8 @@ class CinderblockWriter {
         StoreStatement,
         ReturnStatement,
         AssignStatement,
-        PanicStatement
+        PanicStatement,
+        AsmStatement
       )(
         (store) => {
           if (!store.Type)
@@ -323,7 +344,7 @@ class CinderblockWriter {
           result.push(...res);
           stored.push(...sto);
 
-          result.push(`*${store.Name} = ${final};`);
+          result.push(`${store.Name} = ${final};`);
         },
         (ret) => {
           if (!returns)
@@ -346,7 +367,7 @@ class CinderblockWriter {
           } = this.WriteExpression(ret.Value, level, true);
           result.push(...res);
           stored.push(...sto);
-          result.push(`*result = ${final};`);
+          result.push(`result = ${final};`);
 
           result.push(...stored.map((s) => `safe_free(${s});`));
 
@@ -379,6 +400,33 @@ class CinderblockWriter {
           stored.push(...sto);
           result.push(`code = ${final};`);
           result.push(`exit(code);`);
+        },
+        (asm) => {
+          result.push(`blob *${asm.ReadAs} = malloc(sizeof(blob));`);
+
+          result.push(
+            `asm volatile(${asm.Text.split("\n")
+              .map((t) => `"${t.trim()}"`)
+              .join("\n")}
+              : "=${asm.Read}" (${asm.ReadAs})
+              : ${[...asm.Inputs.iterator()]
+                .map((i) => {
+                  RequireType(AsmProperty, i);
+                  const n = i.Name;
+                  const e = i.Uses;
+                  const {
+                    result: res,
+                    stored: sto,
+                    final,
+                  } = this.WriteExpression(e, level, true);
+                  result.push(...res);
+                  stored.push(...sto);
+                  return `"${n}" (${final})`;
+                })
+                .join(", ")}
+              : "memory", "cc"
+            );`
+          );
         }
       )(statement);
     }
@@ -408,7 +456,7 @@ class CinderblockWriter {
           const type = p.Type;
           if (!type) throw new WriterError(p.Location, "Parameter has no type");
 
-          return this.WriteType(type, p.Name);
+          return this.WriteType(type, p.Name, true);
         })
         .join(", ")}) {`
     );
@@ -531,6 +579,10 @@ ${this.WriteType(c.Returns, c.Name, true)}(${params}) {
     return `
 ${functions.join("\n\n")}`;
   }
+
+  Globals() {
+    return this.#globals.join("\n\n");
+  }
 }
 
 export function WriteCinderblock(ast: Ast) {
@@ -552,42 +604,61 @@ export function WriteCinderblock(ast: Ast) {
 #include <stdlib.h>
 #include <dlfcn.h>
 
-typedef struct string
+typedef struct blob
 {
-  char *data;
+  void *data;
   int length;
-} string;
+} blob;
 
-string_ptr_free(string *subject)
+void blob_ptr_free(blob *subject)
 {
   free(subject->data);
   free(subject);
 }
 
-string_free(string subject)
+void blob_free(blob subject)
 {
   free(subject.data);
 }
 
-#define safe_free(x) _Generic((x), string *: string_ptr_free, string: string_free, default: free)(x)
+#define safe_free(x) _Generic((x), blob *: blob_ptr_free, blob: blob_free, default: free)(x)
 
-char GetChar(string input, int index)
+char GetChar(blob *input, int *index)
 {
-  if (input.length < index)
+  if (input->length < *index)
   {
     return 0;
   }
 
-  return input.data[index];
+  char *blob_data = input->data;
+
+  return blob_data[*index];
 }
 
-string CreateString(char *input, int length)
+int Length(blob *input)
 {
-  string result;
-  result.data = input;
-  result.length = length;
+  return input->length;
+}
+
+blob *CreateString(char *input, int *length)
+{
+  blob *result = malloc(sizeof(blob));
+  result->data = input;
+  result->length = *length;
   return result;
 }
+
+size_t CSize(blob* input)
+{
+  return sizeof(input->data);
+}
+
+char *CBuffer(blob* input)
+{
+  return input->data;
+}
+
+${writer.Globals()}
 
 ${result}`;
       }

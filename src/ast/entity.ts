@@ -388,7 +388,7 @@ export class BuiltInFunction extends Component {
   }
 
   get type_name() {
-    return "external_function_declaration";
+    return "built_in_function";
   }
 
   get extra_json() {

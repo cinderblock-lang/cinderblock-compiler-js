@@ -5,16 +5,15 @@ import {
   FunctionParameter,
   InvokationExpression,
   ReferenceExpression,
-  ReferenceType,
   SchemaEntity,
   SchemaType,
   StoreStatement,
   StructEntity,
-  Type,
 } from "#compiler/ast";
 import { ReferenceNameIndexingVisitor } from "./reference-name-indexing-visitor";
 import { LinkerError } from "../error";
 import { ResolveExpression, ResolveType } from "./resolve";
+import { Namer } from "#compiler/location";
 
 export class FunctionFlatteningVisitor extends ReferenceNameIndexingVisitor {
   get OperatesOn(): (new (...args: any[]) => Component)[] {
@@ -57,7 +56,14 @@ export class FunctionFlatteningVisitor extends ReferenceNameIndexingVisitor {
           result: new InvokationExpression(
             target.Location,
             new ReferenceExpression(found.Location, "", found),
-            new ComponentGroup(accessing, ...target.Parameters.iterator())
+            new ComponentGroup(
+              new ReferenceExpression(
+                accessing.Location,
+                Namer.GetName(),
+                accessing
+              ),
+              ...target.Parameters.iterator()
+            )
           ),
           cleanup: () => {},
         };

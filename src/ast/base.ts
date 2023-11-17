@@ -64,6 +64,7 @@ export abstract class Component {
   get json(): unknown {
     return {
       ...this.extra_json,
+      index: this.Index,
       type: this.type_name,
       location: this.#location.json,
     };

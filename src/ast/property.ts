@@ -1,4 +1,5 @@
 import { Location } from "#compiler/location";
+import { Expression } from ".";
 import { AstItem, Component, ComponentStore } from "./base";
 import { Type } from "./type";
 
@@ -95,6 +96,41 @@ export class FunctionParameter extends Component {
     return {
       name: this.#name,
       type_name: this.#type ?? null,
+    };
+  }
+}
+
+@AstItem
+export class AsmProperty extends Component {
+  readonly #name: string;
+  readonly #uses: number;
+
+  constructor(ctx: Location, name: string, uses: Expression) {
+    super(ctx);
+    this.#name = name;
+    this.#uses = uses.Index;
+  }
+
+  copy() {
+    return new AsmProperty(this.Location, this.Name, this.Uses.copy());
+  }
+
+  get Name() {
+    return this.#name;
+  }
+
+  get Uses() {
+    return ComponentStore.Get(this.#uses);
+  }
+
+  get type_name() {
+    return "asm_property";
+  }
+
+  get extra_json() {
+    return {
+      name: this.#name,
+      uses: this.#uses,
     };
   }
 }

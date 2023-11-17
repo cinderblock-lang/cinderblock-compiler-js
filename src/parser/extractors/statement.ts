@@ -1,4 +1,6 @@
 import {
+  AsmProperty,
+  AsmStatement,
   AssignStatement,
   ComponentGroup,
   PanicStatement,
@@ -33,6 +35,31 @@ function ExtractPanic(tokens: TokenGroup) {
   return { error: ExtractExpression(tokens) };
 }
 
+function ExtractAsm(tokens: TokenGroup) {
+  const inputs = BuildWhile(tokens, "(", ",", ")", () => {
+    const name = NextBlock(tokens);
+    ExpectNext(tokens, ":");
+    const value = ExtractExpression(tokens, [",", ")"]);
+    return new AsmProperty(name.Location, name.Text, value);
+  });
+
+  ExpectNext(tokens, ":");
+
+  const output = NextBlock(tokens).Text;
+
+  ExpectNext(tokens, "as");
+  const output_as = NextBlock(tokens).Text;
+
+  const body = NextBlock(tokens);
+  if (!body.Text.startsWith("`") || !body.Text.endsWith("`"))
+    throw new ParserError(
+      body.Location,
+      "asm statements must be followed by a multi line string"
+    );
+
+  return { inputs, output, output_as, body: body.Text.replace(/`/gm, "") };
+}
+
 export function ExtractStatement(tokens: TokenGroup): Statement {
   const current = NextBlock(tokens);
 
@@ -52,13 +79,24 @@ export function ExtractStatement(tokens: TokenGroup): Statement {
       const { error } = ExtractPanic(tokens);
       return new PanicStatement(current.Location, error);
     }
+    case "asm": {
+      const { inputs, output, output_as, body } = ExtractAsm(tokens);
+      return new AsmStatement(
+        current.Location,
+        body,
+        output,
+        output_as,
+        new ComponentGroup(...inputs)
+      );
+    }
     default:
       throw ParserError.UnexpectedSymbol(
         current,
         "store",
         "return",
         "assign",
-        "panic"
+        "panic",
+        "asm"
       );
   }
 }

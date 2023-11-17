@@ -40,7 +40,6 @@ export class ReferenceTypeVisitor extends TypeCollectorVisitor {
           cleanup: () => {},
         };
 
-      debugger;
       throw new LinkerError(
         target.Location,
         `Could not resolve symbol: ${target.Name}`

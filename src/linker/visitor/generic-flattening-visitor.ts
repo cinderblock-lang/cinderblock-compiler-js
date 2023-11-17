@@ -1,8 +1,10 @@
 import {
+  BuiltInFunction,
   Component,
   ComponentGroup,
   ComponentStore,
   Expression,
+  ExternalFunctionDeclaration,
   FunctionEntity,
   FunctionParameter,
   InvokationExpression,
@@ -14,6 +16,7 @@ import {
   ReferenceType,
   SchemaEntity,
   SchemaType,
+  StoreStatement,
   StructEntity,
   UseType,
   Visitor,
@@ -156,7 +159,7 @@ export class GenericFlatteningVisitor extends Visitor {
     const remove: Array<FunctionParameter> = [];
     for (let i = 0; i < desired.length; i++) {
       const c = desired[i];
-      const u = current[i];
+      let u = current[i];
 
       RequireType(FunctionParameter, c);
       if (c.Optional) {
@@ -164,6 +167,8 @@ export class GenericFlatteningVisitor extends Visitor {
         generic = true;
         continue;
       }
+
+      if (u instanceof StoreStatement) u = u.Equals;
 
       RequireType(Expression, u);
 
@@ -199,6 +204,14 @@ export class GenericFlatteningVisitor extends Visitor {
             cleanup: () => {},
           };
         const invoking = ResolveExpression(invokation.Subject);
+        if (
+          invoking instanceof ExternalFunctionDeclaration ||
+          invoking instanceof BuiltInFunction
+        )
+          return {
+            result: undefined,
+            cleanup: () => {},
+          };
         RequireType(FunctionEntity, invoking);
 
         const { generic, using } = this.#is_generic(invokation, invoking);

@@ -1,5 +1,5 @@
 import { Location } from "#compiler/location";
-import { AstItem, Component, ComponentStore } from "./base";
+import { AstItem, Component, ComponentGroup, ComponentStore } from "./base";
 import { Expression } from "./expression";
 import { Type } from "./type";
 
@@ -139,6 +139,67 @@ export class PanicStatement extends Statement {
   get extra_json() {
     return {
       value: this.#value,
+    };
+  }
+}
+
+@AstItem
+export class AsmStatement extends Statement {
+  readonly #text: string;
+  readonly #read: string;
+  readonly #read_as: string;
+
+  readonly #inputs: ComponentGroup;
+
+  constructor(
+    ctx: Location,
+    text: string,
+    read: string,
+    read_as: string,
+    inputs: ComponentGroup
+  ) {
+    super(ctx);
+    this.#text = text;
+    this.#read = read;
+    this.#read_as = read_as;
+    this.#inputs = inputs;
+  }
+
+  copy() {
+    return new AsmStatement(
+      this.Location,
+      this.Text,
+      this.Read,
+      this.ReadAs,
+      this.Inputs
+    );
+  }
+
+  get Text() {
+    return this.#text;
+  }
+
+  get Read() {
+    return this.#read;
+  }
+
+  get ReadAs() {
+    return this.#read_as;
+  }
+
+  get Inputs() {
+    return this.#inputs;
+  }
+
+  get type_name() {
+    return "asm_statement";
+  }
+
+  get extra_json() {
+    return {
+      text: this.#text,
+      read: this.#read,
+      inputs: this.#inputs,
     };
   }
 }

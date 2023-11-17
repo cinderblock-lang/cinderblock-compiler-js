@@ -33,6 +33,45 @@ export const BuiltInFunctions = new ComponentGroup(
           )
         ),
         new PrimitiveType(EmptyLocation, "char")
+      ),
+      new BuiltInFunction(
+        EmptyLocation,
+        "Length",
+        new ComponentGroup(
+          new FunctionParameter(
+            EmptyLocation,
+            "input",
+            new PrimitiveType(EmptyLocation, "string"),
+            false
+          )
+        ),
+        new PrimitiveType(EmptyLocation, "int")
+      ),
+      new BuiltInFunction(
+        EmptyLocation,
+        "CBuffer",
+        new ComponentGroup(
+          new FunctionParameter(
+            EmptyLocation,
+            "input",
+            new PrimitiveType(EmptyLocation, "string"),
+            false
+          )
+        ),
+        new PrimitiveType(EmptyLocation, "any")
+      ),
+      new BuiltInFunction(
+        EmptyLocation,
+        "CSize",
+        new ComponentGroup(
+          new FunctionParameter(
+            EmptyLocation,
+            "input",
+            new PrimitiveType(EmptyLocation, "string"),
+            false
+          )
+        ),
+        new PrimitiveType(EmptyLocation, "any")
       )
     )
   )
