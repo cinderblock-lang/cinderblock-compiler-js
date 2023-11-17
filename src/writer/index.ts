@@ -403,12 +403,11 @@ class CinderblockWriter {
         },
         (asm) => {
           result.push(`blob *${asm.ReadAs} = malloc(sizeof(blob));`);
-
           result.push(
             `asm volatile(${asm.Text.split("\n")
               .map((t) => `"${t.trim()}"`)
               .join("\n")}
-              : "=${asm.Read}" (${asm.ReadAs})
+              : "=${asm.Read}" (${asm.ReadAs}->data)
               : ${[...asm.Inputs.iterator()]
                 .map((i) => {
                   RequireType(AsmProperty, i);
