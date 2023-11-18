@@ -1,6 +1,5 @@
 import {
   AccessExpression,
-  AsmProperty,
   AssignStatement,
   Ast,
   BracketsExpression,
@@ -80,6 +79,8 @@ class CinderblockWriter {
               return "long " + alias;
             case "string":
               return "blob " + alias;
+            case "c_string":
+              return "char* " + alias;
           }
         },
         (func) => {
@@ -147,7 +148,7 @@ class CinderblockWriter {
           case "long":
             return literal.Value;
           case "string":
-            return `CreateString("${literal.Value}", ${literal.Value.length})`;
+            return `create_string("${literal.Value}", ${literal.Value.length})`;
         }
       },
       (operator) => {

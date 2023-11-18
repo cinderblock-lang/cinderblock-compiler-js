@@ -58,7 +58,26 @@ export const BuiltInFunctions = new ComponentGroup(
             false
           )
         ),
-        new PrimitiveType(EmptyLocation, "any")
+        new PrimitiveType(EmptyLocation, "c_string")
+      ),
+      new BuiltInFunction(
+        EmptyLocation,
+        "create_string",
+        new ComponentGroup(
+          new FunctionParameter(
+            EmptyLocation,
+            "input",
+            new PrimitiveType(EmptyLocation, "c_string"),
+            false
+          ),
+          new FunctionParameter(
+            EmptyLocation,
+            "length",
+            new PrimitiveType(EmptyLocation, "int"),
+            false
+          )
+        ),
+        new PrimitiveType(EmptyLocation, "string")
       ),
       new BuiltInFunction(
         EmptyLocation,
@@ -71,7 +90,20 @@ export const BuiltInFunctions = new ComponentGroup(
             false
           )
         ),
-        new PrimitiveType(EmptyLocation, "any")
+        new PrimitiveType(EmptyLocation, "int")
+      ),
+      new BuiltInFunction(
+        EmptyLocation,
+        "sys_print",
+        new ComponentGroup(
+          new FunctionParameter(
+            EmptyLocation,
+            "input",
+            new PrimitiveType(EmptyLocation, "string"),
+            false
+          )
+        ),
+        new PrimitiveType(EmptyLocation, "int")
       )
     )
   )

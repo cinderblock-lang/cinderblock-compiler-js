@@ -1,5 +1,4 @@
 import {
-  AsmProperty,
   AssignStatement,
   ComponentGroup,
   PanicStatement,
@@ -11,7 +10,6 @@ import { ParserError } from "../error";
 import { TokenGroup } from "../token";
 import { BuildWhile, ExpectNext, NextBlock } from "../utils";
 import { ExtractExpression } from "./expression";
-import { ExtractType } from "./type";
 
 function ExtractStore(tokens: TokenGroup) {
   const name = NextBlock(tokens).Text;

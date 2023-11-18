@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <dlfcn.h>
+#include <sys/syscall.h>
 
 typedef struct blob
 {
@@ -24,7 +25,7 @@ int length(blob input)
   return input.length;
 }
 
-blob CreateString(char *input, int length)
+blob create_string(char *input, int length)
 {
   blob result;
   result.data = input;
@@ -40,4 +41,13 @@ int c_size(blob input)
 char *c_buffer(blob input)
 {
   return input.data;
+}
+
+int sys_print(blob text)
+{
+  int result;
+
+  result = syscall(SYS_write, 1, text.data, text.length);
+
+  return result;
 }

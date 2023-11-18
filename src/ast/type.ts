@@ -92,6 +92,7 @@ export const PrimitiveNames = [
   "long",
   "any",
   "string",
+  "c_string",
 ] as const;
 
 export type PrimitiveName = (typeof PrimitiveNames)[number];
