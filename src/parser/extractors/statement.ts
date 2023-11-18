@@ -43,12 +43,24 @@ function ExtractAsm(tokens: TokenGroup) {
     return new AsmProperty(name.Location, name.Text, value);
   });
 
-  ExpectNext(tokens, ":");
+  const output =
+    tokens.peek()?.Text === "exposing"
+      ? (() => {
+          ExpectNext(tokens, "exposing");
+          const use = NextBlock(tokens).Text;
+          ExpectNext(tokens, "as");
+          const as = NextBlock(tokens).Text;
+          return { use, as };
+        })()
+      : undefined;
 
-  const output = NextBlock(tokens).Text;
-
-  ExpectNext(tokens, "as");
-  const output_as = NextBlock(tokens).Text;
+  const registers = BuildWhile(
+    tokens,
+    "registering",
+    ",",
+    "with",
+    () => NextBlock(tokens).Text
+  );
 
   const body = NextBlock(tokens);
   if (!body.Text.startsWith("`") || !body.Text.endsWith("`"))
@@ -57,7 +69,12 @@ function ExtractAsm(tokens: TokenGroup) {
       "asm statements must be followed by a multi line string"
     );
 
-  return { inputs, output, output_as, body: body.Text.replace(/`/gm, "") };
+  return {
+    inputs,
+    output,
+    registers,
+    body: body.Text.replace(/`/gm, ""),
+  };
 }
 
 export function ExtractStatement(tokens: TokenGroup): Statement {
@@ -80,12 +97,13 @@ export function ExtractStatement(tokens: TokenGroup): Statement {
       return new PanicStatement(current.Location, error);
     }
     case "asm": {
-      const { inputs, output, output_as, body } = ExtractAsm(tokens);
+      const { inputs, output, body, registers } = ExtractAsm(tokens);
       return new AsmStatement(
         current.Location,
         body,
-        output,
-        output_as,
+        output?.use,
+        output?.as,
+        registers,
         new ComponentGroup(...inputs)
       );
     }

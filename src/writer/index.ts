@@ -149,7 +149,7 @@ class CinderblockWriter {
           case "long":
             return literal.Value;
           case "string":
-            return `CreateString("${literal.Value}", ${literal.Value.length})`;
+            return `CreateString("${literal.Value}", &(int){${literal.Value.length}})`;
         }
       },
       (operator) => {
@@ -328,13 +328,7 @@ class CinderblockWriter {
               "No type for store statement"
             );
           stored.push(store.Name);
-          result.push(
-            `${this.WriteType(
-              store.Type,
-              store.Name,
-              true
-            )} = malloc(sizeof(${this.WriteType(store.Type, "")}));`
-          );
+          result.push(`${this.WriteType(store.Type, store.Name, true)};`);
 
           const {
             result: res,
@@ -369,7 +363,7 @@ class CinderblockWriter {
           stored.push(...sto);
           result.push(`result = ${final};`);
 
-          result.push(...stored.map((s) => `safe_free(${s});`));
+          result.push(...stored.map((s) => `free(${s});`));
 
           result.push(`${resolve} result;`);
         },
@@ -402,12 +396,16 @@ class CinderblockWriter {
           result.push(`exit(code);`);
         },
         (asm) => {
-          result.push(`blob *${asm.ReadAs} = malloc(sizeof(blob));`);
+          if (asm.ReadAs) {
+            result.push(`blob *${asm.ReadAs} = malloc(sizeof(blob));`);
+            stored.push(asm.ReadAs);
+          }
+
           result.push(
-            `asm volatile(${asm.Text.split("\n")
-              .map((t) => `"${t.trim()}"`)
+            `__asm__ volatile(${asm.Text.split("\n")
+              .map((t) => `"${t.trim()};"`)
               .join("\n")}
-              : "=${asm.Read}" (${asm.ReadAs}->data)
+              : ${asm.Read ? `"=${asm.Read}" (${asm.ReadAs}->data)` : ""}
               : ${[...asm.Inputs.iterator()]
                 .map((i) => {
                   RequireType(AsmProperty, i);
@@ -423,7 +421,7 @@ class CinderblockWriter {
                   return `"${n}" (${final})`;
                 })
                 .join(", ")}
-              : "memory", "cc"
+              : ${asm.Registers.map((a) => `"${a}"`).join(", ")}
             );`
           );
         }
@@ -431,7 +429,7 @@ class CinderblockWriter {
     }
 
     if (struct) {
-      result.push(...stored.map((s) => `safe_free(${s});`));
+      result.push(...stored.map((s) => `free(${s});`));
     }
 
     return result.map((r) => " ".repeat(level) + r).join("\n");
@@ -466,7 +464,7 @@ class CinderblockWriter {
         2,
         returns,
         undefined,
-        func.Name === "main" ? "return *" : "return"
+        func.Name === "main" ? "return" : "return"
       )
     );
 
@@ -602,10 +600,11 @@ export function WriteCinderblock(ast: Ast) {
         return `
 #include <stdlib.h>
 #include <dlfcn.h>
+#include <stdio.h>
 
 typedef struct blob
 {
-  void *data;
+  char *data;
   int length;
 } blob;
 
@@ -647,7 +646,7 @@ blob *CreateString(char *input, int *length)
   return result;
 }
 
-size_t CSize(blob* input)
+int CSize(blob* input)
 {
   return sizeof(input->data);
 }

@@ -146,22 +146,25 @@ export class PanicStatement extends Statement {
 @AstItem
 export class AsmStatement extends Statement {
   readonly #text: string;
-  readonly #read: string;
-  readonly #read_as: string;
+  readonly #read?: string;
+  readonly #read_as?: string;
+  readonly #registers: Array<string>;
 
   readonly #inputs: ComponentGroup;
 
   constructor(
     ctx: Location,
     text: string,
-    read: string,
-    read_as: string,
+    read: string | undefined,
+    read_as: string | undefined,
+    registers: Array<string>,
     inputs: ComponentGroup
   ) {
     super(ctx);
     this.#text = text;
     this.#read = read;
     this.#read_as = read_as;
+    this.#registers = registers;
     this.#inputs = inputs;
   }
 
@@ -171,6 +174,7 @@ export class AsmStatement extends Statement {
       this.Text,
       this.Read,
       this.ReadAs,
+      this.Registers,
       this.Inputs
     );
   }
@@ -185,6 +189,10 @@ export class AsmStatement extends Statement {
 
   get ReadAs() {
     return this.#read_as;
+  }
+
+  get Registers() {
+    return this.#registers;
   }
 
   get Inputs() {
