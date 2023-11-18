@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "A new programming language",
   "scripts": {
-    "build": "tsc && cp ./src/writer/template.c ./dist/writer/template.c",
+    "build": "tsc",
     "test": "npm run build && cd ../tests/externals && cinderblock compile -d"
   },
   "private": true,

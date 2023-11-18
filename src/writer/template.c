@@ -8,16 +8,16 @@ typedef struct blob
   int length;
 } blob;
 
-char get_char(blob *input, int *index)
+char get_char(blob input, int index)
 {
-  if (input->length < *index)
+  if (input.length < index)
   {
     return 0;
   }
 
-  char *blob_data = input->data;
+  char *blob_data = input.data;
 
-  return blob_data[*index];
+  return blob_data[index];
 }
 
 int length(blob input)

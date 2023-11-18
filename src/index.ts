@@ -59,9 +59,6 @@ export async function Compile(
   root_dir: string,
   options: { debug?: boolean } = {}
 ) {
-  const template = await ReadText(
-    Path.resolve(__dirname, "writer", "template.c")
-  );
   const project: Project = await ReadJson(
     Path.resolve(root_dir, "cinder.json")
   );
@@ -156,14 +153,16 @@ export async function Compile(
 
     const linked = LinkCinderblock(parsed);
 
-    const c_code = WriteCinderblock(linked, template);
+    const c_code = WriteCinderblock(linked);
 
     await Fs.writeFile(Path.join(dir, "main.c"), c_code);
 
     switch (target) {
       case "linux":
         await Exec(
-          `gcc main.c ${options.debug ? "-g1 -lSegFault" : ""} -o ${project.name}`,
+          `gcc main.c ${options.debug ? "-g1 -lSegFault" : ""} -o ${
+            project.name
+          }`,
           dir
         );
         break;

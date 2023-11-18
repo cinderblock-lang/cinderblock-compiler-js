@@ -21,6 +21,7 @@ import {
   SchemaType,
   SchemaEntity,
   ReferenceType,
+  BuiltInFunction,
 } from "#compiler/ast";
 import { PatternMatch } from "#compiler/location";
 import { LinkerError } from "../error";
@@ -59,7 +60,7 @@ export function ResolveBlock(block: ComponentGroup) {
 
 export function ResolveExpression(
   expression: Expression
-): Type | StructEntity | FunctionEntity | SchemaType {
+): Type | StructEntity | FunctionEntity | SchemaType | BuiltInFunction {
   return PatternMatch(
     LiteralExpression,
     OperatorExpression,
@@ -74,7 +75,9 @@ export function ResolveExpression(
     AccessExpression,
     SchemaType
   )(
-    (literal): Type | StructEntity | FunctionEntity | SchemaType => {
+    (
+      literal
+    ): Type | StructEntity | FunctionEntity | SchemaType | BuiltInFunction => {
       return new PrimitiveType(
         literal.Location,
         literal.Type === "char"

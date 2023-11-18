@@ -35,6 +35,7 @@ import { WriterError } from "./error";
 
 class CinderblockWriter {
   readonly #written: Array<number> = [];
+  readonly #includes: Array<string> = ["<stdlib.h>", "<dlfcn.h>"];
   readonly #globals: Array<string> = [];
 
   StructToString(struct: StructEntity): string {
@@ -78,7 +79,7 @@ class CinderblockWriter {
             case "long":
               return "long " + alias;
             case "string":
-              return "blob " + alias;
+              return "string " + alias;
             case "c_string":
               return "char* " + alias;
           }
@@ -148,7 +149,7 @@ class CinderblockWriter {
           case "long":
             return literal.Value;
           case "string":
-            return `create_string("${literal.Value}", ${literal.Value.length})`;
+            return `"${literal.Value}"`;
         }
       },
       (operator) => {
@@ -239,6 +240,10 @@ class CinderblockWriter {
 
         if (target instanceof FunctionEntity) {
           this.#globals.push(this.WriteFunction(target));
+        }
+
+        if (target instanceof BuiltInFunction) {
+          this.#globals.push(this.WriteBuiltInFunction(target));
         }
 
         if (
@@ -420,6 +425,37 @@ class CinderblockWriter {
     return result.concat("}").join("\n");
   }
 
+  WriteBuiltInFunction(func: BuiltInFunction): string {
+    const result: Array<string> = [];
+
+    this.#includes.push(...func.Requires);
+    if (func.Globals) this.#globals.push(func.Globals);
+
+    const returns = func.Returns;
+
+    if (!returns)
+      throw new WriterError(func.Location, "Function has no return type");
+
+    result.push(
+      `${this.WriteType(func.Returns, func.Name)} (${[
+        ...func.Parameters.iterator(),
+      ]
+        .map((p) => {
+          RequireType(FunctionParameter, p);
+
+          const type = p.Type;
+          if (!type) throw new WriterError(p.Location, "Parameter has no type");
+
+          return this.WriteType(type, p.Name);
+        })
+        .join(", ")}) {`
+    );
+
+    result.push(func.Source);
+
+    return result.concat("}").join("\n");
+  }
+
   WriteExternalLib(lib: LibEntity) {
     const var_name = Namer.GetName();
 
@@ -527,11 +563,14 @@ ${functions.join("\n\n")}`;
   }
 
   Globals() {
-    return this.#globals.join("\n\n");
+    return [
+      ...this.#includes.map((i) => "#include " + i),
+      ...this.#globals,
+    ].join("\n\n");
   }
 }
 
-export function WriteCinderblock(ast: Ast, template: string) {
+export function WriteCinderblock(ast: Ast) {
   const writer = new CinderblockWriter();
   for (const namespace of ast.iterator()) {
     if (!(namespace instanceof Namespace))
@@ -547,8 +586,6 @@ export function WriteCinderblock(ast: Ast, template: string) {
         const result = writer.WriteFunction(entity);
 
         return `
-${template}
-
 ${writer.Globals()}
 
 ${result}`;

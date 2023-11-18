@@ -357,17 +357,26 @@ export class BuiltInFunction extends Component {
   readonly #name: string;
   readonly #parameters: ComponentGroup;
   readonly #returns: number;
+  readonly #source: string;
+  readonly #requires: Array<string>;
+  readonly #globals: string | undefined;
 
   constructor(
     ctx: Location,
     name: string,
     parameters: ComponentGroup,
-    returns: Type
+    returns: Type,
+    source: string,
+    requires: Array<string>,
+    globals?: string
   ) {
     super(ctx);
     this.#name = name;
     this.#parameters = parameters;
     this.#returns = returns.Index;
+    this.#source = source;
+    this.#requires = requires;
+    this.#globals = globals;
   }
 
   copy() {
@@ -375,7 +384,10 @@ export class BuiltInFunction extends Component {
       this.Location,
       this.#name,
       this.#parameters.copy(),
-      this.Returns.copy()
+      this.Returns.copy(),
+      this.#source,
+      this.Requires,
+      this.Globals
     );
   }
 
@@ -383,8 +395,24 @@ export class BuiltInFunction extends Component {
     return this.#name;
   }
 
+  get Parameters() {
+    return this.#parameters;
+  }
+
   get Returns() {
     return ComponentStore.Get(this.#returns);
+  }
+
+  get Source() {
+    return this.#source;
+  }
+
+  get Requires() {
+    return this.#requires;
+  }
+
+  get Globals() {
+    return this.#globals;
   }
 
   get type_name() {
