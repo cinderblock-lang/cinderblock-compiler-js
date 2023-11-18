@@ -3,33 +3,33 @@
 
 typedef struct blob
 {
-  void *data;
+  char *data;
   int length;
 } blob;
 
-blob_ptr_free(blob *subject)
+void blob_ptr_free(blob *subject)
 {
   free(subject->data);
   free(subject);
 }
 
-blob_free(blob subject)
+void blob_free(blob subject)
 {
   free(subject.data);
 }
 
 #define safe_free(x) _Generic((x), blob *: blob_ptr_free, blob: blob_free, default: free)(x)
 
-char GetChar(blob input, int index)
+char GetChar(blob *input, int *index)
 {
-  if (input.length < index)
+  if (input->length < *index)
   {
     return 0;
   }
 
-  char *blob_data = input.data;
+  char *blob_data = input->data;
 
-  return blob_data[index];
+  return blob_data[*index];
 }
 
 int Length(blob input)
@@ -45,7 +45,7 @@ blob CreateString(char *input, int length)
   return result;
 }
 
-size_t CSize(blob input)
+int CSize(blob input)
 {
   return sizeof(input.data);
 }

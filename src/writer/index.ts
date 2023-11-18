@@ -84,7 +84,7 @@ class CinderblockWriter {
           }
         },
         (func) => {
-          return `${this.WriteType(func.Returns, "", true)} (*${alias})(${[
+          return `${this.WriteType(func.Returns, "")} (*${alias})(${[
             ...func.Parameters.iterator(),
           ]
             .map((p) => {
@@ -114,8 +114,7 @@ class CinderblockWriter {
 
   WriteExpression(
     item: Expression,
-    level: number,
-    is_left: boolean
+    level: number
   ): {
     result: Array<string>;
     stored: Array<string>;
@@ -149,7 +148,7 @@ class CinderblockWriter {
           case "long":
             return literal.Value;
           case "string":
-            return `CreateString("${literal.Value}", &(int){${literal.Value.length}})`;
+            return `CreateString("${literal.Value}", ${literal.Value.length})`;
         }
       },
       (operator) => {
@@ -157,21 +156,21 @@ class CinderblockWriter {
           result: left_res,
           stored: left_store,
           final: left_final,
-        } = this.WriteExpression(operator.Left, level, is_left);
+        } = this.WriteExpression(operator.Left, level);
         result.push(...left_res);
         stored.push(...left_store);
         const {
           result: right_res,
           stored: right_store,
           final: right_final,
-        } = this.WriteExpression(operator.Right, level, false);
+        } = this.WriteExpression(operator.Right, level);
         result.push(...right_res);
         stored.push(...right_store);
 
         return `${left_final} ${operator.Operator} ${right_final}`;
       },
       (ife) => {
-        const checker = this.WriteExpression(ife.Check, level, is_left);
+        const checker = this.WriteExpression(ife.Check, level);
         result.push(...checker.result);
         result.push(...checker.stored);
 
@@ -197,15 +196,8 @@ class CinderblockWriter {
         const target = make.StructEntity;
         if (!target) throw new WriterError(make.Location, "Make has no struct");
 
-        result.push(
-          `${this.WriteType(
-            make.StructEntity,
-            name,
-            true
-          )} = malloc(sizeof(${this.WriteType(make.StructEntity, "", false)}))`
-        );
+        result.push(`${this.WriteType(make.StructEntity, name, true)};`);
 
-        if (!is_left) stored.push(name);
         result.push("{");
 
         result.push(this.WriteBlock(make.Using, level + 2, undefined, name));
@@ -219,7 +211,7 @@ class CinderblockWriter {
           throw new WriterError(reference.Location, "Unresolved reference");
 
         return (
-          (is_left ? "" : "*") +
+          "*" +
           PatternMatch(FunctionEntity, StoreStatement, FunctionParameter)(
             (fn) => fn.Name,
             (st) => st.Name,
@@ -234,8 +226,7 @@ class CinderblockWriter {
         result.push(
           `${this.WriteType(type, name)} = ${this.WriteExpression(
             bracket.Expression,
-            level,
-            is_left
+            level
           )};`
         );
 
@@ -273,7 +264,7 @@ class CinderblockWriter {
               result: res,
               stored: sto,
               final,
-            } = this.WriteExpression(p, level, true);
+            } = this.WriteExpression(p, level);
 
             result.push(...res);
             stored.push(...sto);
@@ -290,7 +281,7 @@ class CinderblockWriter {
           result: res,
           stored: sto,
           final,
-        } = this.WriteExpression(subject, level, false);
+        } = this.WriteExpression(subject, level);
 
         result.push(...res);
         stored.push(...sto);
@@ -334,11 +325,11 @@ class CinderblockWriter {
             result: res,
             stored: sto,
             final,
-          } = this.WriteExpression(store.Equals, level, true);
+          } = this.WriteExpression(store.Equals, level);
           result.push(...res);
           stored.push(...sto);
 
-          result.push(`${store.Name} = ${final};`);
+          result.push(`*${store.Name} = ${final};`);
         },
         (ret) => {
           if (!returns)
@@ -346,19 +337,13 @@ class CinderblockWriter {
               ret.Location,
               "Attempting to return when not in a returning context"
             );
-          result.push(
-            `${this.WriteType(
-              returns,
-              "result",
-              true
-            )} = malloc(sizeof(${this.WriteType(returns, "")}));`
-          );
+          result.push(`${this.WriteType(returns, "result", false)};`);
 
           const {
             result: res,
             stored: sto,
             final,
-          } = this.WriteExpression(ret.Value, level, true);
+          } = this.WriteExpression(ret.Value, level);
           result.push(...res);
           stored.push(...sto);
           result.push(`result = ${final};`);
@@ -378,7 +363,7 @@ class CinderblockWriter {
             result: res,
             stored: sto,
             final,
-          } = this.WriteExpression(assign.Equals, level, true);
+          } = this.WriteExpression(assign.Equals, level);
           result.push(...res);
           stored.push(...sto);
           result.push(`${struct}->${assign.Name} = ${final}`);
@@ -389,7 +374,7 @@ class CinderblockWriter {
             result: res,
             stored: sto,
             final,
-          } = this.WriteExpression(panic.Value, level, true);
+          } = this.WriteExpression(panic.Value, level);
           result.push(...res);
           stored.push(...sto);
           result.push(`code = ${final};`);
@@ -415,7 +400,7 @@ class CinderblockWriter {
                     result: res,
                     stored: sto,
                     final,
-                  } = this.WriteExpression(e, level, true);
+                  } = this.WriteExpression(e, level);
                   result.push(...res);
                   stored.push(...sto);
                   return `"${n}" (${final})`;
@@ -444,7 +429,7 @@ class CinderblockWriter {
       throw new WriterError(func.Location, "Function has no return type");
 
     result.push(
-      `${this.WriteType(func.Returns, func.Name, func.Name !== "main")} (${[
+      `${this.WriteType(func.Returns, func.Name)} (${[
         ...func.Parameters.iterator(),
       ]
         .map((p) => {
@@ -453,20 +438,12 @@ class CinderblockWriter {
           const type = p.Type;
           if (!type) throw new WriterError(p.Location, "Parameter has no type");
 
-          return this.WriteType(type, p.Name, true);
+          return this.WriteType(type, p.Name);
         })
         .join(", ")}) {`
     );
 
-    result.push(
-      this.WriteBlock(
-        func.Content,
-        2,
-        returns,
-        undefined,
-        func.Name === "main" ? "return" : "return"
-      )
-    );
+    result.push(this.WriteBlock(func.Content, 2, returns));
 
     return result.concat("}").join("\n");
   }
@@ -582,7 +559,7 @@ ${functions.join("\n\n")}`;
   }
 }
 
-export function WriteCinderblock(ast: Ast) {
+export function WriteCinderblock(ast: Ast, template: string) {
   const writer = new CinderblockWriter();
   for (const namespace of ast.iterator()) {
     if (!(namespace instanceof Namespace))
@@ -598,63 +575,7 @@ export function WriteCinderblock(ast: Ast) {
         const result = writer.WriteFunction(entity);
 
         return `
-#include <stdlib.h>
-#include <dlfcn.h>
-#include <stdio.h>
-
-typedef struct blob
-{
-  char *data;
-  int length;
-} blob;
-
-void blob_ptr_free(blob *subject)
-{
-  free(subject->data);
-  free(subject);
-}
-
-void blob_free(blob subject)
-{
-  free(subject.data);
-}
-
-#define safe_free(x) _Generic((x), blob *: blob_ptr_free, blob: blob_free, default: free)(x)
-
-char GetChar(blob *input, int *index)
-{
-  if (input->length < *index)
-  {
-    return 0;
-  }
-
-  char *blob_data = input->data;
-
-  return blob_data[*index];
-}
-
-int Length(blob *input)
-{
-  return input->length;
-}
-
-blob *CreateString(char *input, int *length)
-{
-  blob *result = malloc(sizeof(blob));
-  result->data = input;
-  result->length = *length;
-  return result;
-}
-
-int CSize(blob* input)
-{
-  return sizeof(input->data);
-}
-
-char *CBuffer(blob* input)
-{
-  return input->data;
-}
+${template}
 
 ${writer.Globals()}
 

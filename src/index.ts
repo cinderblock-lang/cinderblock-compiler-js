@@ -56,6 +56,9 @@ async function ReadText(path: string) {
 }
 
 export async function Compile(root_dir: string) {
+  const template = await ReadText(
+    Path.resolve(__dirname, "writer", "template.c")
+  );
   const project: Project = await ReadJson(
     Path.resolve(root_dir, "cinder.json")
   );
@@ -150,7 +153,7 @@ export async function Compile(root_dir: string) {
 
     const linked = LinkCinderblock(parsed);
 
-    const c_code = WriteCinderblock(linked);
+    const c_code = WriteCinderblock(linked, template);
 
     await Fs.writeFile(Path.join(dir, "main.c"), c_code);
 
