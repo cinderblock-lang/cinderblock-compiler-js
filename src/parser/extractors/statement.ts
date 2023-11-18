@@ -1,6 +1,5 @@
 import {
   AsmProperty,
-  AsmStatement,
   AssignStatement,
   ComponentGroup,
   PanicStatement,
@@ -12,6 +11,7 @@ import { ParserError } from "../error";
 import { TokenGroup } from "../token";
 import { BuildWhile, ExpectNext, NextBlock } from "../utils";
 import { ExtractExpression } from "./expression";
+import { ExtractType } from "./type";
 
 function ExtractStore(tokens: TokenGroup) {
   const name = NextBlock(tokens).Text;
@@ -35,48 +35,6 @@ function ExtractPanic(tokens: TokenGroup) {
   return { error: ExtractExpression(tokens) };
 }
 
-function ExtractAsm(tokens: TokenGroup) {
-  const inputs = BuildWhile(tokens, "(", ",", ")", () => {
-    const name = NextBlock(tokens);
-    ExpectNext(tokens, ":");
-    const value = ExtractExpression(tokens, [",", ")"]);
-    return new AsmProperty(name.Location, name.Text, value);
-  });
-
-  const output =
-    tokens.peek()?.Text === "exposing"
-      ? (() => {
-          ExpectNext(tokens, "exposing");
-          const use = NextBlock(tokens).Text;
-          ExpectNext(tokens, "as");
-          const as = NextBlock(tokens).Text;
-          return { use, as };
-        })()
-      : undefined;
-
-  const registers = BuildWhile(
-    tokens,
-    "registering",
-    ",",
-    "with",
-    () => NextBlock(tokens).Text
-  );
-
-  const body = NextBlock(tokens);
-  if (!body.Text.startsWith("`") || !body.Text.endsWith("`"))
-    throw new ParserError(
-      body.Location,
-      "asm statements must be followed by a multi line string"
-    );
-
-  return {
-    inputs,
-    output,
-    registers,
-    body: body.Text.replace(/`/gm, ""),
-  };
-}
-
 export function ExtractStatement(tokens: TokenGroup): Statement {
   const current = NextBlock(tokens);
 
@@ -95,17 +53,6 @@ export function ExtractStatement(tokens: TokenGroup): Statement {
     case "panic": {
       const { error } = ExtractPanic(tokens);
       return new PanicStatement(current.Location, error);
-    }
-    case "asm": {
-      const { inputs, output, body, registers } = ExtractAsm(tokens);
-      return new AsmStatement(
-        current.Location,
-        body,
-        output?.use,
-        output?.as,
-        registers,
-        new ComponentGroup(...inputs)
-      );
     }
     default:
       throw ParserError.UnexpectedSymbol(

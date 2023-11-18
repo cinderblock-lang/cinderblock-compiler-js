@@ -7,20 +7,7 @@ typedef struct blob
   int length;
 } blob;
 
-void blob_ptr_free(blob *subject)
-{
-  free(subject->data);
-  free(subject);
-}
-
-void blob_free(blob subject)
-{
-  free(subject.data);
-}
-
-#define safe_free(x) _Generic((x), blob *: blob_ptr_free, blob: blob_free, default: free)(x)
-
-char GetChar(blob *input, int *index)
+char get_char(blob *input, int *index)
 {
   if (input->length < *index)
   {
@@ -32,7 +19,7 @@ char GetChar(blob *input, int *index)
   return blob_data[*index];
 }
 
-int Length(blob input)
+int length(blob input)
 {
   return input.length;
 }
@@ -45,12 +32,12 @@ blob CreateString(char *input, int length)
   return result;
 }
 
-int CSize(blob input)
+int c_size(blob input)
 {
   return sizeof(input.data);
 }
 
-char *CBuffer(blob input)
+char *c_buffer(blob input)
 {
   return input.data;
 }

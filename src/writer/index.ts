@@ -1,7 +1,6 @@
 import {
   AccessExpression,
   AsmProperty,
-  AsmStatement,
   AssignStatement,
   Ast,
   BracketsExpression,
@@ -210,14 +209,11 @@ class CinderblockWriter {
         if (!target)
           throw new WriterError(reference.Location, "Unresolved reference");
 
-        return (
-          "*" +
-          PatternMatch(FunctionEntity, StoreStatement, FunctionParameter)(
-            (fn) => fn.Name,
-            (st) => st.Name,
-            (pr) => pr.Name
-          )(target)
-        );
+        return PatternMatch(FunctionEntity, StoreStatement, FunctionParameter)(
+          (fn) => fn.Name,
+          (st) => "*" + st.Name,
+          (pr) => pr.Name
+        )(target);
       },
       (bracket) => {
         const type = ResolveExpression(bracket.Expression);
@@ -309,8 +305,7 @@ class CinderblockWriter {
         StoreStatement,
         ReturnStatement,
         AssignStatement,
-        PanicStatement,
-        AsmStatement
+        PanicStatement
       )(
         (store) => {
           if (!store.Type)
@@ -319,7 +314,13 @@ class CinderblockWriter {
               "No type for store statement"
             );
           stored.push(store.Name);
-          result.push(`${this.WriteType(store.Type, store.Name, true)};`);
+          result.push(
+            `${this.WriteType(
+              store.Type,
+              store.Name,
+              true
+            )} = malloc(sizeof(${this.WriteType(store.Type, "")}));`
+          );
 
           const {
             result: res,
@@ -379,36 +380,6 @@ class CinderblockWriter {
           stored.push(...sto);
           result.push(`code = ${final};`);
           result.push(`exit(code);`);
-        },
-        (asm) => {
-          if (asm.ReadAs) {
-            result.push(`blob *${asm.ReadAs} = malloc(sizeof(blob));`);
-            stored.push(asm.ReadAs);
-          }
-
-          result.push(
-            `__asm__ volatile(${asm.Text.split("\n")
-              .map((t) => `"${t.trim()};"`)
-              .join("\n")}
-              : ${asm.Read ? `"=${asm.Read}" (${asm.ReadAs}->data)` : ""}
-              : ${[...asm.Inputs.iterator()]
-                .map((i) => {
-                  RequireType(AsmProperty, i);
-                  const n = i.Name;
-                  const e = i.Uses;
-                  const {
-                    result: res,
-                    stored: sto,
-                    final,
-                  } = this.WriteExpression(e, level);
-                  result.push(...res);
-                  stored.push(...sto);
-                  return `"${n}" (${final})`;
-                })
-                .join(", ")}
-              : ${asm.Registers.map((a) => `"${a}"`).join(", ")}
-            );`
-          );
         }
       )(statement);
     }

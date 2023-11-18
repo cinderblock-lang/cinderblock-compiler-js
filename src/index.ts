@@ -55,7 +55,10 @@ async function ReadText(path: string) {
   return await Fs.readFile(path, "utf-8");
 }
 
-export async function Compile(root_dir: string) {
+export async function Compile(
+  root_dir: string,
+  options: { debug?: boolean } = {}
+) {
   const template = await ReadText(
     Path.resolve(__dirname, "writer", "template.c")
   );
@@ -159,7 +162,10 @@ export async function Compile(root_dir: string) {
 
     switch (target) {
       case "linux":
-        await Exec(`gcc main.c -o ${project.name}`, dir);
+        await Exec(
+          `gcc main.c ${options.debug ? "-g1 -lSegFault" : ""} -o ${project.name}`,
+          dir
+        );
         break;
       default:
         throw new Error(

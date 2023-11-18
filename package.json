@@ -4,7 +4,7 @@
   "description": "A new programming language",
   "scripts": {
     "build": "tsc && cp ./src/writer/template.c ./dist/writer/template.c",
-    "test": "npm run build && cd ../tests/externals && cinderblock compile"
+    "test": "npm run build && cd ../tests/externals && cinderblock compile -d"
   },
   "private": true,
   "bin": {

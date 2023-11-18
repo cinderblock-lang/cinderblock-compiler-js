@@ -11,7 +11,11 @@ yargs(hideBin(process.argv))
       return yargs;
     },
     (argv) => {
-      Compile(".");
+      Compile(".", { debug: argv.debug });
     }
   )
+  .option("debug", {
+    alias: "d",
+    type: "boolean",
+  })
   .parse();

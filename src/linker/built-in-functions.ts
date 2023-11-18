@@ -17,7 +17,7 @@ export const BuiltInFunctions = new ComponentGroup(
     new ComponentGroup(
       new BuiltInFunction(
         EmptyLocation,
-        "GetChar",
+        "get_char",
         new ComponentGroup(
           new FunctionParameter(
             EmptyLocation,
@@ -36,7 +36,7 @@ export const BuiltInFunctions = new ComponentGroup(
       ),
       new BuiltInFunction(
         EmptyLocation,
-        "Length",
+        "length",
         new ComponentGroup(
           new FunctionParameter(
             EmptyLocation,
@@ -49,7 +49,7 @@ export const BuiltInFunctions = new ComponentGroup(
       ),
       new BuiltInFunction(
         EmptyLocation,
-        "CBuffer",
+        "c_buffer",
         new ComponentGroup(
           new FunctionParameter(
             EmptyLocation,
@@ -62,7 +62,7 @@ export const BuiltInFunctions = new ComponentGroup(
       ),
       new BuiltInFunction(
         EmptyLocation,
-        "CSize",
+        "c_size",
         new ComponentGroup(
           new FunctionParameter(
             EmptyLocation,
