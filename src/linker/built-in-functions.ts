@@ -9,36 +9,6 @@ import { Location } from "#compiler/location";
 
 const EmptyLocation = new Location("generated", -1, -1, -1, -1);
 
-export const CreateString = new BuiltInFunction(
-  EmptyLocation,
-  "create_string",
-  new ComponentGroup(
-    new FunctionParameter(
-      EmptyLocation,
-      "input",
-      new PrimitiveType(EmptyLocation, "c_string"),
-      false
-    ),
-    new FunctionParameter(
-      EmptyLocation,
-      "length",
-      new PrimitiveType(EmptyLocation, "int"),
-      false
-    )
-  ),
-  new PrimitiveType(EmptyLocation, "string"),
-  `string result;
-    result.data = input;
-    result.length = length;
-    return result;`,
-  [],
-  `typedef struct string
-    {
-      char *data;
-      int length;
-    } string;`
-);
-
 export const BuiltInFunctions = new ComponentGroup(
   new Namespace(
     EmptyLocation,
@@ -63,14 +33,7 @@ export const BuiltInFunctions = new ComponentGroup(
           )
         ),
         new PrimitiveType(EmptyLocation, "char"),
-        `if (input.length < index)
-          {
-            return 0;
-          }
-        
-          char *blob_data = input.data;
-        
-          return blob_data[index];`,
+        `return input[index];`,
         []
       ),
       new BuiltInFunction(
@@ -85,25 +48,58 @@ export const BuiltInFunctions = new ComponentGroup(
           )
         ),
         new PrimitiveType(EmptyLocation, "int"),
-        `return input.length;`,
+        ` int index = 0;
+        
+          while (input[index] != 0) {
+            index = index + 1;
+          }
+          
+          return index;`,
         []
       ),
       new BuiltInFunction(
         EmptyLocation,
-        "c_buffer",
+        "concat",
         new ComponentGroup(
           new FunctionParameter(
             EmptyLocation,
-            "input",
+            "first",
+            new PrimitiveType(EmptyLocation, "string"),
+            false
+          ),
+          new FunctionParameter(
+            EmptyLocation,
+            "second",
             new PrimitiveType(EmptyLocation, "string"),
             false
           )
         ),
-        new PrimitiveType(EmptyLocation, "c_string"),
-        `return input.data;`,
+        new PrimitiveType(EmptyLocation, "string"),
+        ` int first_length = 0;
+        
+          while (first[first_length] != 0) {
+            first_length = first_length + 1;
+          }
+          
+          int second_length = 0;
+        
+          while (second[second_length] != 0) {
+            second_length = second_length + 1;
+          }
+
+          char **result = malloc(sizeof(char) * (first_length + second_length + 1));
+
+          for (int i = 0 ; i < first_length ; i++) {
+            *result[i] = first[i];
+          }
+
+          for (int i = 0 ; i < second_length ; i++) {
+            *result[first_length + i] = second[i];
+          }
+          
+          return *result;`,
         []
       ),
-      CreateString,
       new BuiltInFunction(
         EmptyLocation,
         "c_size",
@@ -128,14 +124,16 @@ export const BuiltInFunctions = new ComponentGroup(
             "text",
             new PrimitiveType(EmptyLocation, "string"),
             false
+          ),
+          new FunctionParameter(
+            EmptyLocation,
+            "length",
+            new PrimitiveType(EmptyLocation, "int"),
+            false
           )
         ),
         new PrimitiveType(EmptyLocation, "int"),
-        `int result;
-
-        result = syscall(SYS_write, 1, text.data, text.length);
-      
-        return result;`,
+        `return syscall(SYS_write, 1, text.data, length);`,
         ["<sys/syscall.h>"]
       )
     )

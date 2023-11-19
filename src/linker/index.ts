@@ -15,7 +15,6 @@ import { EmptyVisitor } from "./visitor/empty-visitor";
 import { ConcatVisitor } from "./visitor/concat-visitor";
 import { GenericFlatteningVisitor } from "./visitor/generic-flattening-visitor";
 import { BuiltInFunctions } from "./built-in-functions";
-import { StringLiteralVisitor } from "./visitor/string-literal-visitor";
 
 export function LinkCinderblock(ast: Ast) {
   const function_collector = new FunctionCollectingVisitor();
@@ -45,8 +44,7 @@ export function LinkCinderblock(ast: Ast) {
     .visited(lambda_visitor)
     .visited(empty_visitor)
     .visited(concat_visitor)
-    .visited(generic_flattening_visitor)
-    .visited(new StringLiteralVisitor());
+    .visited(generic_flattening_visitor);
 
   while (generic_flattening_visitor.FoundAny) {
     generic_flattening_visitor.Reset();

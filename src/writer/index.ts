@@ -79,8 +79,6 @@ class CinderblockWriter {
             case "long":
               return "long " + alias;
             case "string":
-              return "string " + alias;
-            case "c_string":
               return "char* " + alias;
           }
         },
