@@ -22,9 +22,32 @@ import {
   SchemaEntity,
   ReferenceType,
   BuiltInFunction,
+  StoreStatement,
+  FunctionParameter,
 } from "#compiler/ast";
 import { PatternMatch } from "#compiler/location";
 import { LinkerError } from "../error";
+
+export function AccessingType(subject: AccessExpression) {
+  const accessing = ResolveExpression(subject.Subject);
+  if (
+    accessing instanceof StoreStatement ||
+    accessing instanceof FunctionParameter
+  ) {
+    const type = accessing.Type;
+    if (!type) throw new LinkerError(accessing.Location, "Could not find type");
+    const accessing_type = ResolveType(type);
+    if (
+      (accessing_type instanceof StructEntity ||
+        accessing_type instanceof SchemaEntity ||
+        accessing_type instanceof SchemaType) &&
+      accessing_type.HasKey(subject.Target)
+    ) {
+      const key = accessing_type.GetKey(subject.Target);
+      if (key) return key.Type;
+    }
+  }
+}
 
 export function ResolveType(
   type: Type
@@ -34,7 +57,9 @@ export function ResolveType(
     SchemaEntity,
     SchemaType,
     ReferenceType,
-    PrimitiveType
+    PrimitiveType,
+    AccessExpression,
+    FunctionParameter
   )(
     (s) => s,
     (s) => s,
@@ -45,7 +70,18 @@ export function ResolveType(
 
       return ResolveType(target);
     },
-    (p) => p
+    (p) => p,
+    (a) => {
+      const accessing = AccessingType(a);
+      if (!accessing)
+        throw new LinkerError(a.Location, "Could not resolve type of access");
+      return ResolveType(accessing);
+    },
+    (p) => {
+      const type = p.Type;
+      if (!type) throw new LinkerError(p.Location, "Untyped function argument");
+      return ResolveType(type);
+    }
   )(type);
 }
 

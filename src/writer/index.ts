@@ -53,7 +53,13 @@ class CinderblockWriter {
   WriteType(type: Type, alias: string, reference?: boolean): string {
     if (reference) alias = "*" + alias;
     return (
-      PatternMatch(ReferenceType, PrimitiveType, FunctionType, StructEntity)(
+      PatternMatch(
+        ReferenceType,
+        PrimitiveType,
+        FunctionType,
+        StructEntity,
+        FunctionParameter
+      )(
         (reference) => {
           const target = reference.References;
           if (!target)
@@ -106,6 +112,12 @@ class CinderblockWriter {
           }
 
           return `struct ${struct.Name} ${alias}`;
+        },
+        (param) => {
+          const type = param.Type;
+          if (!type)
+            throw new WriterError(param.Location, "Untyped function parameter");
+          return this.WriteType(type, alias, reference);
         }
       )(type) ?? ""
     );
@@ -255,6 +267,11 @@ class CinderblockWriter {
           );
 
         const parameters = [...invokation.Parameters.iterator()];
+
+        // if (target instanceof BuiltInFunction && target.Allocates) {
+        //   const temp = 
+        //   result.push()
+        // }
 
         return `${target.Name}(${parameters
           .map((p) => {
@@ -427,7 +444,6 @@ class CinderblockWriter {
     const result: Array<string> = [];
 
     this.#includes.push(...func.Requires);
-    if (func.Globals) this.#globals.push(func.Globals);
 
     const returns = func.Returns;
 

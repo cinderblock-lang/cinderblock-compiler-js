@@ -359,7 +359,7 @@ export class BuiltInFunction extends Component {
   readonly #returns: number;
   readonly #source: string;
   readonly #requires: Array<string>;
-  readonly #globals: string | undefined;
+  readonly #allocates: boolean;
 
   constructor(
     ctx: Location,
@@ -368,7 +368,7 @@ export class BuiltInFunction extends Component {
     returns: Type,
     source: string,
     requires: Array<string>,
-    globals?: string
+    allocates?: boolean
   ) {
     super(ctx);
     this.#name = name;
@@ -376,7 +376,7 @@ export class BuiltInFunction extends Component {
     this.#returns = returns.Index;
     this.#source = source;
     this.#requires = requires;
-    this.#globals = globals;
+    this.#allocates = allocates ?? false;
   }
 
   copy() {
@@ -387,7 +387,7 @@ export class BuiltInFunction extends Component {
       this.Returns.copy(),
       this.#source,
       this.Requires,
-      this.Globals
+      this.Allocates
     );
   }
 
@@ -411,8 +411,8 @@ export class BuiltInFunction extends Component {
     return this.#requires;
   }
 
-  get Globals() {
-    return this.#globals;
+  get Allocates() {
+    return this.#allocates;
   }
 
   get type_name() {

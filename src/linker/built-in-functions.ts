@@ -87,18 +87,19 @@ export const BuiltInFunctions = new ComponentGroup(
             second_length = second_length + 1;
           }
 
-          char **result = malloc(sizeof(char) * (first_length + second_length + 1));
+          char *result = malloc(sizeof(char) * (first_length + second_length + 1));
 
           for (int i = 0 ; i < first_length ; i++) {
-            *result[i] = first[i];
+            result[i] = first[i];
           }
 
           for (int i = 0 ; i < second_length ; i++) {
-            *result[first_length + i] = second[i];
+            result[first_length + i] = second[i];
           }
           
-          return *result;`,
-        []
+          return result;`,
+        [],
+        true
       ),
       new BuiltInFunction(
         EmptyLocation,
@@ -133,7 +134,7 @@ export const BuiltInFunctions = new ComponentGroup(
           )
         ),
         new PrimitiveType(EmptyLocation, "int"),
-        `return syscall(SYS_write, 1, text.data, length);`,
+        `return syscall(SYS_write, 1, text, length);`,
         ["<sys/syscall.h>"]
       )
     )
