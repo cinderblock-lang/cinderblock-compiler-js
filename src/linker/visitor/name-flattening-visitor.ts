@@ -1,4 +1,5 @@
 import {
+  BuiltInFunction,
   Component,
   FunctionEntity,
   Namespace,
@@ -21,7 +22,8 @@ export class NameFlatteningVisitor extends Visitor {
       FunctionEntity,
       StructEntity,
       StoreStatement,
-      Namespace
+      Namespace,
+      BuiltInFunction
     )(
       (func) =>
         this.#exported || (this.#namespace === "App" && func.Name === "main")
@@ -65,7 +67,19 @@ export class NameFlatteningVisitor extends Visitor {
             this.#exported = false;
           },
         };
-      }
+      },
+      (b) => ({
+        cleanup: () => {},
+        result: new BuiltInFunction(
+          b.Location,
+          Namer.GetName(),
+          b.Parameters,
+          b.Returns,
+          b.Source,
+          b.Requires,
+          b.Allocates
+        ),
+      })
     )(target);
   }
 }

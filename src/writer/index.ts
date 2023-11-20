@@ -268,10 +268,32 @@ class CinderblockWriter {
 
         const parameters = [...invokation.Parameters.iterator()];
 
-        // if (target instanceof BuiltInFunction && target.Allocates) {
-        //   const temp = 
-        //   result.push()
-        // }
+        if (target instanceof BuiltInFunction && target.Allocates) {
+          const temp = Namer.GetName();
+          result.push(
+            `${this.WriteType(target.Returns, temp)} = ${
+              target.Name
+            }(${parameters
+              .map((p) => {
+                RequireType(Expression, p);
+
+                const {
+                  result: res,
+                  stored: sto,
+                  final,
+                } = this.WriteExpression(p, level);
+
+                result.push(...res);
+                stored.push(...sto);
+
+                return final;
+              })
+              .join(",")});`
+          );
+          stored.push(temp);
+
+          return temp;
+        }
 
         return `${target.Name}(${parameters
           .map((p) => {
