@@ -12,7 +12,11 @@ import {
 } from "#compiler/ast";
 import { ReferenceNameIndexingVisitor } from "./reference-name-indexing-visitor";
 import { LinkerError } from "../error";
-import { ResolveExpression, ResolveType } from "./resolve";
+import {
+  ResolveExpression,
+  ResolveExpressionType,
+  ResolveType,
+} from "./resolve";
 import { Namer } from "#compiler/location";
 
 export class FunctionFlatteningVisitor extends ReferenceNameIndexingVisitor {
@@ -29,7 +33,10 @@ export class FunctionFlatteningVisitor extends ReferenceNameIndexingVisitor {
           accessing instanceof StoreStatement ||
           accessing instanceof FunctionParameter
         ) {
-          const type = accessing.Type;
+          const type =
+            accessing instanceof StoreStatement
+              ? ResolveExpressionType(accessing.Equals)
+              : accessing.Type;
           if (!type)
             throw new LinkerError(accessing.Location, "Could not find type");
           const accessing_type = ResolveType(type);

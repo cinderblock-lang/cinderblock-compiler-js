@@ -29,7 +29,11 @@ import {
   Type,
 } from "#compiler/ast";
 import { Namer } from "#compiler/location";
-import { ResolveBlock, ResolveExpression } from "../linker/visitor/resolve";
+import {
+  ResolveBlock,
+  ResolveExpression,
+  ResolveExpressionType,
+} from "../linker/visitor/resolve";
 import { PatternMatch, RequireType } from "../location/pattern-match";
 import { WriterError } from "./error";
 
@@ -58,7 +62,9 @@ class CinderblockWriter {
         PrimitiveType,
         FunctionType,
         StructEntity,
-        FunctionParameter
+        FunctionParameter,
+        FunctionEntity,
+        BuiltInFunction
       )(
         (reference) => {
           const target = reference.References;
@@ -118,6 +124,46 @@ class CinderblockWriter {
           if (!type)
             throw new WriterError(param.Location, "Untyped function parameter");
           return this.WriteType(type, alias, reference);
+        },
+        (func) => {
+          const type = func.Returns;
+          if (!type)
+            throw new WriterError(func.Location, "Untyped function argument");
+          return `${this.WriteType(type, "")} (*${alias})(${[
+            ...func.Parameters.iterator(),
+          ]
+            .map((p) => {
+              RequireType(FunctionParameter, p);
+              const type = p.Type;
+              if (!type)
+                throw new WriterError(
+                  p.Location,
+                  "unfound type for function parameter"
+                );
+
+              return this.WriteType(type, p.Name);
+            })
+            .join(", ")})`;
+        },
+        (func) => {
+          const type = func.Returns;
+          if (!type)
+            throw new WriterError(func.Location, "Untyped function argument");
+          return `${this.WriteType(type, "")} (*${alias})(${[
+            ...func.Parameters.iterator(),
+          ]
+            .map((p) => {
+              RequireType(FunctionParameter, p);
+              const type = p.Type;
+              if (!type)
+                throw new WriterError(
+                  p.Location,
+                  "unfound type for function parameter"
+                );
+
+              return this.WriteType(type, p.Name);
+            })
+            .join(", ")})`;
         }
       )(type) ?? ""
     );
@@ -125,7 +171,8 @@ class CinderblockWriter {
 
   WriteExpression(
     item: Expression,
-    level: number
+    level: number,
+    accessing: boolean = false
   ): {
     result: Array<string>;
     stored: Array<string>;
@@ -207,14 +254,22 @@ class CinderblockWriter {
         const target = make.StructEntity;
         if (!target) throw new WriterError(make.Location, "Make has no struct");
 
-        result.push(`${this.WriteType(make.StructEntity, name, true)};`);
+        result.push(
+          `${this.WriteType(
+            make.StructEntity,
+            name,
+            true
+          )} = malloc(sizeof(${this.WriteType(make.StructEntity, "")}));`
+        );
+
+        stored.push(name);
 
         result.push("{");
 
         result.push(this.WriteBlock(make.Using, level + 2, undefined, name));
         result.push("}");
 
-        return name;
+        return "*" + name;
       },
       (reference) => {
         const target = reference.References;
@@ -223,7 +278,7 @@ class CinderblockWriter {
 
         return PatternMatch(FunctionEntity, StoreStatement, FunctionParameter)(
           (fn) => fn.Name,
-          (st) => "*" + st.Name,
+          (st) => (accessing ? "" : "*") + st.Name,
           (pr) => pr.Name
         )(target);
       },
@@ -320,7 +375,7 @@ class CinderblockWriter {
           result: res,
           stored: sto,
           final,
-        } = this.WriteExpression(subject, level);
+        } = this.WriteExpression(subject, level, true);
 
         result.push(...res);
         stored.push(...sto);
@@ -357,12 +412,13 @@ class CinderblockWriter {
               "No type for store statement"
             );
           stored.push(store.Name);
+          const type = ResolveExpressionType(store.Equals);
           result.push(
             `${this.WriteType(
-              store.Type,
+              type,
               store.Name,
               true
-            )} = malloc(sizeof(${this.WriteType(store.Type, "")}));`
+            )} = malloc(sizeof(${this.WriteType(type, "")}));`
           );
 
           const {
@@ -410,7 +466,7 @@ class CinderblockWriter {
           } = this.WriteExpression(assign.Equals, level);
           result.push(...res);
           stored.push(...sto);
-          result.push(`${struct}->${assign.Name} = ${final}`);
+          result.push(`${struct}->${assign.Name} = ${final};`);
         },
         (panic) => {
           result.push(`int code;`);

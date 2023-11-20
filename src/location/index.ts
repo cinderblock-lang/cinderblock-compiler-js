@@ -48,22 +48,33 @@ export class Location {
   }
 
   toString() {
-    return `\nFile: ${this.FileName}\nLine: ${this.StartLine + 1}\nColumn: ${this.StartColumn + 1}`;
+    return `\nFile: ${this.FileName}\nLine: ${this.StartLine + 1}\nColumn: ${
+      this.StartColumn + 1
+    }`;
   }
 }
 
 const name_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+function set_char_at(str: string, index: number, chr: string) {
+  if (index > str.length - 1) return str;
+  return str.substring(0, index) + chr + str.substring(index + 1);
+}
+
 export class Namer {
   static #index: number = -1;
 
   static GetName() {
-    let name = "";
-    let current = this.#index;
+    let name = " ".repeat(Math.floor(this.#index / name_chars.length) + 1);
+    let current = 0;
 
-    while (current >= 0) {
-      name += name_chars[current];
-      current -= name_chars.length;
+    while (current <= this.#index) {
+      name = set_char_at(
+        name,
+        Math.floor(current / name_chars.length),
+        name_chars[current % name_chars.length]
+      );
+      current += 1;
     }
 
     this.#index += 1;

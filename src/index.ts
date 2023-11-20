@@ -160,7 +160,7 @@ export async function Compile(
     switch (target) {
       case "linux":
         await Exec(
-          `gcc main.c ${options.debug ? "-g1 -lSegFault" : ""} -o ${
+          `gcc main.c ${options.debug ? "-g1" : ""} -o ${
             project.name
           }`,
           dir

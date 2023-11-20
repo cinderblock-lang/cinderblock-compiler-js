@@ -212,7 +212,8 @@ export class GenericFlatteningVisitor extends Visitor {
             result: undefined,
             cleanup: () => {},
           };
-        RequireType(FunctionEntity, invoking);
+        if (!(invoking instanceof FunctionEntity))
+          return { result: undefined, cleanup: () => {} };
 
         const { generic, using } = this.#is_generic(invokation, invoking);
         if (!generic) return { result: undefined, cleanup: () => {} };

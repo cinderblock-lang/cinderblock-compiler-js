@@ -20,6 +20,7 @@ export function PatternMatch<
         }
       }
 
+      debugger;
       throw new LinkerError(
         input.Location,
         `No handler found. This is definitely a bug with the compiler.\nFound: ${input.constructor.name}`
@@ -35,7 +36,7 @@ export function RequireType<T extends Component>(
   if (!(item instanceof target)) {
     throw new LinkerError(
       item.Location,
-      `Invalid type. Expected ${target.name} but recieved ${item.constructor.name}`
+      `Invalid type. Expected ${target.prototype.constructor.name} but recieved ${item.constructor.name}`
     );
   }
 }

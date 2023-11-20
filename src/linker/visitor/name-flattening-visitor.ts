@@ -14,7 +14,13 @@ export class NameFlatteningVisitor extends Visitor {
   #namespace: string = "";
 
   get OperatesOn(): (new (...args: any[]) => Component)[] {
-    return [FunctionEntity, StructEntity, StoreStatement, Namespace];
+    return [
+      FunctionEntity,
+      StructEntity,
+      StoreStatement,
+      Namespace,
+      BuiltInFunction,
+    ];
   }
 
   Visit(target: Component) {

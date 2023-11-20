@@ -5,7 +5,7 @@ import {
   StructEntity,
 } from "#compiler/ast";
 import { TypeCollectorVisitor } from "./type-collector-visitor";
-import { ResolveExpression } from "./resolve";
+import { ResolveExpressionType } from "./resolve";
 
 export class StoreTypeVisitor extends TypeCollectorVisitor {
   constructor(types: Record<string, StructEntity | SchemaEntity>) {
@@ -23,7 +23,7 @@ export class StoreTypeVisitor extends TypeCollectorVisitor {
           target.Location,
           target.Name,
           target.Equals,
-          ResolveExpression(target.Equals)
+          ResolveExpressionType(target.Equals)
         ),
         cleanup: () => {},
       };

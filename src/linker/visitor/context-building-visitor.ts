@@ -1,11 +1,10 @@
 import {
-  AccessExpression,
   AssignStatement,
   Component,
   ComponentGroup,
+  ComponentStore,
   FunctionEntity,
   FunctionParameter,
-  InvokationExpression,
   IterateExpression,
   MakeExpression,
   Namespace,
@@ -13,11 +12,45 @@ import {
   ReferenceExpression,
   StoreStatement,
   StructEntity,
+  Visitor,
 } from "#compiler/ast";
 import { Location, Namer, PatternMatch } from "#compiler/location";
 import { LinkerError } from "../error";
 import { ResolveExpression } from "./resolve";
 import { ReferenceNameIndexingVisitor } from "./reference-name-indexing-visitor";
+
+class ReferenceSwapperVisitor extends Visitor {
+  readonly #locals: Array<readonly [Component, Component]>;
+
+  constructor(locals: Array<readonly [Component, Component]>) {
+    super();
+    this.#locals = locals;
+  }
+
+  get OperatesOn() {
+    return [ReferenceExpression];
+  }
+
+  Visit(target: Component): {
+    result: Component | undefined;
+    cleanup: () => void;
+  } {
+    if (target instanceof ReferenceExpression) {
+      const match = this.#locals.find(
+        (r) => r[0].Index === target.References?.Index
+      );
+
+      if (!match) return { result: undefined, cleanup: () => {} };
+
+      return {
+        result: new ReferenceExpression(target.Location, target.Name, match[1]),
+        cleanup: () => {},
+      };
+    }
+
+    throw new LinkerError(target.Location, "No handler found");
+  }
+}
 
 export class ContextBuildingVisitor extends ReferenceNameIndexingVisitor {
   #data: Array<{ func: FunctionEntity; struct: StructEntity }> = [];
@@ -31,36 +64,8 @@ export class ContextBuildingVisitor extends ReferenceNameIndexingVisitor {
     );
   }
 
-  protected FindExecutors(subject: StructEntity) {
-    for (const { func, struct } of this.#data)
-      if (struct === subject) return func;
-
-    throw new LinkerError(subject.Location, "Could not find lambda");
-  }
-
-  protected BuildInvokation(
-    location: Location,
-    store: StoreStatement,
-    stored: StructEntity,
-    func: FunctionEntity,
-    extra: Array<Component>
-  ) {
-    return new InvokationExpression(
-      location,
-      new ReferenceExpression(location, func.Name, func),
-      new ComponentGroup(
-        ...[...stored.Properties.iterator()].map((p) => {
-          if (!(p instanceof Property))
-            throw new LinkerError(p.Location, "Invalid property type");
-          return new AccessExpression(
-            p.Location,
-            new ReferenceExpression(p.Location, stored.Name, store),
-            p.Name
-          );
-        }),
-        ...extra
-      )
-    );
+  get Data() {
+    return this.#data;
   }
 
   protected BuildContext(
@@ -105,39 +110,53 @@ export class ContextBuildingVisitor extends ReferenceNameIndexingVisitor {
       )
     );
 
+    const ps = this.locals.map(([n, v]) =>
+      PatternMatch(StoreStatement, IterateExpression, FunctionParameter)(
+        (store) =>
+          [
+            store as Component,
+            new FunctionParameter(
+              store.Location,
+              n,
+              ensure(store.Type),
+              false
+            ) as Component,
+          ] as const,
+        (iterate) =>
+          [
+            iterate,
+            new FunctionParameter(
+              iterate.Location,
+              n,
+              ResolveExpression(iterate.Over),
+              false
+            ),
+          ] as const,
+        (parameter) =>
+          [
+            parameter,
+            new FunctionParameter(
+              parameter.Location,
+              n,
+              ensure(parameter.Type),
+              parameter.Optional
+            ),
+          ] as const
+      )(v)
+    );
+
+    const visitor = new ReferenceSwapperVisitor(ps);
+
+    for (const item of body.iterator()) {
+      ComponentStore.DeepVisit(item, visitor);
+    }
+
     const result = {
       func: new FunctionEntity(
         location,
         false,
         Namer.GetName(),
-        new ComponentGroup(
-          ...this.locals.map(([n, v]) =>
-            PatternMatch(StoreStatement, IterateExpression, FunctionParameter)(
-              (store) =>
-                new FunctionParameter(
-                  store.Location,
-                  n,
-                  ensure(store.Type),
-                  false
-                ),
-              (iterate) =>
-                new FunctionParameter(
-                  iterate.Location,
-                  n,
-                  ResolveExpression(iterate.Over),
-                  false
-                ),
-              (parameter) =>
-                new FunctionParameter(
-                  parameter.Location,
-                  n,
-                  ensure(parameter.Type),
-                  parameter.Optional
-                )
-            )(v)
-          ),
-          ...parameters.iterator()
-        ),
+        new ComponentGroup(...ps.map((p) => p[1]), ...parameters.iterator()),
         returns,
         body
       ),

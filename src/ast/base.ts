@@ -130,6 +130,10 @@ export class ComponentStore {
     });
   }
 
+  static DeepVisit(item: Component, visitor: Visitor) {
+    return visiting_context.exit(() => this.Visit(item, visitor));
+  }
+
   static get Json() {
     const result: Record<string, unknown> = {};
     for (const key in this.#data) result[key.toString()] = this.#data[key].json;
