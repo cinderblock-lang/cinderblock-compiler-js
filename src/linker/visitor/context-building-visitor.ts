@@ -16,7 +16,7 @@ import {
 } from "#compiler/ast";
 import { Location, Namer, PatternMatch } from "#compiler/location";
 import { LinkerError } from "../error";
-import { ResolveExpression } from "./resolve";
+import { ResolveExpression, ResolveExpressionType } from "./resolve";
 import { ReferenceNameIndexingVisitor } from "./reference-name-indexing-visitor";
 
 class ReferenceSwapperVisitor extends Visitor {
@@ -76,7 +76,7 @@ export class ContextBuildingVisitor extends ReferenceNameIndexingVisitor {
   ) {
     const ensure = (subject: Component | undefined) => {
       if (!subject) {
-        throw new LinkerError(location, "Missing property");
+        throw new LinkerError(location, "Missing property " + subject);
       }
 
       return subject;
@@ -90,7 +90,12 @@ export class ContextBuildingVisitor extends ReferenceNameIndexingVisitor {
         ...this.locals.map(([n, v]) =>
           PatternMatch(StoreStatement, IterateExpression, FunctionParameter)(
             (store) =>
-              new Property(store.Location, n, ensure(store.Type), false),
+              new Property(
+                store.Location,
+                n,
+                ResolveExpressionType(store.Equals),
+                false
+              ),
             (iterate) =>
               new Property(
                 iterate.Location,
@@ -118,7 +123,7 @@ export class ContextBuildingVisitor extends ReferenceNameIndexingVisitor {
             new FunctionParameter(
               store.Location,
               n,
-              ensure(store.Type),
+              ResolveExpressionType(store.Equals),
               false
             ) as Component,
           ] as const,

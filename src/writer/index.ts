@@ -113,8 +113,8 @@ class CinderblockWriter {
         },
         (struct) => {
           if (!this.#written.includes(struct.Index)) {
-            this.#globals.push(this.StructToString(struct));
             this.#written.push(struct.Index);
+            this.#globals.push(this.StructToString(struct));
           }
 
           return `struct ${struct.Name} ${alias}`;
@@ -304,21 +304,24 @@ class CinderblockWriter {
           throw new WriterError(subject.Location, "Unresolved reference");
 
         if (target instanceof FunctionEntity) {
-          this.#globals.push(this.WriteFunction(target));
+          if (!this.#written.includes(target.Index)) {
+            this.#globals.push(this.WriteFunction(target));
+            this.#written.push(target.Index);
+          }
         }
 
         if (target instanceof BuiltInFunction) {
-          this.#globals.push(this.WriteBuiltInFunction(target));
+          if (!this.#written.includes(target.Index)) {
+            this.#globals.push(this.WriteBuiltInFunction(target));
+            this.#written.push(target.Index);
+          }
         }
 
-        if (
-          !(target instanceof FunctionEntity) &&
-          !(target instanceof BuiltInFunction) &&
-          !(target instanceof ExternalFunctionDeclaration)
-        )
+        if (!("Name" in target))
           throw new WriterError(
             target.Location,
-            "Attempting to invoke a none function"
+            "Attempting to invoke a none function, received a " +
+              target.constructor.name
           );
 
         const parameters = [...invokation.Parameters.iterator()];
@@ -406,11 +409,6 @@ class CinderblockWriter {
         PanicStatement
       )(
         (store) => {
-          if (!store.Type)
-            throw new WriterError(
-              store.Location,
-              "No type for store statement"
-            );
           stored.push(store.Name);
           const type = ResolveExpressionType(store.Equals);
           result.push(

@@ -172,6 +172,10 @@ export class SchemaEntity extends Entity {
     return this.#name;
   }
 
+  get Properties() {
+    return this.#properties;
+  }
+
   HasKey(key: string) {
     for (const property of this.#properties.iterator())
       if (property instanceof Property) if (property.Name === key) return true;

@@ -24,7 +24,11 @@ import {
 import { PatternMatch, Location, Namer } from "#compiler/location";
 import { RequireType } from "../../location/pattern-match";
 import { LinkerError } from "../error";
-import { ResolveExpression } from "./resolve";
+import {
+  ResolveExpression,
+  ResolveExpressionType,
+  ResolveType,
+} from "./resolve";
 
 const EmptyLocation = new Location("generated", -1, -1, -1, -1);
 
@@ -37,11 +41,11 @@ class TypeSwappingVisitor extends Visitor {
   }
 
   get OperatesOn() {
-    return [ReferenceType, SchemaType, IsExpression];
+    return [ReferenceType, SchemaType, IsExpression, UseType];
   }
 
   Visit(target: Component) {
-    return PatternMatch(ReferenceType, SchemaType, IsExpression)(
+    return PatternMatch(ReferenceType, SchemaType, IsExpression, UseType)(
       (
         reference
       ): {
@@ -52,34 +56,37 @@ class TypeSwappingVisitor extends Visitor {
         if (!target)
           throw new LinkerError(reference.Location, "Unresolved reference");
 
-        for (const [current, desired] of this.#swapping)
-          if (target.Index === current.Index)
+        for (const [current, desired] of this.#swapping) {
+          if (target.Index === current.Index) {
             return {
-              result: new ReferenceExpression(
+              result: new ReferenceType(
                 reference.Location,
                 reference.Name,
                 desired
               ),
               cleanup: () => {},
             };
+          }
+        }
 
         return { result: undefined, cleanup: () => {} };
       },
       (schema) => {
-        for (const [current, desired] of this.#swapping)
+        for (const [current, desired] of this.#swapping) {
           if (schema.Index === current.Index)
             return {
-              result: new ReferenceExpression(
+              result: new ReferenceType(
                 schema.Location,
                 Namer.GetName(),
                 desired
               ),
               cleanup: () => {},
             };
+        }
         return { result: undefined, cleanup: () => {} };
       },
       (is) => {
-        const subject = ResolveExpression(is.Left);
+        const subject = ResolveExpressionType(is.Left);
 
         if (subject.Index === is.Right.Index)
           return {
@@ -91,6 +98,27 @@ class TypeSwappingVisitor extends Visitor {
           result: new LiteralExpression(is.Location, "bool", "false"),
           cleanup: () => {},
         };
+      },
+      (use) => {
+        const swapping = this.#swapping;
+        for (const [current, desired] of swapping) {
+          if (use.Index === current.Index) {
+            if (current.Index !== desired.Index)
+              return {
+                result: new ReferenceType(
+                  use.Location,
+                  Namer.GetName(),
+                  desired
+                ),
+                cleanup: () => {},
+              };
+          }
+        }
+
+        return {
+          result: undefined,
+          cleanup: () => {},
+        };
       }
     )(target);
   }
@@ -98,7 +126,6 @@ class TypeSwappingVisitor extends Visitor {
 
 export class GenericFlatteningVisitor extends Visitor {
   #data: Array<FunctionEntity> = [];
-  #skipping = false;
   #found = false;
 
   get Namespace() {
@@ -118,10 +145,11 @@ export class GenericFlatteningVisitor extends Visitor {
     current: Component,
     invoking_with: Component
   ): { generic: boolean; uses: Array<[Component, Component]> } {
-    if (current instanceof SchemaEntity)
-      return { generic: true, uses: [[current, invoking_with]] };
-    if (current instanceof SchemaType) {
+    if (current instanceof ReferenceType) current = ResolveType(current);
+    if (current instanceof SchemaType || current instanceof SchemaEntity) {
       let uses: Array<[Component, Component]> = [[current, invoking_with]];
+
+      if (invoking_with instanceof UseType) return { generic: true, uses };
 
       RequireType(StructEntity, invoking_with);
 
@@ -174,7 +202,7 @@ export class GenericFlatteningVisitor extends Visitor {
 
       const type = c.Type;
       if (!type) throw new LinkerError(c.Location, "Parameter has no type");
-      const result = this.#process_type(c.Type, ResolveExpression(u));
+      const result = this.#process_type(c.Type, ResolveExpressionType(u));
 
       generic = generic || result.generic;
       using.push(...(result.uses ?? []));
@@ -184,7 +212,7 @@ export class GenericFlatteningVisitor extends Visitor {
   }
 
   get OperatesOn(): (new (...args: any[]) => Component)[] {
-    return [InvokationExpression, FunctionEntity];
+    return [InvokationExpression];
   }
 
   Reset() {
@@ -196,77 +224,43 @@ export class GenericFlatteningVisitor extends Visitor {
   }
 
   Visit(target: Component) {
-    return PatternMatch(InvokationExpression, FunctionEntity)(
-      (invokation) => {
-        if (this.#skipping)
-          return {
-            result: undefined,
-            cleanup: () => {},
-          };
-        const invoking = ResolveExpression(invokation.Subject);
-        if (
-          invoking instanceof ExternalFunctionDeclaration ||
-          invoking instanceof BuiltInFunction
-        )
-          return {
-            result: undefined,
-            cleanup: () => {},
-          };
-        if (!(invoking instanceof FunctionEntity))
-          return { result: undefined, cleanup: () => {} };
-
-        const { generic, using } = this.#is_generic(invokation, invoking);
-        if (!generic) return { result: undefined, cleanup: () => {} };
-        this.#found = true;
-
-        const copied = invoking.copy();
-
-        ComponentStore.Visit(copied, new TypeSwappingVisitor(using));
-
-        this.#data.push(copied);
-
-        return {
-          result: new InvokationExpression(
-            invokation.Location,
-            new ReferenceExpression(invokation.Location, copied.Name, copied),
-            invokation.Parameters
-          ),
-          cleanup: () => {},
-        };
-      },
-      (func) => {
-        const desired = [...func.Parameters.iterator()];
-
-        const is_generic = () => {
-          this.#skipping = true;
-
-          return {
-            result: undefined,
-            cleanup: () => {
-              this.#skipping = false;
-            },
-          };
-        };
-
-        for (let i = 0; i < desired.length; i++) {
-          const c = desired[i];
-
-          RequireType(FunctionParameter, c);
-          if (c.Optional) return is_generic();
-
-          const type = c.Type;
-          if (!type) throw new LinkerError(c.Location, "Parameter has no type");
-
-          if (type instanceof SchemaType) return is_generic();
-          if (type instanceof SchemaEntity) return is_generic();
-          if (type instanceof UseType) return is_generic();
-        }
-
+    return PatternMatch(InvokationExpression)((invokation) => {
+      const invoking = ResolveExpression(invokation.Subject);
+      if (
+        invoking instanceof ExternalFunctionDeclaration ||
+        invoking instanceof BuiltInFunction
+      )
         return {
           result: undefined,
           cleanup: () => {},
         };
-      }
-    )(target);
+      if (!(invoking instanceof FunctionEntity))
+        return { result: undefined, cleanup: () => {} };
+
+      const { generic, using } = this.#is_generic(invokation, invoking);
+      if (!generic)
+        return {
+          result: undefined,
+          cleanup: () => {},
+        };
+
+      if (!generic) return { result: undefined, cleanup: () => {} };
+      this.#found = true;
+
+      const copied = invoking.copy();
+
+      ComponentStore.DeepVisit(copied, new TypeSwappingVisitor(using));
+
+      this.#data.push(copied);
+
+      return {
+        result: new InvokationExpression(
+          invokation.Location,
+          new ReferenceExpression(invokation.Location, copied.Name, copied),
+          invokation.Parameters
+        ),
+        cleanup: () => {},
+      };
+    })(target);
   }
 }

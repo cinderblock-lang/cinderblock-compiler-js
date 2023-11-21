@@ -7,7 +7,6 @@ import {
   FunctionParameter,
   FunctionType,
   InvokationExpression,
-  IterableType,
   IterateExpression,
   LambdaExpression,
   MakeExpression,
@@ -23,7 +22,7 @@ import {
 } from "#compiler/ast";
 import { Location, Namer } from "#compiler/location";
 import { LinkerError } from "../error";
-import { ResolveBlock, ResolveExpression } from "./resolve";
+import { ResolveBlockType, ResolveExpressionType } from "./resolve";
 
 const EmptyLocation = new Location("generated", -1, -1, -1, -1);
 
@@ -81,22 +80,9 @@ export class IterateExpressionVisitor extends Visitor {
 
   Visit(target: Component) {
     if (target instanceof IterateExpression) {
-      const store = ResolveExpression(target.Over);
-      if (
-        !(store instanceof StoreStatement) &&
-        !(store instanceof FunctionParameter)
-      )
-        return {
-          result: undefined,
-          cleanup: () => {},
-        };
+      const store = target.Over;
 
-      const stored = store.Type;
-      if (!stored || !(stored instanceof IterableType))
-        return {
-          result: undefined,
-          cleanup: () => {},
-        };
+      const stored = ResolveExpressionType(store);
 
       const main_reference = new ReferenceType(
         target.Location,
@@ -130,7 +116,7 @@ export class IterateExpressionVisitor extends Visitor {
             new ReferenceType(
               target.Location,
               Namer.GetName(),
-              ResolveBlock(target.Body)
+              ResolveBlockType(target.Body)
             ),
             true
           )
@@ -140,7 +126,7 @@ export class IterateExpressionVisitor extends Visitor {
       const main_param = new FunctionParameter(
         target.Location,
         target.As,
-        stored.Type,
+        stored,
         false
       );
 
@@ -155,7 +141,7 @@ export class IterateExpressionVisitor extends Visitor {
         new FunctionType(
           target.Location,
           new ComponentGroup(main_param),
-          ResolveExpression(target.Over)
+          ResolveExpressionType(target.Over)
         )
       );
 
@@ -310,12 +296,12 @@ export class IterateExpressionVisitor extends Visitor {
             new AssignStatement(
               target.Location,
               "next",
-              new ReturnStatement(
+              new LambdaExpression(
                 target.Location,
-                new LambdaExpression(
-                  target.Location,
-                  new ComponentGroup(),
-                  new ComponentGroup(
+                new ComponentGroup(),
+                new ComponentGroup(
+                  new ReturnStatement(
+                    target.Location,
                     new InvokationExpression(
                       target.Location,
                       wrapper_reference,

@@ -72,6 +72,8 @@ export class ReferenceNameIndexingVisitor extends Visitor {
   }
 
   #add_local(name: string, statement: Local) {
+    if (!this.#locals[this.#locals.length - 1])
+      this.#locals[this.#locals.length - 1] = {};
     this.#locals[this.#locals.length - 1][name] = statement;
   }
 

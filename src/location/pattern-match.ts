@@ -20,7 +20,6 @@ export function PatternMatch<
         }
       }
 
-      debugger;
       throw new LinkerError(
         input.Location,
         `No handler found. This is definitely a bug with the compiler.\nFound: ${input.constructor.name}`

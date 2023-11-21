@@ -10,7 +10,6 @@ import { PartialInvokationVisitor } from "./visitor/partial-invokation-visitor";
 import { LambdaSwappingVisitor } from "./visitor/lambda-swapping-visitor";
 import { IterateExpressionVisitor } from "./visitor/iterate-expression-visitor";
 import { IterableVisitor } from "./visitor/iterable-visitor";
-import { ReduceVisitor } from "./visitor/reduce-visitor";
 import { EmptyVisitor } from "./visitor/empty-visitor";
 import { ConcatVisitor } from "./visitor/concat-visitor";
 import { GenericFlatteningVisitor } from "./visitor/generic-flattening-visitor";
@@ -33,7 +32,6 @@ export function LinkCinderblock(ast: Ast) {
 
   ast = ast
     .with(BuiltInFunctions)
-    .visited(new ReduceVisitor())
     .visited(iterable_visitor)
     .visited(function_collector)
     .visited(type_collector)

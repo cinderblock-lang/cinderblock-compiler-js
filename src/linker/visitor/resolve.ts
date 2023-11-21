@@ -26,6 +26,8 @@ import {
   FunctionParameter,
   ExternalFunctionDeclaration,
   Component,
+  UseType,
+  Property,
 } from "#compiler/ast";
 import { PatternMatch } from "#compiler/location";
 import { LinkerError } from "../error";
@@ -53,7 +55,13 @@ export function AccessingType(subject: AccessExpression) {
 
 export function ResolveType(
   type: Type
-): StructEntity | SchemaEntity | SchemaType | PrimitiveType | FunctionType {
+):
+  | StructEntity
+  | SchemaEntity
+  | SchemaType
+  | PrimitiveType
+  | FunctionType
+  | UseType {
   return PatternMatch(
     StructEntity,
     SchemaEntity,
@@ -62,7 +70,10 @@ export function ResolveType(
     PrimitiveType,
     AccessExpression,
     FunctionParameter,
-    FunctionEntity
+    FunctionEntity,
+    UseType,
+    FunctionType,
+    Property
   )(
     (s) => s,
     (s) => s,
@@ -89,6 +100,15 @@ export function ResolveType(
       const type = f.Returns;
       if (!type) throw new LinkerError(f.Location, "Untyped function return");
       return new FunctionType(f.Location, f.Parameters, type);
+    },
+    (u) => {
+      return u;
+    },
+    (f) => {
+      return f;
+    },
+    (p) => {
+      return ResolveType(p.Type);
     }
   )(type);
 }
@@ -199,10 +219,11 @@ export function ResolveExpression(
 }
 
 export function ResolveBlockType(block: ComponentGroup) {
-  for (const statement of block.iterator())
+  for (const statement of block.iterator()) {
     if (statement instanceof ReturnStatement && statement.Value) {
       return ResolveExpressionType(statement.Value);
     }
+  }
 
   throw new LinkerError(block.First.Location, "All blocks must return a value");
 }
@@ -227,7 +248,10 @@ export function ResolveExpressionType(
     FunctionEntity,
     PrimitiveType,
     BuiltInFunction,
-    StoreStatement
+    StoreStatement,
+    UseType,
+    ReferenceType,
+    Property
   )(
     (
       literal
@@ -282,7 +306,7 @@ export function ResolveExpressionType(
       return new FunctionType(
         lambda.Location,
         lambda.Parameters,
-        ResolveBlock(lambda.Body)
+        ResolveBlockType(lambda.Body)
       );
     },
     (invoke) => {
@@ -313,11 +337,11 @@ export function ResolveExpressionType(
               f.Location,
               "Could not find function return type"
             );
-          return f.Returns;
+          return ResolveType(f.Returns);
         },
         (l) => ResolveBlockType(l.Body),
-        (b) => b.Returns,
-        (e) => e.Returns,
+        (b) => ResolveType(b.Returns),
+        (e) => ResolveType(e.Returns),
         (p) => parse_function_type(p.Type),
         (f) => {
           if (!f.Returns)
@@ -325,7 +349,7 @@ export function ResolveExpressionType(
               f.Location,
               "Could not find function return type"
             );
-          return f.Returns;
+          return ResolveType(f.Returns);
         },
         (s) => {
           const type = ResolveExpressionType(s.Equals);
@@ -335,7 +359,7 @@ export function ResolveExpressionType(
               "May only invoke function store types"
             );
 
-          return type.Returns;
+          return ResolveType(type.Returns);
         },
         (s) => s
       )(subject);
@@ -348,21 +372,21 @@ export function ResolveExpressionType(
           if (!result)
             throw new LinkerError(access.Location, "Cannot resolve access");
 
-          return result;
+          return ResolveType(result);
         },
         (struct) => {
           const result = struct.GetKey(access.Target);
           if (!result)
             throw new LinkerError(access.Location, "Cannot resolve access");
 
-          return result;
+          return ResolveType(result);
         },
         (struct) => {
           const result = struct.GetKey(access.Target);
           if (!result)
             throw new LinkerError(access.Location, "Cannot resolve access");
 
-          return result;
+          return ResolveType(result);
         }
       )(subject);
     },
@@ -372,7 +396,7 @@ export function ResolveExpressionType(
     (p) => {
       if (!p.Type)
         throw new LinkerError(p.Location, "Unresolved parameter type");
-      return p.Type;
+      return ResolveType(p.Type);
     },
     (f) => {
       if (!f.Returns)
@@ -387,6 +411,15 @@ export function ResolveExpressionType(
     },
     (store) => {
       return ResolveExpressionType(store.Equals);
+    },
+    (use) => {
+      return use;
+    },
+    (r) => {
+      return ResolveType(r);
+    },
+    (p) => {
+      return ResolveType(p.Type);
     }
   )(expression);
 }

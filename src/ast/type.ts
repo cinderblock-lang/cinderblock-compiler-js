@@ -15,7 +15,7 @@ export class SchemaType extends Type {
   }
 
   copy() {
-    return this;
+    return new SchemaType(this.Location, this.Properties.copy());
   }
 
   get Properties() {
@@ -60,7 +60,7 @@ export class ReferenceType extends Type {
   }
 
   copy() {
-    return new ReferenceType(this.Location, this.Name, this.References);
+    return new ReferenceType(this.Location, this.Name, this.References?.copy());
   }
 
   get Name() {

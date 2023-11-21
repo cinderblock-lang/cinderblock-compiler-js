@@ -14,7 +14,6 @@ import {
   Operator,
   OperatorExpression,
   Operators,
-  ReduceExpression,
   ReferenceExpression,
   ReturnStatement,
 } from "#compiler/ast";
@@ -57,22 +56,6 @@ function ExtractIterate(tokens: TokenGroup) {
   const block = ExtractStatementBlock(tokens);
 
   return { to, as, block };
-}
-
-function ExtractReduce(tokens: TokenGroup) {
-  ExpectNext(tokens, "(");
-  const to = ExtractExpression(tokens, ["as"]);
-  ExpectNext(tokens, "as");
-  const as = NextBlock(tokens).Text;
-  ExpectNext(tokens, "with");
-  const init = ExtractExpression(tokens, ["as"]);
-  ExpectNext(tokens, "as");
-  const init_as = NextBlock(tokens).Text;
-  ExpectNext(tokens, ")");
-
-  const block = ExtractStatementBlock(tokens);
-
-  return { to, as, block, init, init_as };
 }
 
 function ExtractMake(tokens: TokenGroup) {
@@ -143,16 +126,6 @@ export function ExtractExpression(
     } else if (text === "iterate") {
       const { to, as, block } = ExtractIterate(tokens);
       result = new IterateExpression(current.Location, to, as, block);
-    } else if (text === "reduce") {
-      const { to, as, block, init, init_as } = ExtractReduce(tokens);
-      result = new ReduceExpression(
-        current.Location,
-        to,
-        as,
-        init,
-        init_as,
-        block
-      );
     } else if (text === "make") {
       const { name, block } = ExtractMake(tokens);
       result = new MakeExpression(current.Location, name, block);
