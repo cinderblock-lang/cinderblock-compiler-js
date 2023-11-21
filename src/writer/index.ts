@@ -235,7 +235,7 @@ class CinderblockWriter {
         const name = Namer.GetName();
 
         const type = ResolveBlock(ife.If);
-        result.push(this.WriteType(type, name));
+        result.push(this.WriteType(type, name) + ";");
         result.push(`if (${checker.final}) {`);
         result.push(
           this.WriteBlock(ife.If, level + 2, type, undefined, `${name} = `)
@@ -297,6 +297,36 @@ class CinderblockWriter {
       },
       (invokation) => {
         const subject = invokation.Subject;
+
+        const parameters = [...invokation.Parameters.iterator()];
+
+        if (subject instanceof AccessExpression) {
+          const {
+            result: res,
+            stored: sto,
+            final,
+          } = this.WriteExpression(subject, 0);
+
+          result.push(...res);
+          stored.push(...sto);
+          return `(*${final})(${parameters
+            .map((p) => {
+              RequireType(Expression, p);
+
+              const {
+                result: res,
+                stored: sto,
+                final,
+              } = this.WriteExpression(p, level);
+
+              result.push(...res);
+              stored.push(...sto);
+
+              return final;
+            })
+            .join(",")})`;
+        }
+
         RequireType(ReferenceExpression, subject);
 
         const target = subject.References;
@@ -317,14 +347,50 @@ class CinderblockWriter {
           }
         }
 
-        if (!("Name" in target))
-          throw new WriterError(
-            target.Location,
-            "Attempting to invoke a none function, received a " +
-              target.constructor.name
-          );
+        if (
+          !(target instanceof FunctionEntity) &&
+          !(target instanceof BuiltInFunction) &&
+          !(target instanceof ExternalFunctionDeclaration)
+        ) {
+          return PatternMatch(StoreStatement, FunctionParameter)(
+            (store) => {
+              return `(*${store.Name})(${parameters
+                .map((p) => {
+                  RequireType(Expression, p);
 
-        const parameters = [...invokation.Parameters.iterator()];
+                  const {
+                    result: res,
+                    stored: sto,
+                    final,
+                  } = this.WriteExpression(p, level);
+
+                  result.push(...res);
+                  stored.push(...sto);
+
+                  return final;
+                })
+                .join(",")})`;
+            },
+            (param) => {
+              return `(*${param.Name})(${parameters
+                .map((p) => {
+                  RequireType(Expression, p);
+
+                  const {
+                    result: res,
+                    stored: sto,
+                    final,
+                  } = this.WriteExpression(p, level);
+
+                  result.push(...res);
+                  stored.push(...sto);
+
+                  return final;
+                })
+                .join(",")})`;
+            }
+          )(target);
+        }
 
         if (target instanceof BuiltInFunction && target.Allocates) {
           const temp = Namer.GetName();
@@ -383,7 +449,9 @@ class CinderblockWriter {
         result.push(...res);
         stored.push(...sto);
 
-        return `${final}->${access.Target}`;
+        if (subject instanceof StoreStatement)
+          return `${final}->${access.Target}`;
+        else return `${final}.${access.Target}`;
       }
     )(item);
 

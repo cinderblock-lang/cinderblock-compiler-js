@@ -55,27 +55,17 @@ export class Location {
 }
 
 const name_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-function set_char_at(str: string, index: number, chr: string) {
-  if (index > str.length - 1) return str;
-  return str.substring(0, index) + chr + str.substring(index + 1);
-}
-
 export class Namer {
   static #index: number = -1;
 
   static GetName() {
-    let name = " ".repeat(Math.floor(this.#index / name_chars.length) + 1);
-    let current = 0;
+    let name = "";
+    let current = this.#index;
 
-    while (current <= this.#index) {
-      name = set_char_at(
-        name,
-        Math.floor(current / name_chars.length),
-        name_chars[current % name_chars.length]
-      );
-      current += 1;
-    }
+    do {
+      name += name_chars[current % name_chars.length];
+      current = Math.floor(current / name_chars.length);
+    } while (current > 0);
 
     this.#index += 1;
     return name;
