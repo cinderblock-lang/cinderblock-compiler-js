@@ -1,15 +1,18 @@
 import {
+  AccessExpression,
   AssignStatement,
   Component,
   ComponentGroup,
   ComponentStore,
   FunctionEntity,
   FunctionParameter,
+  FunctionType,
   IterateExpression,
   MakeExpression,
   Namespace,
   Property,
   ReferenceExpression,
+  ReferenceType,
   StoreStatement,
   StructEntity,
   Visitor,
@@ -82,6 +85,15 @@ export class ContextBuildingVisitor extends ReferenceNameIndexingVisitor {
       return subject;
     };
 
+    const main_struct_reference = new ReferenceType(location, Namer.GetName());
+
+    const ctx_parameter = new FunctionParameter(
+      location,
+      "ctx",
+      main_struct_reference,
+      false
+    );
+
     const struct = new StructEntity(
       location,
       false,
@@ -111,8 +123,23 @@ export class ContextBuildingVisitor extends ReferenceNameIndexingVisitor {
                 parameter.Optional
               )
           )(v)
+        ),
+        new Property(
+          location,
+          "handler",
+          new FunctionType(
+            location,
+            new ComponentGroup(ctx_parameter, ...[...parameters.iterator()]),
+            returns
+          ),
+          false
         )
       )
+    );
+
+    ComponentStore.Replace(
+      main_struct_reference,
+      new ReferenceType(location, Namer.GetName(), struct)
     );
 
     const ps = this.locals.map(([n, v]) =>
@@ -120,31 +147,40 @@ export class ContextBuildingVisitor extends ReferenceNameIndexingVisitor {
         (store) =>
           [
             store as Component,
-            new FunctionParameter(
+            new AccessExpression(
               store.Location,
-              n,
-              ResolveExpressionType(store.Equals),
-              false
+              new ReferenceExpression(
+                store.Location,
+                ctx_parameter.Name,
+                ctx_parameter
+              ),
+              store.Name
             ) as Component,
           ] as const,
         (iterate) =>
           [
             iterate,
-            new FunctionParameter(
+            new AccessExpression(
               iterate.Location,
-              n,
-              ResolveExpression(iterate.Over),
-              false
+              new ReferenceExpression(
+                iterate.Location,
+                ctx_parameter.Name,
+                ctx_parameter
+              ),
+              iterate.As
             ),
           ] as const,
         (parameter) =>
           [
             parameter,
-            new FunctionParameter(
+            new AccessExpression(
               parameter.Location,
-              n,
-              ensure(parameter.Type),
-              parameter.Optional
+              new ReferenceExpression(
+                parameter.Location,
+                ctx_parameter.Name,
+                ctx_parameter
+              ),
+              parameter.Name
             ),
           ] as const
       )(v)
@@ -156,16 +192,18 @@ export class ContextBuildingVisitor extends ReferenceNameIndexingVisitor {
       ComponentStore.DeepVisit(item, visitor);
     }
 
+    const func = new FunctionEntity(
+      location,
+      false,
+      Namer.GetName(),
+      new ComponentGroup(ctx_parameter, ...parameters.iterator()),
+      returns,
+      body
+    );
+
     const result = {
-      func: new FunctionEntity(
-        location,
-        false,
-        Namer.GetName(),
-        new ComponentGroup(...ps.map((p) => p[1]), ...parameters.iterator()),
-        returns,
-        body
-      ),
-      struct: struct,
+      func,
+      struct,
       make: new MakeExpression(
         location,
         struct.Name,
@@ -177,6 +215,11 @@ export class ContextBuildingVisitor extends ReferenceNameIndexingVisitor {
                 n,
                 new ReferenceExpression(location, n, v)
               )
+          ),
+          new AssignStatement(
+            location,
+            "handler",
+            new ReferenceExpression(location, func.Name, func)
           )
         ),
         struct

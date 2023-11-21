@@ -92,6 +92,8 @@ class CinderblockWriter {
               return "long " + alias;
             case "string":
               return "char* " + alias;
+            case "any":
+              return "void* " + alias;
           }
         },
         (func) => {
@@ -276,22 +278,42 @@ class CinderblockWriter {
         if (!target)
           throw new WriterError(reference.Location, "Unresolved reference");
 
-        return PatternMatch(FunctionEntity, StoreStatement, FunctionParameter)(
+        return PatternMatch(
+          FunctionEntity,
+          StoreStatement,
+          FunctionParameter,
+          AccessExpression
+        )(
           (fn) => fn.Name,
           (st) => (accessing ? "" : "*") + st.Name,
-          (pr) => pr.Name
+          (pr) => pr.Name,
+          (a) => {
+            const {
+              result: res,
+              stored: sto,
+              final,
+            } = this.WriteExpression(a, 0);
+
+            result.push(...res);
+            stored.push(...sto);
+
+            return final;
+          }
         )(target);
       },
       (bracket) => {
         const type = ResolveExpression(bracket.Expression);
         const name = Namer.GetName();
+        const {
+          result: res,
+          stored: sto,
+          final,
+        } = this.WriteExpression(bracket.Expression, 0);
 
-        result.push(
-          `${this.WriteType(type, name)} = ${this.WriteExpression(
-            bracket.Expression,
-            level
-          )};`
-        );
+        result.push(...res);
+        stored.push(...sto);
+
+        result.push(`${this.WriteType(type, name)} = ${final};`);
 
         return name;
       },

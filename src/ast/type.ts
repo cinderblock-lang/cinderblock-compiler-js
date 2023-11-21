@@ -60,7 +60,7 @@ export class ReferenceType extends Type {
   }
 
   copy() {
-    return new ReferenceType(this.Location, this.Name, this.References?.copy());
+    return new ReferenceType(this.Location, this.Name, this.References);
   }
 
   get Name() {

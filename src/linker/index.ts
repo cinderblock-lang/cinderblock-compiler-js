@@ -14,7 +14,6 @@ import { EmptyVisitor } from "./visitor/empty-visitor";
 import { ConcatVisitor } from "./visitor/concat-visitor";
 import { GenericFlatteningVisitor } from "./visitor/generic-flattening-visitor";
 import { BuiltInFunctions } from "./built-in-functions";
-import { LambdaReferencingVisitor } from "./visitor/lambda-referencing-visitor";
 
 export function LinkCinderblock(ast: Ast) {
   const function_collector = new FunctionCollectingVisitor();
@@ -42,14 +41,7 @@ export function LinkCinderblock(ast: Ast) {
     .visited(new NameFlatteningVisitor())
     .visited(new PartialInvokationVisitor())
     .visited(iterate_visitor)
-    .visited(lambda_visitor);
-
-  const lambda_reference_visitor = new LambdaReferencingVisitor(
-    lambda_visitor.Data
-  );
-
-  ast = ast
-    .visited(lambda_reference_visitor)
+    .visited(lambda_visitor)
     .visited(empty_visitor)
     .visited(concat_visitor)
     .visited(generic_flattening_visitor);

@@ -2,6 +2,7 @@ import {
   BuiltInFunction,
   ComponentGroup,
   FunctionParameter,
+  FunctionType,
   Namespace,
   PrimitiveType,
 } from "#compiler/ast";
