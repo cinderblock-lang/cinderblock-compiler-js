@@ -1,7 +1,6 @@
 import { Location } from "#compiler/location";
-import { AstItem, Component, ComponentGroup } from "./base";
+import { Component, ComponentGroup } from "./base";
 
-@AstItem
 export class Namespace extends Component {
   readonly #name: string;
   readonly #exported: boolean;
@@ -19,15 +18,6 @@ export class Namespace extends Component {
     this.#contents = contents;
   }
 
-  copy() {
-    return new Namespace(
-      this.Location,
-      this.Exported,
-      this.Name,
-      this.#contents.copy()
-    );
-  }
-
   get Name() {
     return this.#name;
   }
@@ -42,13 +32,5 @@ export class Namespace extends Component {
 
   get type_name() {
     return "namespace";
-  }
-
-  get extra_json() {
-    return {
-      name: this.#name,
-      exported: this.#exported,
-      contents: this.#contents.json,
-    };
   }
 }

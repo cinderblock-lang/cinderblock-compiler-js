@@ -1,28 +1,17 @@
 import { Location } from "#compiler/location";
-import { Expression } from ".";
-import { AstItem, Component, ComponentStore } from "./base";
+import { Component } from "./base";
 import { Type } from "./type";
 
-@AstItem
 export class Property extends Component {
   readonly #name: string;
-  readonly #type: number;
+  readonly #type: Component;
   readonly #optional: boolean;
 
   constructor(ctx: Location, name: string, type: Type, optional: boolean) {
     super(ctx);
     this.#name = name;
-    this.#type = type.Index;
+    this.#type = type;
     this.#optional = optional;
-  }
-
-  copy() {
-    return new Property(
-      this.Location,
-      this.Name,
-      this.Type.copy(),
-      this.#optional
-    );
   }
 
   get Name() {
@@ -30,7 +19,7 @@ export class Property extends Component {
   }
 
   get Type() {
-    return ComponentStore.Get(this.#type);
+    return this.#type;
   }
 
   get Optional() {
@@ -49,10 +38,9 @@ export class Property extends Component {
   }
 }
 
-@AstItem
 export class FunctionParameter extends Component {
   readonly #name: string;
-  readonly #type?: number;
+  readonly #type?: Component;
   readonly #optional: boolean;
 
   constructor(
@@ -63,17 +51,8 @@ export class FunctionParameter extends Component {
   ) {
     super(ctx);
     this.#name = name;
-    this.#type = type?.Index;
+    this.#type = type;
     this.#optional = optional;
-  }
-
-  copy() {
-    return new FunctionParameter(
-      this.Location,
-      this.Name,
-      this.Type?.copy(),
-      this.Optional
-    );
   }
 
   get Name() {
@@ -81,7 +60,7 @@ export class FunctionParameter extends Component {
   }
 
   get Type() {
-    return this.#type != null ? ComponentStore.Get(this.#type) : undefined;
+    return this.#type != null ? this.#type : undefined;
   }
 
   get Optional() {
@@ -90,12 +69,5 @@ export class FunctionParameter extends Component {
 
   get type_name() {
     return "function_parameter";
-  }
-
-  get extra_json() {
-    return {
-      name: this.#name,
-      type_name: this.#type ?? null,
-    };
   }
 }

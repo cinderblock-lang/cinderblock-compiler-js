@@ -1,21 +1,16 @@
 import { Location } from "#compiler/location";
-import { AstItem, Component, ComponentGroup, ComponentStore } from "./base";
+import { Component, ComponentGroup } from "./base";
 import { StructEntity } from "./entity";
 import { Property } from "./property";
 
 export abstract class Type extends Component {}
 
-@AstItem
 export class SchemaType extends Type {
   readonly #properties: ComponentGroup;
 
   constructor(ctx: Location, properties: ComponentGroup) {
     super(ctx);
     this.#properties = properties;
-  }
-
-  copy() {
-    return new SchemaType(this.Location, this.Properties.copy());
   }
 
   get Properties() {
@@ -40,46 +35,22 @@ export class SchemaType extends Type {
   get type_name() {
     return "schema_type";
   }
-
-  get extra_json() {
-    return {
-      properties: this.#properties.json,
-    };
-  }
 }
 
-@AstItem
 export class ReferenceType extends Type {
   readonly #name: string;
-  readonly #references?: number;
 
-  constructor(ctx: Location, name: string, references?: Component) {
+  constructor(ctx: Location, name: string) {
     super(ctx);
     this.#name = name;
-    this.#references = references?.Index;
-  }
-
-  copy() {
-    return new ReferenceType(this.Location, this.Name, this.References);
   }
 
   get Name() {
     return this.#name;
   }
 
-  get References() {
-    return this.#references ? ComponentStore.Get(this.#references) : undefined;
-  }
-
   get type_name() {
     return "reference_type";
-  }
-
-  get extra_json() {
-    return {
-      name: this.#name,
-      references: this.#references,
-    };
   }
 }
 
@@ -100,7 +71,6 @@ export function IsPrimitiveName(input: string): input is PrimitiveName {
   return PrimitiveNames.includes(input as any);
 }
 
-@AstItem
 export class PrimitiveType extends Type {
   readonly #name: PrimitiveName;
 
@@ -120,46 +90,28 @@ export class PrimitiveType extends Type {
   get type_name() {
     return "primitive_type";
   }
-
-  get extra_json() {
-    return {
-      name: this.#name,
-    };
-  }
 }
 
-@AstItem
 export class IterableType extends Type {
-  readonly #type: number;
+  readonly #type: Component;
 
   constructor(ctx: Location, type: Type) {
     super(ctx);
-    this.#type = type.Index;
-  }
-
-  copy() {
-    return new IterableType(this.Location, this.Type.copy());
+    this.#type = type;
   }
 
   get Type() {
-    return ComponentStore.Get(this.#type);
+    return this.#type;
   }
 
   get type_name() {
     return "iterable_type";
   }
-
-  get extra_json() {
-    return {
-      type_name: this.#type,
-    };
-  }
 }
 
-@AstItem
 export class FunctionType extends Type {
   readonly #parameters: ComponentGroup;
-  readonly #returns: number;
+  readonly #returns: Component;
 
   constructor(
     ctx: Location,
@@ -168,15 +120,7 @@ export class FunctionType extends Type {
   ) {
     super(ctx);
     this.#parameters = parameters;
-    this.#returns = returns.Index;
-  }
-
-  copy() {
-    return new FunctionType(
-      this.Location,
-      this.Parameters.copy(),
-      this.Returns.copy()
-    );
+    this.#returns = returns;
   }
 
   get Parameters() {
@@ -184,7 +128,7 @@ export class FunctionType extends Type {
   }
 
   get Returns() {
-    return ComponentStore.Get(this.#returns);
+    return this.#returns;
   }
 
   get type_name() {
@@ -199,7 +143,6 @@ export class FunctionType extends Type {
   }
 }
 
-@AstItem
 export class UseType extends Type {
   readonly #name: string;
   readonly #constraints: ComponentGroup;
@@ -224,12 +167,5 @@ export class UseType extends Type {
 
   get type_name() {
     return "use_type";
-  }
-
-  get extra_json() {
-    return {
-      name: this.#name,
-      constraints: this.#constraints.json,
-    };
   }
 }

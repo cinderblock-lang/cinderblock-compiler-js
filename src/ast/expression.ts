@@ -1,4 +1,4 @@
-import { AstItem, Component, ComponentGroup, ComponentStore } from "./base";
+import { Component, ComponentGroup } from "./base";
 import { Type } from "./type";
 import { Location } from "#compiler/location";
 
@@ -13,7 +13,6 @@ export type LiteralType =
   | "long"
   | "bool";
 
-@AstItem
 export class LiteralExpression extends Expression {
   readonly #type: LiteralType;
   readonly #value: string;
@@ -39,13 +38,6 @@ export class LiteralExpression extends Expression {
   get type_name() {
     return "literal_expression";
   }
-
-  get extra_json() {
-    return {
-      type_name: this.#type,
-      value: this.#value,
-    };
-  }
 }
 
 export const Operators = [
@@ -62,14 +54,14 @@ export const Operators = [
   "++",
   "&&",
   "||",
+  "%",
 ] as const;
 export type Operator = (typeof Operators)[number];
 
-@AstItem
 export class OperatorExpression extends Expression {
-  readonly #left: number;
+  readonly #left: Component;
   readonly #operator: Operator;
-  readonly #right: number;
+  readonly #right: Component;
 
   constructor(
     ctx: Location,
@@ -78,22 +70,13 @@ export class OperatorExpression extends Expression {
     right: Expression
   ) {
     super(ctx);
-    this.#left = left.Index;
+    this.#left = left;
     this.#operator = operator;
-    this.#right = right.Index;
-  }
-
-  copy() {
-    return new OperatorExpression(
-      this.Location,
-      this.Left.copy(),
-      this.#operator,
-      this.Right.copy()
-    );
+    this.#right = right;
   }
 
   get Left() {
-    return ComponentStore.Get(this.#left);
+    return this.#left;
   }
 
   get Operator() {
@@ -101,25 +84,16 @@ export class OperatorExpression extends Expression {
   }
 
   get Right() {
-    return ComponentStore.Get(this.#right);
+    return this.#right;
   }
 
   get type_name() {
     return "operator_expression";
   }
-
-  get extra_json() {
-    return {
-      left: this.#left,
-      operator: this.#operator,
-      right: this.#right,
-    };
-  }
 }
 
-@AstItem
 export class IfExpression extends Expression {
-  readonly #check: number;
+  readonly #check: Component;
   readonly #if: ComponentGroup;
   readonly #else: ComponentGroup;
 
@@ -130,22 +104,13 @@ export class IfExpression extends Expression {
     on_else: ComponentGroup
   ) {
     super(ctx);
-    this.#check = check.Index;
+    this.#check = check;
     this.#if = on_if;
     this.#else = on_else;
   }
 
-  copy() {
-    return new IfExpression(
-      this.Location,
-      this.Check.copy(),
-      this.#if.copy(),
-      this.#else.copy()
-    );
-  }
-
   get Check() {
-    return ComponentStore.Get(this.#check);
+    return this.#check;
   }
 
   get If() {
@@ -159,47 +124,27 @@ export class IfExpression extends Expression {
   get type_name() {
     return "if_expression";
   }
-
-  get extra_json() {
-    return {
-      check: this.#check,
-      if: this.#if.json,
-      else: this.#else.json,
-    };
-  }
 }
 
-@AstItem
 export class EmptyExpression extends Expression {
-  readonly #of: number;
+  readonly #of: Component;
 
   constructor(ctx: Location, of: Type) {
     super(ctx);
-    this.#of = of.Index;
-  }
-
-  copy() {
-    return new EmptyExpression(this.Location, this.Of.copy());
+    this.#of = of;
   }
 
   get Of() {
-    return ComponentStore.Get(this.#of);
+    return this.#of;
   }
 
   get type_name() {
     return "empty_expression";
   }
-
-  get extra_json() {
-    return {
-      of: this.#of,
-    };
-  }
 }
 
-@AstItem
 export class IterateExpression extends Expression {
-  readonly #over: number;
+  readonly #over: Component;
   readonly #as: string;
   readonly #using: ComponentGroup;
 
@@ -210,22 +155,13 @@ export class IterateExpression extends Expression {
     using: ComponentGroup
   ) {
     super(ctx);
-    this.#over = over.Index;
+    this.#over = over;
     this.#as = as;
     this.#using = using;
   }
 
-  copy() {
-    return new IterateExpression(
-      this.Location,
-      this.Over.copy(),
-      this.#as,
-      this.#using.copy()
-    );
-  }
-
   get Over() {
-    return ComponentStore.Get(this.#over);
+    return this.#over;
   }
 
   get As() {
@@ -239,41 +175,16 @@ export class IterateExpression extends Expression {
   get type_name() {
     return "iterate_expression";
   }
-
-  get extra_json() {
-    return {
-      over: this.#over,
-      as: this.#as,
-      using: this.#using.json,
-    };
-  }
 }
 
-@AstItem
 export class MakeExpression extends Expression {
   readonly #struct: string;
   readonly #using: ComponentGroup;
-  readonly #struct_entity?: number;
 
-  constructor(
-    ctx: Location,
-    struct: string,
-    using: ComponentGroup,
-    struct_entity?: Component
-  ) {
+  constructor(ctx: Location, struct: string, using: ComponentGroup) {
     super(ctx);
     this.#struct = struct;
     this.#using = using;
-    this.#struct_entity = struct_entity?.Index;
-  }
-
-  copy() {
-    return new MakeExpression(
-      this.Location,
-      this.#struct,
-      this.Using.copy(),
-      this.StructEntity?.copy()
-    );
   }
 
   get Struct() {
@@ -284,123 +195,67 @@ export class MakeExpression extends Expression {
     return this.#using;
   }
 
-  get StructEntity() {
-    return this.#struct_entity
-      ? ComponentStore.Get(this.#struct_entity)
-      : undefined;
-  }
-
   get type_name() {
     return "make_expression";
   }
-
-  get extra_json() {
-    return {
-      struct: this.#struct,
-      using: this.#using.json,
-    };
-  }
 }
 
-@AstItem
 export class IsExpression extends Expression {
-  readonly #left: number;
-  readonly #right: number;
+  readonly #left: Component;
+  readonly #right: Component;
 
   constructor(ctx: Location, left: Expression, right: Type) {
     super(ctx);
-    this.#left = left.Index;
-    this.#right = right.Index;
-  }
-
-  copy() {
-    return new IsExpression(this.Location, this.Left.copy(), this.Right.copy());
+    this.#left = left;
+    this.#right = right;
   }
 
   get Left() {
-    return ComponentStore.Get(this.#left);
+    return this.#left;
   }
 
   get Right() {
-    return ComponentStore.Get(this.#right);
+    return this.#right;
   }
 
   get type_name() {
     return "is_expression";
   }
-
-  get extra_json() {
-    return {
-      left: this.#left,
-      right: this.#right,
-    };
-  }
 }
 
-@AstItem
 export class ReferenceExpression extends Expression {
   readonly #name: string;
-  readonly #references?: number;
 
-  constructor(ctx: Location, name: string, references?: Component) {
+  constructor(ctx: Location, name: string) {
     super(ctx);
     this.#name = name;
-    this.#references = references?.Index;
   }
-
-  copy() {
-    return new ReferenceExpression(this.Location, this.Name, this.References);
-  }
-
   get Name() {
     return this.#name;
-  }
-
-  get References() {
-    return this.#references ? ComponentStore.Get(this.#references) : undefined;
   }
 
   get type_name() {
     return "reference_expression";
   }
-
-  get extra_json() {
-    return {
-      name: this.#name,
-      references: this.#references,
-    };
-  }
 }
 
-@AstItem
 export class BracketsExpression extends Expression {
-  readonly #expression: number;
+  readonly #expression: Component;
 
   constructor(ctx: Location, expression: Expression) {
     super(ctx);
-    this.#expression = expression.Index;
-  }
-
-  copy() {
-    return new BracketsExpression(this.Location, this.Expression.copy());
+    this.#expression = expression;
   }
 
   get Expression() {
-    return ComponentStore.Get(this.#expression);
+    return this.#expression;
   }
 
   get type_name() {
     return "brackets_expression";
   }
-
-  get extra_json() {
-    return {
-      expression: this.#expression,
-    };
-  }
 }
 
-@AstItem
 export class LambdaExpression extends Expression {
   readonly #parameters: ComponentGroup;
   readonly #body: ComponentGroup;
@@ -409,14 +264,6 @@ export class LambdaExpression extends Expression {
     super(ctx);
     this.#parameters = parameters;
     this.#body = body;
-  }
-
-  copy() {
-    return new LambdaExpression(
-      this.Location,
-      this.Parameters.copy(),
-      this.#body.copy()
-    );
   }
 
   get Parameters() {
@@ -430,36 +277,20 @@ export class LambdaExpression extends Expression {
   get type_name() {
     return "lambda_expression";
   }
-
-  get extra_json() {
-    return {
-      parameters: this.#parameters.json,
-      body: this.#body.json,
-    };
-  }
 }
 
-@AstItem
 export class InvokationExpression extends Expression {
-  readonly #subject: number;
+  readonly #subject: Component;
   readonly #parameters: ComponentGroup;
 
   constructor(ctx: Location, subject: Expression, parameters: ComponentGroup) {
     super(ctx);
-    this.#subject = subject.Index;
+    this.#subject = subject;
     this.#parameters = parameters;
   }
 
-  copy() {
-    return new InvokationExpression(
-      this.Location,
-      this.Subject.copy(),
-      this.Parameters.copy()
-    );
-  }
-
   get Subject() {
-    return ComponentStore.Get(this.#subject);
+    return this.#subject;
   }
 
   get Parameters() {
@@ -469,36 +300,20 @@ export class InvokationExpression extends Expression {
   get type_name() {
     return "invokation_expression";
   }
-
-  get extra_json() {
-    return {
-      subject: this.#subject,
-      parameters: this.#parameters.json,
-    };
-  }
 }
 
-@AstItem
 export class AccessExpression extends Expression {
-  readonly #subject: number;
+  readonly #subject: Component;
   readonly #target: string;
 
   constructor(ctx: Location, subject: Expression, target: string) {
     super(ctx);
-    this.#subject = subject.Index;
+    this.#subject = subject;
     this.#target = target;
   }
 
-  copy() {
-    return new AccessExpression(
-      this.Location,
-      this.Subject.copy(),
-      this.Target
-    );
-  }
-
   get Subject() {
-    return ComponentStore.Get(this.#subject);
+    return this.#subject;
   }
 
   get Target() {
@@ -507,12 +322,5 @@ export class AccessExpression extends Expression {
 
   get type_name() {
     return "access_expression";
-  }
-
-  get extra_json() {
-    return {
-      subject: this.#subject,
-      target: this.#target,
-    };
   }
 }
