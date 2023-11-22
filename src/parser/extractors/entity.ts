@@ -136,8 +136,8 @@ export function ExtractEntity(tokens: TokenGroup, exported?: boolean): Entity {
         exported ?? false,
         name,
         new ComponentGroup(...parameters),
-        returns,
-        body
+        body,
+        returns
       );
     }
     default:

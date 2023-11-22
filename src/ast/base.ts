@@ -1,4 +1,5 @@
-import { Location, Namer } from "#compiler/location";
+import { Location } from "#compiler/location";
+import { TokenGroup } from "../parser/token";
 
 export abstract class Component {
   readonly #location: Location;
