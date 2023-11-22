@@ -4,7 +4,7 @@ import Child from "child_process";
 import { Ast, ComponentStore } from "#compiler/ast";
 import { ParseCinderblock } from "./parser";
 import { LinkCinderblock } from "./linker";
-import { WriteCinderblock } from "./writer";
+import { GetMain, WriteCinderblock } from "./writer";
 
 type Target = "linux" | "macos" | "windows" | "android" | "ios" | "wasm";
 
@@ -152,6 +152,10 @@ export async function Compile(
     );
 
     const linked = LinkCinderblock(parsed);
+    await Fs.writeFile(
+      Path.join(dir, "linked.json"),
+      JSON.stringify(ComponentStore.Json, undefined, 2)
+    );
 
     const c_code = WriteCinderblock(linked);
 
@@ -160,9 +164,7 @@ export async function Compile(
     switch (target) {
       case "linux":
         await Exec(
-          `gcc main.c ${options.debug ? "-g1" : ""} -o ${
-            project.name
-          }`,
+          `gcc main.c ${options.debug ? "-g1" : ""} -o ${project.name}`,
           dir
         );
         break;

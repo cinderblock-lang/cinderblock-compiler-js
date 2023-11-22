@@ -25,6 +25,7 @@ import { PatternMatch, Location, Namer } from "#compiler/location";
 import { RequireType } from "../../location/pattern-match";
 import { LinkerError } from "../error";
 import {
+  ResolveBlockType,
   ResolveExpression,
   ResolveExpressionType,
   ResolveType,
@@ -234,8 +235,9 @@ export class GenericFlatteningVisitor extends Visitor {
           result: undefined,
           cleanup: () => {},
         };
-      if (!(invoking instanceof FunctionEntity))
+      if (!(invoking instanceof FunctionEntity)) {
         return { result: undefined, cleanup: () => {} };
+      }
 
       const { generic, using } = this.#is_generic(invokation, invoking);
       if (!generic)
@@ -250,6 +252,18 @@ export class GenericFlatteningVisitor extends Visitor {
       const copied = invoking.copy();
 
       ComponentStore.DeepVisit(copied, new TypeSwappingVisitor(using));
+
+      ComponentStore.Replace(
+        copied,
+        new FunctionEntity(
+          copied.Location,
+          copied.Exported,
+          copied.Name,
+          copied.Parameters,
+          ResolveBlockType(copied.Content),
+          copied.Content
+        )
+      );
 
       this.#data.push(copied);
 

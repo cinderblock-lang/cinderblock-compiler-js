@@ -42,6 +42,8 @@ class CinderblockWriter {
   readonly #includes: Array<string> = ["<stdlib.h>", "<dlfcn.h>"];
   readonly #globals: Array<string> = [];
 
+  #callstack: Array<string> = [];
+
   StructToString(struct: StructEntity): string {
     let result = [`struct ${struct.Name} {`];
 
@@ -579,31 +581,44 @@ class CinderblockWriter {
   }
 
   WriteFunction(func: FunctionEntity): string {
-    const result: Array<string> = [];
+    try {
+      this.#callstack.push(func.Name);
+      const result: Array<string> = [];
 
-    const returns = func.Returns;
+      const returns = func.Returns;
 
-    if (!returns)
-      throw new WriterError(func.Location, "Function has no return type");
+      if (!returns)
+        throw new WriterError(func.Location, "Function has no return type");
 
-    result.push(
-      `${this.WriteType(func.Returns, func.Name)} (${[
-        ...func.Parameters.iterator(),
-      ]
-        .map((p) => {
-          RequireType(FunctionParameter, p);
+      result.push(
+        `${this.WriteType(func.Returns, func.Name)} (${[
+          ...func.Parameters.iterator(),
+        ]
+          .map((p) => {
+            RequireType(FunctionParameter, p);
 
-          const type = p.Type;
-          if (!type) throw new WriterError(p.Location, "Parameter has no type");
+            const type = p.Type;
+            if (!type)
+              throw new WriterError(p.Location, "Parameter has no type");
 
-          return this.WriteType(type, p.Name);
-        })
-        .join(", ")}) {`
-    );
+            return this.WriteType(type, p.Name);
+          })
+          .join(", ")}) {`
+      );
 
-    result.push(this.WriteBlock(func.Content, 2, returns));
+      result.push(this.WriteBlock(func.Content, 2, returns));
 
-    return result.concat("}").join("\n");
+      this.#callstack = this.#callstack.slice(
+        0,
+        this.#callstack.indexOf(func.Name)
+      );
+      return result.concat("}").join("\n");
+    } catch (err) {
+      console.error(
+        `Error rendering function: ${this.#callstack.join(" -> ")}`
+      );
+      throw err;
+    }
   }
 
   WriteBuiltInFunction(func: BuiltInFunction): string {
@@ -750,8 +765,7 @@ ${functions.join("\n\n")}`;
   }
 }
 
-export function WriteCinderblock(ast: Ast) {
-  const writer = new CinderblockWriter();
+export function GetMain(ast: Ast) {
   for (const namespace of ast.iterator()) {
     if (!(namespace instanceof Namespace))
       throw new WriterError(
@@ -763,12 +777,7 @@ export function WriteCinderblock(ast: Ast) {
 
     for (const entity of namespace.Contents.iterator()) {
       if (entity instanceof FunctionEntity && entity.Name === "main") {
-        const result = writer.WriteFunction(entity);
-
-        return `
-${writer.Globals()}
-
-${result}`;
+        return entity;
       }
     }
   }
@@ -776,4 +785,14 @@ ${result}`;
   throw new Error(
     "Could not find the main function. Currently, only simple apps with a main function are supported"
   );
+}
+
+export function WriteCinderblock(ast: Ast) {
+  const writer = new CinderblockWriter();
+  const result = writer.WriteFunction(GetMain(ast));
+
+  return `
+${writer.Globals()}
+
+${result}`;
 }

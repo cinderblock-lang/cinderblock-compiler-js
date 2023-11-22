@@ -38,13 +38,13 @@ export function LinkCinderblock(ast: Ast) {
     .visited(new ReferenceTypeVisitor(type_collector.Types))
     .visited(new FunctionFlatteningVisitor(function_collector.Functions))
     .visited(new StoreTypeVisitor(type_collector.Types))
-    .visited(new NameFlatteningVisitor())
+    // .visited(new NameFlatteningVisitor())
     .visited(new PartialInvokationVisitor())
     .visited(iterate_visitor)
-    .visited(lambda_visitor)
     .visited(empty_visitor)
     .visited(concat_visitor)
-    .visited(generic_flattening_visitor);
+    .visited(generic_flattening_visitor)
+    .visited(lambda_visitor);
 
   while (generic_flattening_visitor.FoundAny) {
     generic_flattening_visitor.Reset();

@@ -9,6 +9,7 @@ import {
   SchemaType,
   StoreStatement,
   StructEntity,
+  UseType,
 } from "#compiler/ast";
 import { ReferenceNameIndexingVisitor } from "./reference-name-indexing-visitor";
 import { LinkerError } from "../error";
@@ -41,10 +42,11 @@ export class FunctionFlatteningVisitor extends ReferenceNameIndexingVisitor {
             throw new LinkerError(accessing.Location, "Could not find type");
           const accessing_type = ResolveType(type);
           if (
-            (accessing_type instanceof StructEntity ||
+            ((accessing_type instanceof StructEntity ||
               accessing_type instanceof SchemaEntity ||
               accessing_type instanceof SchemaType) &&
-            accessing_type.HasKey(subject.Target)
+              accessing_type.HasKey(subject.Target)) ||
+            accessing_type instanceof UseType
           ) {
             return {
               result: undefined,
