@@ -5,6 +5,9 @@ import {
   FunctionType,
   Namespace,
   PrimitiveType,
+  Property,
+  ReferenceType,
+  StructEntity,
 } from "#compiler/ast";
 import { Location } from "#compiler/location";
 
@@ -16,6 +19,44 @@ export const BuiltInFunctions = new ComponentGroup(
     false,
     "__GENERATED_CODE__",
     new ComponentGroup(
+      new StructEntity(
+        EmptyLocation,
+        true,
+        "Array",
+        new ComponentGroup(
+          new Property(
+            EmptyLocation,
+            "next",
+            new FunctionType(
+              EmptyLocation,
+              new ComponentGroup(
+                new FunctionParameter(
+                  EmptyLocation,
+                  "ctx",
+                  new ReferenceType(EmptyLocation, "Array"),
+                  false
+                )
+              ),
+              new ReferenceType(EmptyLocation, "Array")
+            ),
+            false
+          ),
+          new Property(
+            EmptyLocation,
+            "result",
+            new PrimitiveType(EmptyLocation, "any"),
+            true
+          ),
+          new Property(
+            EmptyLocation,
+            "done",
+            new PrimitiveType(EmptyLocation, "bool"),
+            true
+          )
+        ),
+        "__GENERATED_CODE__",
+        []
+      ),
       new BuiltInFunction(
         EmptyLocation,
         "get_char",

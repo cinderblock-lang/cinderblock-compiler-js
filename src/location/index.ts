@@ -56,7 +56,7 @@ export class Location {
 
 const name_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 export class Namer {
-  static #index: number = -1;
+  static #index: number = 0;
 
   static GetName() {
     let name = "";

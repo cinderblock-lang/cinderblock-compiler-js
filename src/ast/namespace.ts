@@ -1,5 +1,5 @@
 import { Location } from "#compiler/location";
-import { Component, ComponentGroup } from "./base";
+import { Component, ComponentGroup, WriterContext } from "./base";
 
 export class Namespace extends Component {
   readonly #name: string;
@@ -32,5 +32,11 @@ export class Namespace extends Component {
 
   get type_name() {
     return "namespace";
+  }
+
+  c(ctx: WriterContext): string {
+    return this.Contents.map((c) => c.c({ ...ctx, namespace: this.Name })).join(
+      "\n\n"
+    );
   }
 }

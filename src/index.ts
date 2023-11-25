@@ -1,10 +1,9 @@
 import Path from "path";
 import Fs from "fs/promises";
 import Child from "child_process";
-import { Ast, ComponentStore } from "#compiler/ast";
+import { Ast } from "#compiler/ast";
 import { ParseCinderblock } from "./parser";
-import { LinkCinderblock } from "./linker";
-import { GetMain, WriteCinderblock } from "./writer";
+import { BuiltInFunctions } from "./linker";
 
 type Target = "linux" | "macos" | "windows" | "android" | "ios" | "wasm";
 
@@ -87,7 +86,7 @@ export async function Compile(
   }
 
   for (const target of project.targets) {
-    let parsed = new Ast();
+    let parsed = new Ast().with(BuiltInFunctions);
 
     for (const [url, tag] of libs) {
       const path = LibraryUrl(cache_dir, url, tag);
@@ -142,22 +141,7 @@ export async function Compile(
     const dir = Path.resolve(root_dir, project.bin, target);
     await Fs.mkdir(dir, { recursive: true });
 
-    const json: Array<any> = [];
-    for (const namespace of parsed.iterator())
-      json.push(ComponentStore.DeepJson(namespace));
-
-    await Fs.writeFile(
-      Path.join(dir, "ast.json"),
-      JSON.stringify(json, undefined, 2)
-    );
-
-    const linked = LinkCinderblock(parsed);
-    await Fs.writeFile(
-      Path.join(dir, "linked.json"),
-      JSON.stringify(ComponentStore.Json, undefined, 2)
-    );
-
-    const c_code = WriteCinderblock(linked);
+    const c_code = parsed.c();
 
     await Fs.writeFile(Path.join(dir, "main.c"), c_code);
 

@@ -13,6 +13,7 @@ function ExtractNamespace(tokens: TokenGroup, exported = false): Namespace {
     return ExtractNamespace(tokens, true);
   }
 
+  const using: Array<string> = [];
   const name = BuildWhile(
     tokens,
     "namespace",
@@ -24,7 +25,7 @@ function ExtractNamespace(tokens: TokenGroup, exported = false): Namespace {
   const entities = BuildWhilePeek(
     tokens,
     (v) => v !== "}",
-    () => ExtractEntity(tokens)
+    () => ExtractEntity(tokens, name, using)
   );
 
   ExpectNext(tokens, "}");
@@ -37,7 +38,10 @@ function ExtractNamespace(tokens: TokenGroup, exported = false): Namespace {
   );
 }
 
-export function ParseCinderblock(input: string, file_name: string): ComponentGroup {
+export function ParseCinderblock(
+  input: string,
+  file_name: string
+): ComponentGroup {
   const tokens = SplitTokens(input, file_name);
   const group = new TokenGroup(tokens);
 

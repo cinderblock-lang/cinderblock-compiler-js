@@ -1,7 +1,10 @@
-import { Location } from "#compiler/location";
-import { Component, ComponentGroup } from "./base";
+import { Location, Namer } from "#compiler/location";
+import { LinkerError } from "../linker/error";
+import { ResolveType } from "../linker/resolve";
+import { RequireOneOfType, RequireType } from "../location/pattern-match";
+import { Component, ComponentGroup, WriterContext } from "./base";
 import { StructEntity } from "./entity";
-import { Property } from "./property";
+import { FunctionParameter, Property } from "./property";
 
 export abstract class Type extends Component {}
 
@@ -32,8 +35,19 @@ export class SchemaType extends Type {
     return undefined;
   }
 
+  IsCompatible(subject: StructEntity): boolean {
+    throw new Error("Not yet implemented");
+  }
+
   get type_name() {
     return "schema_type";
+  }
+
+  c(ctx: WriterContext): string {
+    throw new LinkerError(
+      this.Location,
+      "May not have a schema in the compiled code"
+    );
   }
 }
 
@@ -52,6 +66,10 @@ export class ReferenceType extends Type {
   get type_name() {
     return "reference_type";
   }
+
+  c(ctx: WriterContext): string {
+    return ResolveType(this, ctx).c(ctx);
+  }
 }
 
 export const PrimitiveNames = [
@@ -63,6 +81,7 @@ export const PrimitiveNames = [
   "long",
   "any",
   "string",
+  "null",
 ] as const;
 
 export type PrimitiveName = (typeof PrimitiveNames)[number];
@@ -90,10 +109,33 @@ export class PrimitiveType extends Type {
   get type_name() {
     return "primitive_type";
   }
+
+  c(ctx: WriterContext): string {
+    switch (this.Name) {
+      case "any":
+        return "void*";
+      case "bool":
+        return "_Bool";
+      case "char":
+        return "char";
+      case "float":
+        return "float";
+      case "double":
+        return "double";
+      case "int":
+        return "int";
+      case "long":
+        return "long";
+      case "string":
+        return "char*";
+      case "null":
+        return "void*";
+    }
+  }
 }
 
 export class IterableType extends Type {
-  readonly #type: Component;
+  readonly #type: Type;
 
   constructor(ctx: Location, type: Type) {
     super(ctx);
@@ -106,6 +148,10 @@ export class IterableType extends Type {
 
   get type_name() {
     return "iterable_type";
+  }
+
+  c(ctx: WriterContext): string {
+    return `Array`;
   }
 }
 
@@ -141,6 +187,47 @@ export class FunctionType extends Type {
       returns: this.#returns,
     };
   }
+
+  // static #written: Record<string, string> = {};
+  static #already_written = false;
+
+  c(ctx: WriterContext): string {
+    // const id =
+    //   this.Parameters.map((p) => p.constructor.name).join("_") +
+    //   "_" +
+    //   this.Returns.constructor.name;
+    // if (FunctionType.#written[id]) return FunctionType.#written[id];
+
+    // const name = Namer.GetName();
+    // FunctionType.#written[id] = name;
+    // ctx.file.add_global(
+    //   `typedef ${this.Returns.c(ctx)} (*${name}_func)(${this.Parameters.map(
+    //     (p) => {
+    //       RequireType(FunctionParameter, p);
+    //       const type = p.Type;
+    //       if (!type)
+    //         throw new LinkerError(p.Location, "Could not resolve type");
+
+    //       RequireOneOfType([Type, StructEntity], type);
+    //       return `${type.c(ctx)} ${p.Name}`;
+    //     }
+    //   ).join(", ")});`
+    // );
+
+    // ctx.file.add_global(`typedef struct ${name} {
+    //   ${name}_func handle;
+    //   void* data;
+    // } ${name};`);
+
+
+    if (!FunctionType.#already_written) {
+      FunctionType.#already_written = true;
+      ctx.file.add_global(
+        `typedef struct _FUNCTION { void* handle; void* data; } _FUNCTION;`
+      );
+    }
+    return "_FUNCTION";
+  }
 }
 
 export class UseType extends Type {
@@ -167,5 +254,12 @@ export class UseType extends Type {
 
   get type_name() {
     return "use_type";
+  }
+
+  c(ctx: WriterContext): string {
+    throw new LinkerError(
+      this.Location,
+      "Use must not be in the concrete implementation"
+    );
   }
 }

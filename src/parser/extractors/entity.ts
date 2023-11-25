@@ -84,7 +84,12 @@ function ExtractUsing(tokens: TokenGroup) {
   );
 }
 
-export function ExtractEntity(tokens: TokenGroup, exported?: boolean): Entity {
+export function ExtractEntity(
+  tokens: TokenGroup,
+  namspace: string,
+  using: Array<string>,
+  exported?: boolean
+): Entity {
   const current = NextBlock(tokens);
 
   switch (current.Text) {
@@ -103,14 +108,18 @@ export function ExtractEntity(tokens: TokenGroup, exported?: boolean): Entity {
         current.Location,
         exported ?? false,
         name,
-        new ComponentGroup(...properties)
+        new ComponentGroup(...properties),
+        namspace,
+        using
       );
     }
     case "using": {
-      return new UsingEntity(current.Location, false, ExtractUsing(tokens));
+      const name = ExtractUsing(tokens);
+      using.push(name);
+      return new UsingEntity(current.Location, false, name);
     }
     case "export": {
-      return ExtractEntity(tokens, true);
+      return ExtractEntity(tokens, namspace, using, true);
     }
     case "lib": {
       const { path, declarations } = ExtractLib(tokens);
@@ -137,7 +146,9 @@ export function ExtractEntity(tokens: TokenGroup, exported?: boolean): Entity {
         name,
         new ComponentGroup(...parameters),
         body,
-        returns
+        returns,
+        namspace,
+        using
       );
     }
     default:

@@ -3,6 +3,9 @@ import {
   FunctionParameter,
   FunctionType,
   IterableType,
+  PrimitiveName,
+  PrimitiveNames,
+  PrimitiveType,
   Property,
   ReferenceType,
   SchemaType,
@@ -90,6 +93,10 @@ function ExtractUse(tokens: TokenGroup) {
 
 export function ExtractType(tokens: TokenGroup): Type {
   const current = NextBlock(tokens);
+
+  if (PrimitiveNames.includes(current.Text as PrimitiveName)) {
+    return new PrimitiveType(current.Location, current.Text as PrimitiveName);
+  }
 
   switch (current.Text) {
     case "use": {

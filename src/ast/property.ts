@@ -1,10 +1,11 @@
 import { Location } from "#compiler/location";
-import { Component } from "./base";
+import { LinkerError } from "../linker/error";
+import { Component, WriterContext } from "./base";
 import { Type } from "./type";
 
 export class Property extends Component {
   readonly #name: string;
-  readonly #type: Component;
+  readonly #type: Type;
   readonly #optional: boolean;
 
   constructor(ctx: Location, name: string, type: Type, optional: boolean) {
@@ -36,11 +37,15 @@ export class Property extends Component {
       type_name: this.#type,
     };
   }
+
+  c(ctx: WriterContext): string {
+    return `${this.Type.c(ctx)} ${this.Name};`;
+  }
 }
 
 export class FunctionParameter extends Component {
   readonly #name: string;
-  readonly #type?: Component;
+  readonly #type?: Type;
   readonly #optional: boolean;
 
   constructor(
@@ -69,5 +74,10 @@ export class FunctionParameter extends Component {
 
   get type_name() {
     return "function_parameter";
+  }
+
+  c(ctx: WriterContext): string {
+    if (!this.Type) throw new LinkerError(this.Location, "Unresolved type");
+    return `${this.Type.c(ctx)} ${this.Name}`;
   }
 }
