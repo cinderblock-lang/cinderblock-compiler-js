@@ -3,7 +3,7 @@ import { CodeLocation } from "../../location/code-location";
 import { Component } from "../component";
 import { Type } from "../type/base";
 import { WriterContext } from "../writer";
-import { ResolveExpressionType, ResolveType } from "../../linker/resolve";
+import { PrimitiveType } from "../type/primitive";
 
 export class IsExpression extends Expression {
   readonly #left: Component;
@@ -28,8 +28,12 @@ export class IsExpression extends Expression {
   }
 
   c(ctx: WriterContext): string {
-    const left_type = ResolveExpressionType(this.Left, ctx);
+    const left_type = this.Left.resolve_type(ctx);
 
-    return left_type === ResolveType(this.Right, ctx) ? "1" : "0";
+    return left_type === this.Right.resolve_type(ctx) ? "1" : "0";
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    return new PrimitiveType(this.CodeLocation, "bool");
   }
 }

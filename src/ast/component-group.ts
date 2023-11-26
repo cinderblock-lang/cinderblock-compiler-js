@@ -1,5 +1,10 @@
+import { LinkerError } from "../linker/error";
 import { CodeLocation } from "../location/code-location";
 import { Component } from "./component";
+import { RawStatement } from "./statement/raw";
+import { ReturnStatement } from "./statement/return";
+import { StoreStatement } from "./statement/store";
+import { WriterContext } from "./writer";
 
 export class ComponentGroup {
   readonly #components: Array<Component>;
@@ -48,5 +53,16 @@ export class ComponentGroup {
 
   find_all<T>(checker: abstract new (...args: any[]) => T): T[] {
     return this.#components.filter((c) => c instanceof checker) as T[];
+  }
+
+  resolve_block_type(ctx: WriterContext) {
+    ctx = ctx.WithBody(this);
+    for (const statement of this.iterator()) {
+      if (statement instanceof ReturnStatement) {
+        return statement.Value.resolve_type(ctx);
+      }
+    }
+
+    throw new LinkerError(this.CodeLocation, "All blocks must return a value");
   }
 }

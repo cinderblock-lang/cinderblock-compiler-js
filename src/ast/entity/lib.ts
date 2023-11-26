@@ -1,3 +1,4 @@
+import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { Component } from "../component";
 import { ComponentGroup } from "../component-group";
@@ -37,5 +38,12 @@ export class LibEntity extends Entity {
       "Currently, external functions are not supported and will be ignored"
     );
     return ``;
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    throw new LinkerError(
+      this.CodeLocation,
+      "Should not be able to link to here"
+    );
   }
 }

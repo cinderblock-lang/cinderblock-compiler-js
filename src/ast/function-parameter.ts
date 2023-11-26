@@ -41,4 +41,11 @@ export class FunctionParameter extends Component {
     if (!this.Type) throw new LinkerError(this.CodeLocation, "Unresolved type");
     return `${this.Type.c(ctx)} ${this.Name}`;
   }
+
+  resolve_type(ctx: WriterContext): Component {
+    const type = this.Type;
+    if (!type) throw new LinkerError(this.CodeLocation, "Unresolved type");
+
+    return type.resolve_type(ctx);
+  }
 }

@@ -1,9 +1,4 @@
 import { LinkerError } from "../../linker/error";
-import {
-  ResolveType,
-  ResolveExpressionType,
-  ResolveBlockType,
-} from "../../linker/resolve";
 import { CodeLocation } from "../../location/code-location";
 import { Namer } from "../../location/namer";
 import { RequireType, RequireOneOfType } from "../../location/require-type";
@@ -83,7 +78,7 @@ export class FunctionEntity extends Entity {
     ctx: WriterContext
   ): { target: Type; uses: Record<string, Type> } {
     if (!current) return { target: invoking_with, uses: {} };
-    if (current instanceof ReferenceType) current = ResolveType(current, ctx);
+    if (current instanceof ReferenceType) current = current.resolve_type(ctx);
     if (current instanceof SchemaType || current instanceof SchemaEntity) {
       let uses: Record<string, Type> = {};
 
@@ -121,17 +116,12 @@ export class FunctionEntity extends Entity {
   }
 
   #build_invokation_parameters(old_ctx: WriterContext) {
-    const ctx: WriterContext = {
-      ...old_ctx,
-      parameters: {
-        ctx: new PrimitiveType(this.CodeLocation, "null"),
-      },
-      use_types: {},
-      locals: {},
-      namespace: this.#namespace,
-      using: this.#using,
-    };
-    const invokation = ctx.invokation;
+    let ctx = old_ctx.StartContext(
+      this.CodeLocation,
+      this.#namespace,
+      this.#using
+    );
+    const invokation = ctx.Invokation;
     const expected = [...this.Parameters.iterator()];
     const actual = [...(invokation?.Parameters.iterator() ?? [])];
     const input: Array<FunctionParameter> = [
@@ -156,16 +146,16 @@ export class FunctionEntity extends Entity {
             "Cannot resolve function parameter type in this location"
           );
 
-        ctx.parameters[e.Name] = e;
+        ctx = ctx.WithFunctionParameter(e.Name, e);
         continue;
       }
 
       const { target, uses: updated } = this.#process_type(
         e.Type,
-        ResolveExpressionType(a, old_ctx),
+        a.resolve_type(old_ctx),
         ctx
       );
-      ctx.use_types = { ...ctx.use_types, ...updated };
+      ctx = ctx.WithUseTypes(updated);
 
       const param = new FunctionParameter(
         e.CodeLocation,
@@ -174,28 +164,19 @@ export class FunctionEntity extends Entity {
         e.Optional
       );
       input.push(param);
-      ctx.parameters[e.Name] = param;
+      ctx = ctx.WithFunctionParameter(e.Name, param);
     }
 
-    for (const statement of this.Content.iterator()) {
-      if (statement instanceof StoreStatement) {
-        ctx.locals[statement.Name] = statement;
-      }
-
-      if (statement instanceof RawStatement) {
-        ctx.locals[statement.Reference] = statement;
-      }
-    }
+    ctx = ctx.WithBody(this.Content);
 
     return {
       input_parameters: input,
-      returns: ResolveBlockType(this.Content, ctx),
+      returns: this.Content.resolve_block_type(ctx),
       ctx,
     };
   }
 
   invoked(ctx_old: WriterContext) {
-    ctx_old = { ...ctx_old, namespace: this.#namespace, using: this.#using };
     const { input_parameters, returns, ctx } =
       this.#build_invokation_parameters(ctx_old);
 
@@ -206,8 +187,8 @@ export class FunctionEntity extends Entity {
       new ComponentGroup(...input_parameters),
       this.Content,
       returns,
-      ctx.namespace,
-      ctx.using
+      ctx.Namespace,
+      ctx.Using
     );
   }
 
@@ -217,16 +198,9 @@ export class FunctionEntity extends Entity {
     const { input_parameters, returns, ctx } =
       this.#build_invokation_parameters(ctx_old);
 
-    const prefix: Array<string> = [];
-    const suffix: Array<string> = [];
-
-    const body = this.Content.find(ReturnStatement).c({
-      ...ctx,
-      prefix,
-      suffix,
-    });
+    const body = this.Content.find(ReturnStatement).c(ctx);
     RequireType(Type, returns);
-    if (this.Name === "main" && ctx.namespace === "App") {
+    if (this.Name === "main" && this.#namespace === "App") {
       return `${returns.c(ctx)} ${this.Name}(${input_parameters
         .map((p) => {
           RequireType(FunctionParameter, p);
@@ -238,17 +212,15 @@ export class FunctionEntity extends Entity {
           return `${type.c(ctx)} ${p.Name}`;
         })
         .join(", ")}) {
-        ${prefix.join("\n")}
-        ${suffix.join("\n")}
+        ${ctx.Prefix}
+        ${ctx.Suffix}
         return ${body};
       }`;
     }
 
     if (!FunctionEntity.#already_made.includes(this.#full_name)) {
       FunctionEntity.#already_made.push(this.#full_name);
-      ctx.file.add_global(`${returns.c(ctx)} ${
-        this.#full_name
-      }(${input_parameters
+      ctx.AddGlobal(`${returns.c(ctx)} ${this.#full_name}(${input_parameters
         .map((p) => {
           RequireType(FunctionParameter, p);
           const type = p.Type;
@@ -259,8 +231,8 @@ export class FunctionEntity extends Entity {
           return `${type.c(ctx)} ${p.Name}`;
         })
         .join(", ")}) {
-          ${prefix.filter(Unique).join("\n")}
-          ${suffix.filter(Unique).join("\n")}
+          ${ctx.Prefix}
+          ${ctx.Suffix}
           return ${body};
       }`);
     }
@@ -269,13 +241,24 @@ export class FunctionEntity extends Entity {
       this.CodeLocation,
       new ComponentGroup(...input_parameters),
       returns
-    ).c({ ...ctx });
+    ).c(ctx);
 
     const instance_name = Namer.GetName();
-    ctx.prefix.push(
+    ctx_old.AddPrefix(
       `${struct} ${instance_name} = { &${this.#full_name}, NULL };`
     );
 
     return instance_name;
+  }
+
+  resolve_type(ctx_old: WriterContext): Component {
+    const { input_parameters, returns } =
+      this.#build_invokation_parameters(ctx_old);
+
+    return new FunctionType(
+      this.CodeLocation,
+      new ComponentGroup(...input_parameters),
+      returns
+    );
   }
 }

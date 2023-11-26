@@ -1,15 +1,12 @@
 import { Expression } from "./base";
-import { Unique } from "../utils";
 import { ComponentGroup } from "../component-group";
 import { WriterContext } from "../writer";
 import { Component } from "../component";
-import { StoreStatement } from "../statement/store";
-import { RawStatement } from "../statement/raw";
 import { AssignStatement } from "../statement/assign";
 import { CodeLocation } from "../../location/code-location";
 import { LinkerError } from "../../linker/error";
-import { FindType } from "../../linker/resolve";
 import { Namer } from "../../location/namer";
+import { StructEntity } from "../entity/struct";
 
 export class MakeExpression extends Expression {
   readonly #struct: string;
@@ -34,41 +31,31 @@ export class MakeExpression extends Expression {
   }
 
   c(ctx: WriterContext): string {
-    const type = FindType(this.Struct, ctx);
+    const type = ctx.FindType(this.Struct);
     if (!type)
       throw new LinkerError(this.CodeLocation, "Could not resolve symbol");
     const name = Namer.GetName();
-    ctx.prefix.push(`${type.c(ctx)} ${name} = malloc(sizeof(${type.c(ctx)}))`);
+    ctx.AddPrefix(`${type.c(ctx)} ${name} = malloc(sizeof(${type.c(ctx)}))`);
 
-    let locals: Record<string, Component> = {};
-    for (const statement of this.Using.iterator()) {
-      if (statement instanceof StoreStatement) {
-        locals[statement.Name] = statement;
-      }
+    ctx = ctx.WithBody(this.Using);
 
-      if (statement instanceof RawStatement) {
-        locals[statement.Reference] = statement;
-      }
-    }
-
-    const prefix: Array<string> = [];
-    const suffix: Array<string> = [];
     const inputs = this.Using.find_all(AssignStatement).map(
-      (a) =>
-        `${name}->${a.Name} = ${a.c({
-          ...ctx,
-          prefix,
-          suffix,
-          locals,
-        })};`
+      (a) => `${name}->${a.Name} = ${a.c(ctx)};`
     );
 
-    ctx.prefix.push(`{
-      ${prefix.filter(Unique).join("\n")}
+    ctx.AddPrefix(`{
+      ${ctx.Prefix}
       ${inputs.join("\n")}
-      ${suffix.filter(Unique).join("\n")}
+      ${ctx.Suffix}
     }`);
 
     return `*${name}`;
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    const entity = ctx.FindType(this.Struct);
+    if (!entity || !(entity instanceof StructEntity))
+      throw new LinkerError(this.CodeLocation, "Could not resolve struct");
+    return entity;
   }
 }

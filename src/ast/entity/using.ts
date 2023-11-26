@@ -1,4 +1,6 @@
+import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
+import { Component } from "../component";
 import { WriterContext } from "../writer";
 import { Entity } from "./base";
 
@@ -19,8 +21,13 @@ export class UsingEntity extends Entity {
   }
 
   c(ctx: WriterContext): string {
-    ctx.using.push(this.Name);
-
     return ``;
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    throw new LinkerError(
+      this.CodeLocation,
+      "Should not be able to reach here"
+    );
   }
 }

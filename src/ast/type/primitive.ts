@@ -1,4 +1,5 @@
 import { CodeLocation } from "../../location/code-location";
+import { Component } from "../component";
 import { WriterContext } from "../writer";
 import { Type } from "./base";
 
@@ -61,5 +62,9 @@ export class PrimitiveType extends Type {
       case "null":
         return "void*";
     }
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    return this;
   }
 }

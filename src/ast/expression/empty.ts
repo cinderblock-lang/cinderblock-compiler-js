@@ -3,6 +3,7 @@ import { CodeLocation } from "../../location/code-location";
 import { Component } from "../component";
 import { Type } from "../type/base";
 import { WriterContext } from "../writer";
+import { IterableType } from "../type/iterable";
 
 export class EmptyExpression extends Expression {
   readonly #of: Component;
@@ -22,5 +23,9 @@ export class EmptyExpression extends Expression {
 
   c(ctx: WriterContext): string {
     return "";
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    return new IterableType(this.CodeLocation, this.Of);
   }
 }

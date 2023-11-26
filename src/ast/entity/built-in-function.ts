@@ -82,9 +82,8 @@ export class BuiltInFunction extends Component {
     if (!BuiltInFunction.#already_made.includes(this.Name)) {
       BuiltInFunction.#already_made.push(this.Name);
 
-      for (const requirement of this.Requires)
-        ctx.file.add_include(requirement);
-      ctx.file.add_global(`${this.Returns.c(ctx)} ${this.Name}(${params
+      for (const requirement of this.Requires) ctx.AddInclude(requirement);
+      ctx.AddGlobal(`${this.Returns.c(ctx)} ${this.Name}(${params
         .map((p) => {
           RequireType(FunctionParameter, p);
           const type = p.Type;
@@ -99,12 +98,16 @@ export class BuiltInFunction extends Component {
       }`);
     }
 
-    const struct = new FunctionType(this.CodeLocation, params, this.Returns).c({
-      ...ctx,
-    });
+    const struct = new FunctionType(this.CodeLocation, params, this.Returns).c(
+      ctx
+    );
 
-    ctx.prefix.push(`${struct} ${name} = { &${this.Name}, NULL };`);
+    ctx.AddPrefix(`${struct} ${name} = { &${this.Name}, NULL };`);
 
     return name;
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    return new FunctionType(this.CodeLocation, this.Parameters, this.Returns);
   }
 }

@@ -31,7 +31,7 @@ export const BuiltInFunctions = new ComponentGroup(
                 new FunctionParameter(
                   EmptyCodeLocation,
                   "ctx",
-                  new ReferenceType(EmptyCodeLocation, "Array"),
+                  new PrimitiveType(EmptyCodeLocation, "null"),
                   false
                 )
               ),

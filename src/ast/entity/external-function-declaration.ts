@@ -1,7 +1,9 @@
+import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { Component } from "../component";
 import { ComponentGroup } from "../component-group";
 import { Type } from "../type/base";
+import { FunctionType } from "../type/function";
 import { WriterContext } from "../writer";
 
 export class ExternalFunctionDeclaration extends Component {
@@ -42,5 +44,9 @@ export class ExternalFunctionDeclaration extends Component {
       "Currently, external functions are not supported and will be ignored"
     );
     return ``;
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    return new FunctionType(this.CodeLocation, this.Parameters, this.Returns);
   }
 }

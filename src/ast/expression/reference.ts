@@ -3,7 +3,7 @@ import { CodeLocation } from "../../location/code-location";
 import { WriterContext } from "../writer";
 import { FunctionParameter } from "../function-parameter";
 import { LinkerError } from "../../linker/error";
-import { FindReference } from "../../linker/resolve";
+import { Component } from "../component";
 
 export class ReferenceExpression extends Expression {
   readonly #name: string;
@@ -21,10 +21,18 @@ export class ReferenceExpression extends Expression {
   }
 
   c(ctx: WriterContext): string {
-    const target = FindReference(this.Name, ctx);
+    const target = ctx.FindReference(this.Name);
     if (!target)
       throw new LinkerError(this.CodeLocation, "Could not find reference");
     if (target instanceof FunctionParameter) return this.Name;
     return `(${target.c(ctx)})`;
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    const target = ctx.FindReference(this.Name);
+    if (!target)
+      throw new LinkerError(this.CodeLocation, "Unresolved reference");
+
+    return target.resolve_type(ctx);
   }
 }

@@ -12,9 +12,10 @@ import { RawStatement } from "../statement/raw";
 import { StoreStatement } from "../statement/store";
 import { CodeLocation } from "../../location/code-location";
 import { LinkerError } from "../../linker/error";
-import { ResolveExpressionType, ResolveBlockType } from "../../linker/resolve";
 import { Namer } from "../../location/namer";
 import { RequireType } from "../../location/require-type";
+import { Component } from "../component";
+import { FunctionType } from "../type/function";
 
 export class LambdaExpression extends Expression {
   readonly #parameters: ComponentGroup;
@@ -44,7 +45,7 @@ export class LambdaExpression extends Expression {
 
   invoked(ctx: WriterContext) {
     const expected = [...this.Parameters.iterator()];
-    const actual = [...(ctx.invokation?.Parameters.iterator() ?? [])];
+    const actual = [...(ctx.Invokation?.Parameters.iterator() ?? [])];
     const input: Array<FunctionParameter> = [];
 
     for (let i = 0; i < expected.length; i++) {
@@ -61,7 +62,7 @@ export class LambdaExpression extends Expression {
         new FunctionParameter(
           e.CodeLocation,
           e.Name,
-          ResolveExpressionType(a, ctx),
+          a.resolve_type(ctx),
           e.Optional
         )
       );
@@ -76,8 +77,7 @@ export class LambdaExpression extends Expression {
 
   c(ctx: WriterContext): string {
     const expected = [...this.Parameters.iterator()];
-    const actual = [...(ctx.invokation?.Parameters.iterator() ?? [])];
-    const parameters: Record<string, Type> = {};
+    const actual = [...(ctx.Invokation?.Parameters.iterator() ?? [])];
     const func_parameters: Array<FunctionParameter> = [];
 
     for (let i = 0; i < expected.length; i++) {
@@ -87,7 +87,7 @@ export class LambdaExpression extends Expression {
       if (!a) {
         if (!e.Type)
           throw new LinkerError(e.CodeLocation, "Canot determine type");
-        parameters[e.Name] = e;
+        ctx = ctx.WithFunctionParameter(e.Name, e);
         func_parameters.push(e);
         continue;
       }
@@ -95,17 +95,12 @@ export class LambdaExpression extends Expression {
       const param = new FunctionParameter(
         this.CodeLocation,
         e.Name,
-        ResolveExpressionType(a, ctx),
+        a.resolve_type(ctx),
         false
       );
-      parameters[e.Name] = param;
+      ctx = ctx.WithFunctionParameter(e.Name, param);
       func_parameters.push(param);
     }
-
-    ctx = {
-      ...ctx,
-      parameters,
-    };
 
     const name = Namer.GetName();
     const ctx_struct = new StructEntity(
@@ -113,21 +108,17 @@ export class LambdaExpression extends Expression {
       true,
       name,
       new ComponentGroup(
-        ...Object.keys(ctx.locals).map(
-          (k) =>
-            new Property(
-              this.CodeLocation,
-              k,
-              ResolveExpressionType(ctx.locals[k], ctx),
-              false
-            )
+        ...ctx.Locals.map(
+          ([k, t]) =>
+            new Property(this.CodeLocation, k, t.resolve_type(ctx), false)
         ),
-        ...Object.keys(ctx.parameters).map(
-          (k) => new Property(this.CodeLocation, k, ctx.parameters[k], false)
+        ...ctx.Parameters.map(
+          ([k, t]) =>
+            new Property(this.CodeLocation, k, t.resolve_type(ctx), false)
         )
       ),
-      ctx.namespace,
-      ctx.using
+      ctx.Namespace,
+      ctx.Using
     );
 
     const func = new FunctionEntity(
@@ -142,8 +133,8 @@ export class LambdaExpression extends Expression {
           "_ctx",
           ctx_struct
         ),
-        ...Object.keys(ctx.locals).map(
-          (k) =>
+        ...ctx.Locals.map(
+          ([k]) =>
             new StoreStatement(
               this.CodeLocation,
               k,
@@ -154,8 +145,8 @@ export class LambdaExpression extends Expression {
               )
             )
         ),
-        ...Object.keys(ctx.parameters).map(
-          (k) =>
+        ...ctx.Parameters.map(
+          ([k]) =>
             new StoreStatement(
               this.CodeLocation,
               k,
@@ -168,28 +159,72 @@ export class LambdaExpression extends Expression {
         ),
         ...this.Body.iterator()
       ),
-      ResolveBlockType(this.Body, ctx),
-      ctx.namespace,
-      ctx.using
+      this.Body.resolve_block_type(ctx),
+      ctx.Namespace,
+      ctx.Using
     );
 
-    ctx.global_functions[func.Name] = func;
+    ctx.AddGlobalFunction(func.Name, func);
 
     const instance = func.c(ctx);
     const ctx_ref = ctx_struct.c(ctx);
     const data_name = Namer.GetName();
-    ctx.prefix.push(`${instance}.data = malloc(sizeof(${ctx_ref}));`);
-    ctx.prefix.push(
-      `${ctx_ref}* ${data_name} = (${ctx_ref}*)${instance}.data;`
-    );
+    ctx.AddPrefix(`${instance}.data = malloc(sizeof(${ctx_ref}));`);
+    ctx.AddPrefix(`${ctx_ref}* ${data_name} = (${ctx_ref}*)${instance}.data;`);
 
-    ctx.prefix.push(
-      ...Object.keys(ctx.locals).map(
-        (k) => `${data_name}->${k} = ${ctx.locals[k].c(ctx)};`
-      ),
-      ...Object.keys(ctx.parameters).map((k) => `${data_name}->${k} = ${k};`)
-    );
+    for (const item of [
+      ...ctx.Locals.map(([k, t]) => `${data_name}->${k} = ${t.c(ctx)};`),
+      ...ctx.Parameters.map(([k]) => `${data_name}->${k} = ${k};`),
+    ])
+      ctx.AddPrefix(item);
 
     return instance;
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    const expected = [...this.Parameters.iterator()];
+    const actual = [...(ctx.Invokation?.Parameters.iterator() ?? [])];
+    const input: Array<FunctionParameter> = [];
+
+    for (let i = 0; i < expected.length; i++) {
+      const e = expected[i];
+      RequireType(FunctionParameter, e);
+      const a = actual[i];
+
+      if (!a) {
+        input.push(e);
+        continue;
+      }
+
+      input.push(
+        new FunctionParameter(
+          e.CodeLocation,
+          e.Name,
+          a.resolve_type(ctx),
+          e.Optional
+        )
+      );
+    }
+    const input_parameters: Record<string, Type> = {};
+
+    for (const parameter of input) {
+      RequireType(FunctionParameter, parameter);
+      if (!parameter.Type)
+        throw new LinkerError(
+          parameter.CodeLocation,
+          "Unable to resolve parameter type"
+        );
+      input_parameters[parameter.Name] = parameter.Type;
+    }
+
+    const resolve_ctx = ctx.WithFunctionParameters(
+      new ComponentGroup(...input)
+    );
+
+    return new FunctionType(
+      this.CodeLocation,
+      new ComponentGroup(...input),
+      this.Body.resolve_block_type(resolve_ctx)
+    );
   }
 }

@@ -1,3 +1,4 @@
+import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { Component } from "../component";
 import { Expression } from "../expression/base";
@@ -23,8 +24,12 @@ export class PanicStatement extends Statement {
   c(ctx: WriterContext): string {
     const expression = this.Value.c(ctx);
 
-    ctx.prefix.push(`exit(${expression});`);
+    ctx.AddPrefix(`exit(${expression});`);
 
     return ``;
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    throw new LinkerError(this.CodeLocation, "Should not be reachable");
   }
 }

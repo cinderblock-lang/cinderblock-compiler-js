@@ -57,4 +57,8 @@ export class OperatorExpression extends Expression {
   c(ctx: WriterContext): string {
     return `${this.Left.c(ctx)} ${this.Operator} ${this.Right.c(ctx)}`;
   }
+
+  resolve_type(ctx: WriterContext): Component {
+    return this.Right.resolve_type(ctx);
+  }
 }

@@ -1,6 +1,8 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { WriterContext } from "../writer";
+import { Component } from "../component";
+import { PrimitiveType } from "../type/primitive";
 
 export type LiteralType =
   | "string"
@@ -54,5 +56,26 @@ export class LiteralExpression extends Expression {
       case "string":
         return `"${this.Value}"`;
     }
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    return new PrimitiveType(
+      this.CodeLocation,
+      this.Type === "char"
+        ? "char"
+        : this.Type === "double"
+        ? "double"
+        : this.Type === "float"
+        ? "float"
+        : this.Type === "int"
+        ? "int"
+        : this.Type === "long"
+        ? "long"
+        : this.Type === "bool"
+        ? "bool"
+        : this.Type === "string"
+        ? "string"
+        : "any"
+    );
   }
 }

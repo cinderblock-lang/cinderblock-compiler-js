@@ -1,4 +1,5 @@
 import { CodeLocation } from "../../location/code-location";
+import { Component } from "../component";
 import { ComponentGroup } from "../component-group";
 import { Property } from "../property";
 import { WriterContext } from "../writer";
@@ -53,5 +54,9 @@ export class SchemaEntity extends Entity {
 
   c(ctx: WriterContext): string {
     return ``;
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    return this;
   }
 }

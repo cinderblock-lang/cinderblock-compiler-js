@@ -9,7 +9,7 @@ import { SchemaEntity } from "./entity/schema";
 import { StructEntity } from "./entity/struct";
 import { UsingEntity } from "./entity/using";
 import { Namespace } from "./namespace";
-import { AnyFunction, AnyType } from "./writer";
+import { AnyFunction, AnyType, WriterContext } from "./writer";
 
 export class Ast {
   readonly #data: Array<Component>;
@@ -70,13 +70,7 @@ export class Ast {
         if (!(entity instanceof FunctionEntity)) continue;
         if (entity.Name !== "main") continue;
 
-        const includes: Array<string> = ["<stdlib.h>", "<dlfcn.h>"];
-        const globals: Array<string> = [];
-
-        const prefix: Array<string> = [];
-        const suffix: Array<string> = [];
-
-        const c = entity.c({
+        const ctx = new WriterContext({
           global_functions,
           global_types,
           namespace: "App",
@@ -84,18 +78,11 @@ export class Ast {
           parameters: {},
           locals: {},
           use_types: {},
-
-          prefix,
-          suffix,
-          file: {
-            add_global: (line) => globals.unshift(line),
-            add_include: (line) => includes.unshift(line),
-          },
         });
 
-        return `${includes.map((i) => `#include ${i}`).join("\n")}\n\n${globals
-          .reverse()
-          .join("\n\n")}\n\n${c}`;
+        const c = entity.c(ctx);
+
+        return `${ctx.CText}\n\n${c}`;
       }
     }
 

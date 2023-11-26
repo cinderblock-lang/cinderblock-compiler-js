@@ -41,4 +41,8 @@ export class Property extends Component {
   c(ctx: WriterContext): string {
     return `${this.Type.c(ctx)} ${this.Name};`;
   }
+
+  resolve_type(ctx: WriterContext): Component {
+    return this.Type.resolve_type(ctx);
+  }
 }

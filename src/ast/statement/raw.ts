@@ -33,7 +33,11 @@ export class RawStatement extends Statement {
   }
 
   c(ctx: WriterContext): string {
-    ctx.prefix.push(this.#c_code);
+    ctx.AddPrefix(this.#c_code);
     return this.#reference;
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    return this.Creates.resolve_type(ctx);
   }
 }

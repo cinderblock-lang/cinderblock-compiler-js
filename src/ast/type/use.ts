@@ -1,5 +1,6 @@
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
+import { Component } from "../component";
 import { ComponentGroup } from "../component-group";
 import { WriterContext } from "../writer";
 import { Type } from "./base";
@@ -35,5 +36,9 @@ export class UseType extends Type {
       this.CodeLocation,
       "Use must not be in the concrete implementation"
     );
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    throw new LinkerError(this.CodeLocation, "This should not be reachable");
   }
 }

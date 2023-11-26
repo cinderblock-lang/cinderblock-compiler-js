@@ -1,4 +1,3 @@
-import { ResolveExpressionType } from "../../linker/resolve";
 import { CodeLocation } from "../../location/code-location";
 import { Component } from "../component";
 import { Expression } from "../expression/base";
@@ -22,10 +21,14 @@ export class ReturnStatement extends Statement {
   }
 
   c(ctx: WriterContext): string {
-    const type = ResolveExpressionType(this.Value, ctx);
+    const type = this.Value.resolve_type(ctx);
     const expression = this.Value.c(ctx);
-    ctx.prefix.push(`${type.c(ctx)} result = ${expression};`);
+    ctx.AddPrefix(`${type.c(ctx)} result = ${expression};`);
 
     return `result`;
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    return this.Value.resolve_type(ctx);
   }
 }

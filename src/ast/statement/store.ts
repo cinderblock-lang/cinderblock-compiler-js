@@ -1,4 +1,3 @@
-import { ResolveExpressionType } from "../../linker/resolve";
 import { CodeLocation } from "../../location/code-location";
 import { Component } from "../component";
 import { Expression } from "../expression/base";
@@ -28,23 +27,22 @@ export class StoreStatement extends Statement {
   }
 
   c(ctx: WriterContext): string {
-    let prefix: Array<string> = [];
-    let suffix: Array<string> = [];
-
-    const type = ResolveExpressionType(this.Equals, ctx);
-
-    ctx.locals[this.Name] = this;
+    const type = this.Equals.resolve_type(ctx);
 
     const expression = this.Equals.c(ctx);
 
-    ctx.prefix.push(
+    ctx.AddPrefix(
       `${type.c(ctx)}* ${this.Name} = malloc(sizeof(${type.c(ctx)}));`
     );
 
-    ctx.suffix.push(`free(${this.Name});`);
+    ctx.AddSuffix(`free(${this.Name});`);
 
-    ctx.prefix.push(`*${this.Name} = ${expression};`);
+    ctx.AddPrefix(`*${this.Name} = ${expression};`);
 
     return "*" + this.Name;
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    return this.Equals.resolve_type(ctx);
   }
 }

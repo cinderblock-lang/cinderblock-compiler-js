@@ -1,4 +1,4 @@
-import { ResolveExpressionType } from "../../linker/resolve";
+import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { Component } from "../component";
 import { Expression } from "../expression/base";
@@ -29,10 +29,14 @@ export class AssignStatement extends Statement {
 
   c(ctx: WriterContext): string {
     const expression = this.Equals.c(ctx);
-    const type = ResolveExpressionType(this.Equals, ctx);
+    const type = this.Equals.resolve_type(ctx);
 
-    ctx.prefix.push(`${type.c(ctx)} ${this.Name} = ${expression};`);
+    ctx.AddPrefix(`${type.c(ctx)} ${this.Name} = ${expression};`);
 
     return this.Name;
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    throw new LinkerError(this.CodeLocation, "Should not be reachable");
   }
 }

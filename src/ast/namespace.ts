@@ -1,3 +1,4 @@
+import { LinkerError } from "../linker/error";
 import { CodeLocation } from "../location/code-location";
 import { Component } from "./component";
 import { ComponentGroup } from "./component-group";
@@ -37,8 +38,10 @@ export class Namespace extends Component {
   }
 
   c(ctx: WriterContext): string {
-    return this.Contents.map((c) => c.c({ ...ctx, namespace: this.Name })).join(
-      "\n\n"
-    );
+    return ``;
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    throw new LinkerError(this.CodeLocation, "Should not be reachable");
   }
 }

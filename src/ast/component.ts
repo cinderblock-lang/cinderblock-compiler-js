@@ -15,4 +15,6 @@ export abstract class Component {
   abstract get type_name(): string;
 
   abstract c(ctx: WriterContext): string;
+
+  abstract resolve_type(ctx: WriterContext): Component;
 }

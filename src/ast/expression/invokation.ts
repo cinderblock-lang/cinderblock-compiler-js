@@ -5,10 +5,10 @@ import { Component } from "../component";
 import { ComponentGroup } from "../component-group";
 import { WriterContext } from "../writer";
 import { CodeLocation } from "../../location/code-location";
-import { FindReference, ResolveExpressionType } from "../../linker/resolve";
 import { LinkerError } from "../../linker/error";
 import { IsAnyStructLike, IsAnyInvokable } from "../../linker/types";
 import { Namer } from "../../location/namer";
+import { FunctionType } from "../type/function";
 
 export class InvokationExpression extends Expression {
   readonly #subject: Component;
@@ -38,11 +38,11 @@ export class InvokationExpression extends Expression {
 
   BuildInvokation(ctx: WriterContext) {
     if (this.Subject instanceof AccessExpression) {
-      const target = ResolveExpressionType(this.Subject.Subject, ctx);
+      const target = this.Subject.Subject.resolve_type(ctx);
       if (IsAnyStructLike(target) && target.HasKey(this.Subject.Target))
         return this;
 
-      const func = FindReference(this.Subject.Target, ctx);
+      const func = ctx.FindReference(this.Subject.Target);
       if (!IsAnyInvokable(func))
         throw new LinkerError(
           this.Subject.CodeLocation,
@@ -65,19 +65,16 @@ export class InvokationExpression extends Expression {
 
   c(ctx: WriterContext): string {
     const invokation = this.BuildInvokation(ctx);
-    const reference = invokation.Subject.c({
-      ...ctx,
-      invokation: invokation,
-    });
+    const reference = invokation.Subject.c(ctx.WithInvokation(invokation));
 
-    const returns = ResolveExpressionType(this, ctx);
+    const returns = this.resolve_type(ctx);
 
     const name = Namer.GetName();
-    ctx.prefix.push(
+    ctx.AddPrefix(
       `${returns.c(ctx)} (*${name})(${[
         "void*",
         ...invokation.Parameters.map((p) => {
-          const type = ResolveExpressionType(p, ctx);
+          const type = p.resolve_type(ctx);
           return type.c(ctx);
         }),
       ].join(", ")}) = ${reference}.handle;`
@@ -87,5 +84,16 @@ export class InvokationExpression extends Expression {
       `${reference}.data`,
       ...invokation.Parameters.map((p) => p.c(ctx)),
     ].join(", ")})`;
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    const invokation = this.BuildInvokation(ctx);
+    const func = invokation.Subject.resolve_type(
+      ctx.WithInvokation(invokation)
+    );
+    if (!(func instanceof FunctionType))
+      throw new LinkerError(this.CodeLocation, "May only invoke functions");
+
+    return func.Returns;
   }
 }

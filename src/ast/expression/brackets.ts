@@ -2,7 +2,6 @@ import { Expression } from "./base";
 import { Component } from "../component";
 import { WriterContext } from "../writer";
 import { CodeLocation } from "../../location/code-location";
-import { ResolveExpressionType } from "../../linker/resolve";
 import { Namer } from "../../location/namer";
 
 export class BracketsExpression extends Expression {
@@ -23,10 +22,14 @@ export class BracketsExpression extends Expression {
 
   c(ctx: WriterContext): string {
     const name = Namer.GetName();
-    const type = ResolveExpressionType(this.Expression, ctx);
+    const type = this.Expression.resolve_type(ctx);
 
-    ctx.prefix.push(`${type.c(ctx)} ${name} = ${this.Expression.c(ctx)};`);
+    ctx.AddPrefix(`${type.c(ctx)} ${name} = ${this.Expression.c(ctx)};`);
 
     return name;
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    return this.Expression.resolve_type(ctx);
   }
 }

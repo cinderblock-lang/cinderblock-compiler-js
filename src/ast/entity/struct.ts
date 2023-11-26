@@ -1,4 +1,5 @@
 import { CodeLocation } from "../../location/code-location";
+import { Component } from "../component";
 import { ComponentGroup } from "../component-group";
 import { Property } from "../property";
 import { WriterContext } from "../writer";
@@ -61,13 +62,17 @@ export class StructEntity extends Entity {
   c(ctx: WriterContext): string {
     if (!StructEntity.#already_made.includes(this.#full_name)) {
       StructEntity.#already_made.push(this.#full_name);
-      ctx.file.add_global(`typedef struct ${this.#full_name} {
+      ctx.AddGlobal(`typedef struct ${this.#full_name} {
         ${this.Properties.map((p) =>
-          p.c({ ...ctx, namespace: this.#namespace, using: this.#using })
-        )}
+          p.c(ctx.StartContext(this.CodeLocation, this.#namespace, this.#using))
+        ).join("\n")}
       } ${this.#full_name};`);
     }
 
     return this.#full_name;
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    return this;
   }
 }

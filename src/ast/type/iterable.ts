@@ -1,4 +1,5 @@
 import { CodeLocation } from "../../location/code-location";
+import { Component } from "../component";
 import { WriterContext } from "../writer";
 import { Type } from "./base";
 
@@ -20,5 +21,9 @@ export class IterableType extends Type {
 
   c(ctx: WriterContext): string {
     return `Array`;
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    return this;
   }
 }

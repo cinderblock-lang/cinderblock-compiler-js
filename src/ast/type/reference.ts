@@ -1,5 +1,6 @@
-import { ResolveType } from "../../linker/resolve";
+import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
+import { Component } from "../component";
 import { WriterContext } from "../writer";
 import { Type } from "./base";
 
@@ -20,6 +21,15 @@ export class ReferenceType extends Type {
   }
 
   c(ctx: WriterContext): string {
-    return ResolveType(this, ctx).c(ctx);
+    return this.resolve_type(ctx).c(ctx);
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    const result = ctx.FindType(this.Name)?.resolve_type(ctx);
+
+    if (!result)
+      throw new LinkerError(this.CodeLocation, "COuld not resolve reference");
+
+    return result;
   }
 }

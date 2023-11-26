@@ -1,5 +1,6 @@
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
+import { Component } from "../component";
 import { ComponentGroup } from "../component-group";
 import { StructEntity } from "../entity/struct";
 import { Property } from "../property";
@@ -46,5 +47,9 @@ export class SchemaType extends Type {
       this.CodeLocation,
       "May not have a schema in the compiled code"
     );
+  }
+
+  resolve_type(ctx: WriterContext): Component {
+    return this;
   }
 }
