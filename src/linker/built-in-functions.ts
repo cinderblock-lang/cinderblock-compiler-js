@@ -15,7 +15,7 @@ export const BuiltInFunctions = new ComponentGroup(
   new Namespace(
     EmptyCodeLocation,
     false,
-    "__GENERATED_CODE__",
+    "___BUILT_IN_CODE___",
     new ComponentGroup(
       new StructEntity(
         EmptyCodeLocation,

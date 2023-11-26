@@ -9,6 +9,7 @@ import { LinkerError } from "../../linker/error";
 import { IsAnyStructLike, IsAnyInvokable } from "../../linker/types";
 import { Namer } from "../../location/namer";
 import { FunctionType } from "../type/function";
+import { IterableType } from "../type/iterable";
 
 export class InvokationExpression extends Expression {
   readonly #subject: Component;
@@ -39,7 +40,10 @@ export class InvokationExpression extends Expression {
   BuildInvokation(ctx: WriterContext) {
     if (this.Subject instanceof AccessExpression) {
       const target = this.Subject.Subject.resolve_type(ctx);
-      if (IsAnyStructLike(target) && target.HasKey(this.Subject.Target))
+      if (
+        (IsAnyStructLike(target) && target.HasKey(this.Subject.Target)) ||
+        (target instanceof IterableType && this.Subject.Target === "next")
+      )
         return this;
 
       const func = ctx.FindReference(this.Subject.Target);

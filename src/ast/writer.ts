@@ -155,7 +155,13 @@ export class WriterContext {
   FindType(name: string) {
     if (this.#use_types[name]) return this.#use_types[name];
 
-    for (const area of this.#using) {
+    if (this.#global_types[this.#namespace + "." + name])
+      return this.#global_types[this.#namespace + "." + name];
+
+    const possible = this.#global_types[name];
+    if (possible) return possible;
+
+    for (const area of [...this.#using, "___BUILT_IN_CODE___"]) {
       const full = `${area}.${name}`;
       const possible = this.#global_types[full];
       if (!possible) continue;
@@ -179,7 +185,7 @@ export class WriterContext {
     const possible = this.#global_functions[name];
     if (possible) return possible;
 
-    for (const area of this.#using) {
+    for (const area of [...this.#using, "___BUILT_IN_CODE___"]) {
       const full = `${area}.${name}`;
       const possible = this.#global_functions[full];
       if (!possible) continue;
