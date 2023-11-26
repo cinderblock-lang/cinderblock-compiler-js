@@ -1,11 +1,9 @@
-import {
-  AssignStatement,
-  ComponentGroup,
-  PanicStatement,
-  ReturnStatement,
-  Statement,
-  StoreStatement,
-} from "#compiler/ast";
+import { ComponentGroup } from "../../ast/component-group";
+import { AssignStatement } from "../../ast/statement/assign";
+import { Statement } from "../../ast/statement/base";
+import { PanicStatement } from "../../ast/statement/panic";
+import { ReturnStatement } from "../../ast/statement/return";
+import { StoreStatement } from "../../ast/statement/store";
 import { ParserError } from "../error";
 import { TokenGroup } from "../token";
 import { BuildWhile, ExpectNext, NextBlock } from "../utils";
@@ -39,18 +37,18 @@ export function ExtractStatement(tokens: TokenGroup): Statement {
   switch (current.Text) {
     case "store": {
       const { name, equals } = ExtractStore(tokens);
-      return new StoreStatement(current.Location, name, equals);
+      return new StoreStatement(current.CodeLocation, name, equals);
     }
     case "return": {
-      return new ReturnStatement(current.Location, ExtractReturn(tokens));
+      return new ReturnStatement(current.CodeLocation, ExtractReturn(tokens));
     }
     case "assign": {
       const { name, equals } = ExtractAssign(tokens);
-      return new AssignStatement(current.Location, name, equals);
+      return new AssignStatement(current.CodeLocation, name, equals);
     }
     case "panic": {
       const { error } = ExtractPanic(tokens);
-      return new PanicStatement(current.Location, error);
+      return new PanicStatement(current.CodeLocation, error);
     }
     default:
       throw ParserError.UnexpectedSymbol(

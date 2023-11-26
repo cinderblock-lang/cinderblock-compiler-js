@@ -1,14 +1,3 @@
-import {
-  ComponentGroup,
-  Entity,
-  ExternalFunctionDeclaration,
-  FunctionEntity,
-  LibEntity,
-  SchemaEntity,
-  StructEntity,
-  SystemEntity,
-  UsingEntity,
-} from "#compiler/ast";
 import { TokenGroup } from "../token";
 import {
   BuildWhile,
@@ -21,6 +10,15 @@ import { ExtractFunctionParameter, ExtractProperty, ExtractType } from "./type";
 import { ParserError } from "../error";
 import { ExtractStatementBlock } from "./statement";
 import { ExtractExpression } from "./expression";
+import { ComponentGroup } from "../../ast/component-group";
+import { Entity } from "../../ast/entity/base";
+import { ExternalFunctionDeclaration } from "../../ast/entity/external-function-declaration";
+import { FunctionEntity } from "../../ast/entity/function";
+import { LibEntity } from "../../ast/entity/lib";
+import { SchemaEntity } from "../../ast/entity/schema";
+import { StructEntity } from "../../ast/entity/struct";
+import { SystemEntity } from "../../ast/entity/system";
+import { UsingEntity } from "../../ast/entity/using";
 
 function ExtractExternalFunction(tokens: TokenGroup) {
   const start = ExpectNext(tokens, "fn");
@@ -33,7 +31,7 @@ function ExtractExternalFunction(tokens: TokenGroup) {
   ExpectNext(tokens, ";");
 
   return new ExternalFunctionDeclaration(
-    start.Location,
+    start.CodeLocation,
     name,
     new ComponentGroup(...parameters),
     returns
@@ -96,7 +94,7 @@ export function ExtractEntity(
     case "schema": {
       const { name, properties } = ExtractSchemaOrStruct(tokens);
       return new SchemaEntity(
-        current.Location,
+        current.CodeLocation,
         exported ?? false,
         name,
         new ComponentGroup(...properties)
@@ -105,7 +103,7 @@ export function ExtractEntity(
     case "struct": {
       const { name, properties } = ExtractSchemaOrStruct(tokens);
       return new StructEntity(
-        current.Location,
+        current.CodeLocation,
         exported ?? false,
         name,
         new ComponentGroup(...properties),
@@ -116,7 +114,7 @@ export function ExtractEntity(
     case "using": {
       const name = ExtractUsing(tokens);
       using.push(name);
-      return new UsingEntity(current.Location, false, name);
+      return new UsingEntity(current.CodeLocation, false, name);
     }
     case "export": {
       return ExtractEntity(tokens, namspace, using, true);
@@ -124,7 +122,7 @@ export function ExtractEntity(
     case "lib": {
       const { path, declarations } = ExtractLib(tokens);
       return new LibEntity(
-        current.Location,
+        current.CodeLocation,
         exported ?? false,
         path,
         new ComponentGroup(...declarations)
@@ -133,7 +131,7 @@ export function ExtractEntity(
     case "system": {
       const { declarations } = ExtractSystem(tokens);
       return new SystemEntity(
-        current.Location,
+        current.CodeLocation,
         exported ?? false,
         new ComponentGroup(...declarations)
       );
@@ -141,7 +139,7 @@ export function ExtractEntity(
     case "fn": {
       const { name, parameters, returns, body } = ExtractFunction(tokens);
       return new FunctionEntity(
-        current.Location,
+        current.CodeLocation,
         exported ?? false,
         name,
         new ComponentGroup(...parameters),

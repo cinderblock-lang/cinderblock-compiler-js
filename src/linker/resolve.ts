@@ -1,37 +1,35 @@
-import {
-  Expression,
-  LiteralExpression,
-  OperatorExpression,
-  IfExpression,
-  IterateExpression,
-  MakeExpression,
-  IsExpression,
-  ReferenceExpression,
-  BracketsExpression,
-  LambdaExpression,
-  InvokationExpression,
-  AccessExpression,
-  StructEntity,
-  FunctionEntity,
-  ReturnStatement,
-  Type,
-  PrimitiveType,
-  FunctionType,
-  ComponentGroup,
-  SchemaType,
-  SchemaEntity,
-  ReferenceType,
-  BuiltInFunction,
-  StoreStatement,
-  FunctionParameter,
-  ExternalFunctionDeclaration,
-  Component,
-  UseType,
-  Property,
-  WriterContext,
-  RawStatement,
-} from "#compiler/ast";
-import { PatternMatch } from "#compiler/location";
+import { Component } from "../ast/component";
+import { ComponentGroup } from "../ast/component-group";
+import { BuiltInFunction } from "../ast/entity/built-in-function";
+import { ExternalFunctionDeclaration } from "../ast/entity/external-function-declaration";
+import { FunctionEntity } from "../ast/entity/function";
+import { SchemaEntity } from "../ast/entity/schema";
+import { StructEntity } from "../ast/entity/struct";
+import { AccessExpression } from "../ast/expression/access";
+import { Expression } from "../ast/expression/base";
+import { BracketsExpression } from "../ast/expression/brackets";
+import { IfExpression } from "../ast/expression/if";
+import { InvokationExpression } from "../ast/expression/invokation";
+import { IsExpression } from "../ast/expression/is";
+import { IterateExpression } from "../ast/expression/iterate";
+import { LambdaExpression } from "../ast/expression/lambda";
+import { LiteralExpression } from "../ast/expression/literal";
+import { MakeExpression } from "../ast/expression/make";
+import { OperatorExpression } from "../ast/expression/operator";
+import { ReferenceExpression } from "../ast/expression/reference";
+import { FunctionParameter } from "../ast/function-parameter";
+import { Property } from "../ast/property";
+import { RawStatement } from "../ast/statement/raw";
+import { ReturnStatement } from "../ast/statement/return";
+import { StoreStatement } from "../ast/statement/store";
+import { Type } from "../ast/type/base";
+import { FunctionType } from "../ast/type/function";
+import { PrimitiveType } from "../ast/type/primitive";
+import { ReferenceType } from "../ast/type/reference";
+import { SchemaType } from "../ast/type/schema";
+import { UseType } from "../ast/type/use";
+import { WriterContext } from "../ast/writer";
+import { PatternMatch } from "../location/pattern-match";
 import { LinkerError } from "./error";
 import { IsAnyInvokable } from "./types";
 
@@ -102,7 +100,7 @@ export function ResolveType(
     (r) => {
       const target = FindType(r.Name, ctx);
       if (!target)
-        throw new LinkerError(r.Location, "Could not resolve symbol");
+        throw new LinkerError(r.CodeLocation, "Could not resolve symbol");
 
       return ResolveType(target, ctx);
     },
@@ -113,7 +111,7 @@ export function ResolveType(
       const fallback = () => {
         const possible = FindReference(a.Target, ctx);
         if (!possible)
-          throw new LinkerError(a.Location, "Could not resolve symbol");
+          throw new LinkerError(a.CodeLocation, "Could not resolve symbol");
         return PatternMatch(
           FunctionEntity,
           ExternalFunctionDeclaration,
@@ -124,7 +122,7 @@ export function ResolveType(
           (f) => f,
           (f) => f,
           () => {
-            throw new LinkerError(a.Location, "Could not resolve symbol");
+            throw new LinkerError(a.CodeLocation, "Could not resolve symbol");
           }
         )(possible);
       };
@@ -150,13 +148,15 @@ export function ResolveType(
     },
     (p) => {
       const type = p.Type;
-      if (!type) throw new LinkerError(p.Location, "Untyped function argument");
+      if (!type)
+        throw new LinkerError(p.CodeLocation, "Untyped function argument");
       return ResolveType(type, ctx);
     },
     (f) => {
       const type = f.Returns;
-      if (!type) throw new LinkerError(f.Location, "Untyped function return");
-      return new FunctionType(f.Location, f.Parameters, type);
+      if (!type)
+        throw new LinkerError(f.CodeLocation, "Untyped function return");
+      return new FunctionType(f.CodeLocation, f.Parameters, type);
     },
     (u) => {
       return u;
@@ -191,7 +191,10 @@ export function ResolveBlockType(block: ComponentGroup, ctx: WriterContext) {
     }
   }
 
-  throw new LinkerError(block.First.Location, "All blocks must return a value");
+  throw new LinkerError(
+    block.First.CodeLocation,
+    "All blocks must return a value"
+  );
 }
 
 export function ResolveExpressionType(
@@ -225,7 +228,7 @@ export function ResolveExpressionType(
   )(
     (literal): Component => {
       return new PrimitiveType(
-        literal.Location,
+        literal.CodeLocation,
         literal.Type === "char"
           ? "char"
           : literal.Type === "double"
@@ -255,16 +258,16 @@ export function ResolveExpressionType(
     (make) => {
       const entity = FindType(make.Struct, ctx);
       if (!entity || !(entity instanceof StructEntity))
-        throw new LinkerError(make.Location, "Could not resolve struct");
+        throw new LinkerError(make.CodeLocation, "Could not resolve struct");
       return entity;
     },
     (is) => {
-      return new PrimitiveType(is.Location, "bool");
+      return new PrimitiveType(is.CodeLocation, "bool");
     },
     (reference) => {
       const target = FindReference(reference.Name, ctx);
       if (!target)
-        throw new LinkerError(reference.Location, "Unresolved reference");
+        throw new LinkerError(reference.CodeLocation, "Unresolved reference");
 
       return ResolveExpressionType(target, ctx);
     },
@@ -273,12 +276,12 @@ export function ResolveExpressionType(
     },
     (lambda) => {
       return new FunctionType(
-        lambda.Location,
+        lambda.CodeLocation,
         new ComponentGroup(
           new FunctionParameter(
-            lambda.Location,
+            lambda.CodeLocation,
             "ctx",
-            new PrimitiveType(lambda.Location, "null"),
+            new PrimitiveType(lambda.CodeLocation, "null"),
             false
           ),
           ...lambda.Parameters.iterator()
@@ -293,7 +296,7 @@ export function ResolveExpressionType(
       const parse_function_type = (t: Component | undefined) => {
         if (!t)
           throw new LinkerError(
-            invoke.Location,
+            invoke.CodeLocation,
             "Could not find a function type"
           );
 
@@ -314,7 +317,7 @@ export function ResolveExpressionType(
           f = f.invoked({ ...ctx, invokation: invoke });
           if (!f.Returns)
             throw new LinkerError(
-              f.Location,
+              f.CodeLocation,
               "Could not resolve function return type"
             );
           return ResolveType(f.Returns, ctx);
@@ -329,7 +332,7 @@ export function ResolveExpressionType(
           const type = ResolveExpressionType(s.Equals, ctx);
           if (!(type instanceof FunctionType))
             throw new LinkerError(
-              s.Location,
+              s.CodeLocation,
               "May only invoke function store types"
             );
 
@@ -344,28 +347,28 @@ export function ResolveExpressionType(
         (struct) => {
           const result = struct.GetKey(access.Target);
           if (!result)
-            throw new LinkerError(access.Location, "Cannot resolve access");
+            throw new LinkerError(access.CodeLocation, "Cannot resolve access");
 
           return ResolveType(result, ctx);
         },
         (struct) => {
           const result = struct.GetKey(access.Target);
           if (!result)
-            throw new LinkerError(access.Location, "Cannot resolve access");
+            throw new LinkerError(access.CodeLocation, "Cannot resolve access");
 
           return ResolveType(result, ctx);
         },
         (struct) => {
           const result = struct.GetKey(access.Target);
           if (!result)
-            throw new LinkerError(access.Location, "Cannot resolve access");
+            throw new LinkerError(access.CodeLocation, "Cannot resolve access");
 
           return ResolveType(result, ctx);
         },
         () => {
           const target = FindReference(access.Target, ctx);
           if (!target || !IsAnyInvokable(target))
-            throw new LinkerError(access.Location, "Could not resolve");
+            throw new LinkerError(access.CodeLocation, "Could not resolve");
 
           return target;
         }
@@ -376,19 +379,25 @@ export function ResolveExpressionType(
     },
     (p) => {
       if (!p.Type)
-        throw new LinkerError(p.Location, "Unresolved parameter type");
+        throw new LinkerError(p.CodeLocation, "Unresolved parameter type");
       return ResolveType(p.Type, ctx);
     },
     (f) => {
       if (!f.Returns)
-        throw new LinkerError(f.Location, "Unresolved function return type");
-      return new FunctionType(f.Location, f.Parameters, f.Returns);
+        throw new LinkerError(
+          f.CodeLocation,
+          "Unresolved function return type"
+        );
+      return new FunctionType(f.CodeLocation, f.Parameters, f.Returns);
     },
     (p) => p,
     (f) => {
       if (!f.Returns)
-        throw new LinkerError(f.Location, "Unresolved function return type");
-      return new FunctionType(f.Location, f.Parameters, f.Returns);
+        throw new LinkerError(
+          f.CodeLocation,
+          "Unresolved function return type"
+        );
+      return new FunctionType(f.CodeLocation, f.Parameters, f.Returns);
     },
     (store) => {
       return ResolveExpressionType(store.Equals, ctx);

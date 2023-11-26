@@ -1,17 +1,17 @@
+import { ComponentGroup } from "../../ast/component-group";
+import { FunctionParameter } from "../../ast/function-parameter";
+import { Property } from "../../ast/property";
+import { Type } from "../../ast/type/base";
+import { FunctionType } from "../../ast/type/function";
+import { IterableType } from "../../ast/type/iterable";
 import {
-  ComponentGroup,
-  FunctionParameter,
-  FunctionType,
-  IterableType,
-  PrimitiveName,
   PrimitiveNames,
+  PrimitiveName,
   PrimitiveType,
-  Property,
-  ReferenceType,
-  SchemaType,
-  Type,
-  UseType,
-} from "#compiler/ast";
+} from "../../ast/type/primitive";
+import { ReferenceType } from "../../ast/type/reference";
+import { SchemaType } from "../../ast/type/schema";
+import { UseType } from "../../ast/type/use";
 import { TokenGroup } from "../token";
 import { BuildWhile, BuildWhileOnStart, ExpectNext, NextBlock } from "../utils";
 
@@ -23,16 +23,21 @@ export function ExtractFunctionParameter(
     ExpectNext(tokens, "?");
     ExpectNext(tokens, ":");
     const type = ExtractType(tokens);
-    return new FunctionParameter(name.Location, name.Text, type, true);
+    return new FunctionParameter(name.CodeLocation, name.Text, type, true);
   }
 
   if (tokens.peek()?.Text !== ":") {
-    return new FunctionParameter(name.Location, name.Text, undefined, false);
+    return new FunctionParameter(
+      name.CodeLocation,
+      name.Text,
+      undefined,
+      false
+    );
   }
   ExpectNext(tokens, ":");
   const type = ExtractType(tokens);
 
-  return new FunctionParameter(name.Location, name.Text, type, false);
+  return new FunctionParameter(name.CodeLocation, name.Text, type, false);
 }
 
 export function ExtractProperty(tokens: TokenGroup): Property {
@@ -46,7 +51,7 @@ export function ExtractProperty(tokens: TokenGroup): Property {
   ExpectNext(tokens, ":");
   const type = ExtractType(tokens);
 
-  return new Property(name.Location, name.Text, type, optional);
+  return new Property(name.CodeLocation, name.Text, type, optional);
 }
 
 function ExtractFunction(tokens: TokenGroup) {
@@ -95,25 +100,28 @@ export function ExtractType(tokens: TokenGroup): Type {
   const current = NextBlock(tokens);
 
   if (PrimitiveNames.includes(current.Text as PrimitiveName)) {
-    return new PrimitiveType(current.Location, current.Text as PrimitiveName);
+    return new PrimitiveType(
+      current.CodeLocation,
+      current.Text as PrimitiveName
+    );
   }
 
   switch (current.Text) {
     case "use": {
       const { name, constraints } = ExtractUse(tokens);
       return new UseType(
-        current.Location,
+        current.CodeLocation,
         name,
         new ComponentGroup(...constraints)
       );
     }
     case "[": {
-      return new IterableType(current.Location, ExtractIterable(tokens));
+      return new IterableType(current.CodeLocation, ExtractIterable(tokens));
     }
     case "(": {
       const { parameters, returns } = ExtractFunction(tokens);
       return new FunctionType(
-        current.Location,
+        current.CodeLocation,
         new ComponentGroup(...parameters),
         returns
       );
@@ -121,11 +129,11 @@ export function ExtractType(tokens: TokenGroup): Type {
     case "schema": {
       const { properties, name } = ExtractSchema(tokens);
       return new SchemaType(
-        current.Location,
+        current.CodeLocation,
         new ComponentGroup(...properties)
       );
     }
     default:
-      return new ReferenceType(current.Location, current.Text);
+      return new ReferenceType(current.CodeLocation, current.Text);
   }
 }

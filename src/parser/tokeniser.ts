@@ -1,4 +1,4 @@
-import { Location } from "#compiler/location";
+import { CodeLocation } from "../location/code-location";
 import { ParserError } from "./error";
 import { Token } from "./token";
 
@@ -54,7 +54,13 @@ function VisitWord(data: StringTraversal, file_name: string): Token {
   }
 
   return new Token(
-    new Location(file_name, start.line, start.column, data.line, data.column),
+    new CodeLocation(
+      file_name,
+      start.line,
+      start.column,
+      data.line,
+      data.column
+    ),
     result
   );
 }
@@ -66,7 +72,7 @@ function VisitString(data: StringTraversal, file_name: string): Token {
   while (data.current !== result[0]) {
     if (data.current === "\n" && result[0] !== "`")
       throw new ParserError(
-        new Location(
+        new CodeLocation(
           file_name,
           start.line,
           start.column,
@@ -83,7 +89,13 @@ function VisitString(data: StringTraversal, file_name: string): Token {
   result += data.current;
   data.move();
   return new Token(
-    new Location(file_name, start.line, start.column, data.line, data.column),
+    new CodeLocation(
+      file_name,
+      start.line,
+      start.column,
+      data.line,
+      data.column
+    ),
     result
   );
 }
@@ -97,7 +109,13 @@ function VisitMaths(data: StringTraversal, file_name: string): Token {
   }
 
   return new Token(
-    new Location(file_name, start.line, start.column, data.line, data.column),
+    new CodeLocation(
+      file_name,
+      start.line,
+      start.column,
+      data.line,
+      data.column
+    ),
     result
   );
 }
@@ -116,7 +134,7 @@ export function* SplitTokens(
       yield VisitString(data, file_name);
     else if (data.current.trim()) {
       yield new Token(
-        new Location(
+        new CodeLocation(
           file_name,
           data.line,
           data.column,

@@ -1,4 +1,4 @@
-export class Location {
+export class CodeLocation {
   readonly #file_name: string;
   readonly #start_line: number;
   readonly #start_column: number;
@@ -53,27 +53,3 @@ export class Location {
     }`;
   }
 }
-
-const name_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-export class Namer {
-  static #index: number = 0;
-
-  static GetName() {
-    let name = "";
-    let current = this.#index;
-
-    do {
-      name += name_chars[current % name_chars.length];
-      current = Math.floor(current / name_chars.length);
-    } while (current > 0);
-
-    this.#index += 1;
-    return name;
-  }
-
-  static Reset() {
-    this.#index = -1;
-  }
-}
-
-export { PatternMatch } from "./pattern-match";

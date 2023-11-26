@@ -1,14 +1,14 @@
-import { Location } from "#compiler/location";
+import { CodeLocation } from "../location/code-location";
 import { Token } from "./token";
 
 export class ParserError extends Error {
-  readonly #location: Location;
+  readonly #location: CodeLocation;
   readonly #message: string;
 
-  constructor(location: Location | undefined, message: string) {
+  constructor(location: CodeLocation | undefined, message: string) {
     super(`${message}${location}`);
 
-    this.#location = location ?? new Location("", -1, -1, -1, -1);
+    this.#location = location ?? new CodeLocation("", -1, -1, -1, -1);
     this.#message = message;
   }
 
@@ -18,7 +18,7 @@ export class ParserError extends Error {
 
   static UnexpectedSymbol(received: Token, ...expected: Array<string>) {
     return new ParserError(
-      received.Location,
+      received.CodeLocation,
       `Unexpected symbol. Expected one of ${expected
         .map((e) => `'${e}'`)
         .join(", ")} but received '${received.Text}'`

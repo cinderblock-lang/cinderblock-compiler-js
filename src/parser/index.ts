@@ -1,9 +1,10 @@
-import { ComponentGroup, Namespace } from "#compiler/ast";
 import { SplitTokens } from "./tokeniser";
 import { TokenGroup } from "./token";
 import { ParserError } from "./error";
 import { BuildWhile, BuildWhilePeek, ExpectNext, NextBlock } from "./utils";
 import { ExtractEntity } from "./extractors/entity";
+import { ComponentGroup } from "../ast/component-group";
+import { Namespace } from "../ast/namespace";
 
 function ExtractNamespace(tokens: TokenGroup, exported = false): Namespace {
   const start = tokens.peek();
@@ -31,7 +32,7 @@ function ExtractNamespace(tokens: TokenGroup, exported = false): Namespace {
   ExpectNext(tokens, "}");
 
   return new Namespace(
-    start.Location,
+    start.CodeLocation,
     exported,
     name,
     new ComponentGroup(...entities)

@@ -1,22 +1,22 @@
+import { ComponentGroup } from "../../ast/component-group";
+import { AccessExpression } from "../../ast/expression/access";
+import { Expression } from "../../ast/expression/base";
+import { BracketsExpression } from "../../ast/expression/brackets";
+import { EmptyExpression } from "../../ast/expression/empty";
+import { IfExpression } from "../../ast/expression/if";
+import { InvokationExpression } from "../../ast/expression/invokation";
+import { IsExpression } from "../../ast/expression/is";
+import { IterateExpression } from "../../ast/expression/iterate";
+import { LambdaExpression } from "../../ast/expression/lambda";
+import { LiteralExpression } from "../../ast/expression/literal";
+import { MakeExpression } from "../../ast/expression/make";
 import {
-  AccessExpression,
-  BracketsExpression,
-  ComponentGroup,
-  EmptyExpression,
-  Expression,
-  IfExpression,
-  InvokationExpression,
-  IsExpression,
-  IterateExpression,
-  LambdaExpression,
-  LiteralExpression,
-  MakeExpression,
   Operator,
-  OperatorExpression,
   Operators,
-  ReferenceExpression,
-  ReturnStatement,
-} from "#compiler/ast";
+  OperatorExpression,
+} from "../../ast/expression/operator";
+import { ReferenceExpression } from "../../ast/expression/reference";
+import { ReturnStatement } from "../../ast/statement/return";
 import { ParserError } from "../error";
 import { TokenGroup } from "../token";
 import { BuildWhile, BuildWhileOnStart, ExpectNext, NextBlock } from "../utils";
@@ -81,7 +81,7 @@ function ExtractLambda(tokens: TokenGroup, look_for: Array<string>) {
 
   const body = new ComponentGroup(
     new ReturnStatement(
-      tokens.peek()?.Location ?? parameters[0].Location,
+      tokens.peek()?.CodeLocation ?? parameters[0].CodeLocation,
       ExtractExpression(tokens, look_for)
     )
   );
@@ -104,51 +104,56 @@ export function ExtractExpression(
     if (text === "(" && !result) {
       const input = ExtractExpression(tokens, [")"]);
       ExpectNext(tokens, ")");
-      result = new BracketsExpression(current.Location, input);
+      result = new BracketsExpression(current.CodeLocation, input);
     } else if (IsOperator(text)) {
       if (!result)
         throw new ParserError(
-          current.Location,
+          current.CodeLocation,
           "Operators must have a left hand side"
         );
       result = new OperatorExpression(
-        current.Location,
+        current.CodeLocation,
         result,
         text,
         ExtractExpression(tokens, look_for)
       );
     } else if (text === "if") {
       const { check, if_block, else_block } = ExtractIf(tokens);
-      result = new IfExpression(current.Location, check, if_block, else_block);
+      result = new IfExpression(
+        current.CodeLocation,
+        check,
+        if_block,
+        else_block
+      );
     } else if (text === "empty") {
       const { of } = ExtractEmpty(tokens);
-      result = new EmptyExpression(current.Location, of);
+      result = new EmptyExpression(current.CodeLocation, of);
     } else if (text === "iterate") {
       const { to, as, block } = ExtractIterate(tokens);
-      result = new IterateExpression(current.Location, to, as, block);
+      result = new IterateExpression(current.CodeLocation, to, as, block);
     } else if (text === "make") {
       const { name, block } = ExtractMake(tokens);
-      result = new MakeExpression(current.Location, name, block);
+      result = new MakeExpression(current.CodeLocation, name, block);
     } else if (text === "is") {
       if (!result)
         throw new ParserError(
-          current.Location,
+          current.CodeLocation,
           "Is checks must have a left hand side"
         );
 
       const right = ExtractType(tokens);
-      result = new IsExpression(current.Location, result, right);
+      result = new IsExpression(current.CodeLocation, result, right);
     } else if (text === "fn") {
       const { parameters, body } = ExtractLambda(tokens, look_for);
       result = new LambdaExpression(
-        current.Location,
+        current.CodeLocation,
         new ComponentGroup(...parameters),
         body
       );
     } else if (text === "(") {
       if (!result)
         throw new ParserError(
-          current.Location,
+          current.CodeLocation,
           "Attempting an invokation without a referenced function"
         );
 
@@ -160,69 +165,73 @@ export function ExtractExpression(
           : tokens.next() && [];
 
       result = new InvokationExpression(
-        current.Location,
+        current.CodeLocation,
         result,
         new ComponentGroup(...parameters)
       );
     } else if (text === ".") {
       if (!result)
         throw new ParserError(
-          current.Location,
+          current.CodeLocation,
           "Attempting an access without a left hand side"
         );
       const accessed = NextBlock(tokens);
-      result = new AccessExpression(current.Location, result, accessed.Text);
+      result = new AccessExpression(
+        current.CodeLocation,
+        result,
+        accessed.Text
+      );
     } else if (text.match(/^[0-9]+i$/gm)) {
-      result = new LiteralExpression(current.Location, "int", text);
+      result = new LiteralExpression(current.CodeLocation, "int", text);
     } else if (text.match(/^[0-9]+$/gm)) {
       ExpectNext(tokens, ".");
       const next = NextBlock(tokens);
       if (next.Text.match(/^[0-9]+f$/gm)) {
         result = new LiteralExpression(
-          current.Location,
+          current.CodeLocation,
           "float",
           text + "." + next.Text
         );
       } else if (next.Text.match(/^[0-9]+d$/gm)) {
         result = new LiteralExpression(
-          current.Location,
+          current.CodeLocation,
           "double",
           text + "." + next.Text
         );
       } else {
         throw new ParserError(
-          current.Location,
+          current.CodeLocation,
           "Floating values must be a float or a double"
         );
       }
     } else if (text.startsWith('"')) {
       if (!text.endsWith('"'))
-        throw new ParserError(current.Location, "Expected end of string");
+        throw new ParserError(current.CodeLocation, "Expected end of string");
       result = new LiteralExpression(
-        current.Location,
+        current.CodeLocation,
         "string",
         text.substring(1, text.length - 1)
       );
     } else if (text.startsWith("'")) {
       if (!text.endsWith("'"))
-        throw new ParserError(current.Location, "Expected end of string");
+        throw new ParserError(current.CodeLocation, "Expected end of string");
       if (text.length !== 3)
         throw new ParserError(
-          current.Location,
+          current.CodeLocation,
           "Chars may have an exact length of 1"
         );
       result = new LiteralExpression(
-        current.Location,
+        current.CodeLocation,
         "char",
         text.substring(1, text.length - 1)
       );
     } else {
-      result = new ReferenceExpression(current.Location, current.Text);
+      result = new ReferenceExpression(current.CodeLocation, current.Text);
     }
   }
 
   if (!result)
-    throw new ParserError(tokens.peek()?.Location, "No Expression found");
+    throw new ParserError(tokens.peek()?.CodeLocation, "No Expression found");
 
   return result;
 }

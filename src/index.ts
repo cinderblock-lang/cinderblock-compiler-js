@@ -1,9 +1,9 @@
 import Path from "path";
 import Fs from "fs/promises";
 import Child from "child_process";
-import { Ast } from "#compiler/ast";
 import { ParseCinderblock } from "./parser";
-import { BuiltInFunctions } from "./linker";
+import { Ast } from "./ast/ast";
+import { BuiltInFunctions } from "./linker/built-in-functions";
 
 type Target = "linux" | "macos" | "windows" | "android" | "ios" | "wasm";
 

@@ -1,15 +1,15 @@
-import { Location } from "#compiler/location";
+import { CodeLocation } from "../location/code-location";
 
 export class Token {
-  readonly #location: Location;
+  readonly #location: CodeLocation;
   readonly #text: string;
 
-  constructor(location: Location, text: string) {
+  constructor(location: CodeLocation, text: string) {
     this.#location = location;
     this.#text = text;
   }
 
-  get Location() {
+  get CodeLocation() {
     return this.#location;
   }
 

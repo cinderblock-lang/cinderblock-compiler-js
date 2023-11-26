@@ -1,5 +1,7 @@
-import { Location } from "#compiler/location";
-import { Component, ComponentGroup, WriterContext } from "./base";
+import { CodeLocation } from "../location/code-location";
+import { Component } from "./component";
+import { ComponentGroup } from "./component-group";
+import { WriterContext } from "./writer";
 
 export class Namespace extends Component {
   readonly #name: string;
@@ -7,7 +9,7 @@ export class Namespace extends Component {
   readonly #contents: ComponentGroup;
 
   constructor(
-    ctx: Location,
+    ctx: CodeLocation,
     exported: boolean,
     name: string,
     contents: ComponentGroup

@@ -1,14 +1,20 @@
+import { LinkerError } from "../linker/error";
 import { CodeLocation } from "../location/code-location";
 import { Component } from "./component";
 import { Type } from "./type/base";
 import { WriterContext } from "./writer";
 
-export class Property extends Component {
+export class FunctionParameter extends Component {
   readonly #name: string;
-  readonly #type: Type;
+  readonly #type?: Type;
   readonly #optional: boolean;
 
-  constructor(ctx: CodeLocation, name: string, type: Type, optional: boolean) {
+  constructor(
+    ctx: CodeLocation,
+    name: string,
+    type: Type | undefined,
+    optional: boolean
+  ) {
     super(ctx);
     this.#name = name;
     this.#type = type;
@@ -20,7 +26,7 @@ export class Property extends Component {
   }
 
   get Type() {
-    return this.#type;
+    return this.#type != null ? this.#type : undefined;
   }
 
   get Optional() {
@@ -28,17 +34,11 @@ export class Property extends Component {
   }
 
   get type_name() {
-    return "property";
-  }
-
-  get extra_json() {
-    return {
-      name: this.#name,
-      type_name: this.#type,
-    };
+    return "function_parameter";
   }
 
   c(ctx: WriterContext): string {
-    return `${this.Type.c(ctx)} ${this.Name};`;
+    if (!this.Type) throw new LinkerError(this.CodeLocation, "Unresolved type");
+    return `${this.Type.c(ctx)} ${this.Name}`;
   }
 }

@@ -1,14 +1,12 @@
-import {
-  BuiltInFunction,
-  Component,
-  ExternalFunctionDeclaration,
-  FunctionEntity,
-  FunctionParameter,
-  SchemaEntity,
-  SchemaType,
-  StoreStatement,
-  StructEntity,
-} from "#compiler/ast";
+import { Component } from "../ast/component";
+import { BuiltInFunction } from "../ast/entity/built-in-function";
+import { ExternalFunctionDeclaration } from "../ast/entity/external-function-declaration";
+import { FunctionEntity } from "../ast/entity/function";
+import { SchemaEntity } from "../ast/entity/schema";
+import { StructEntity } from "../ast/entity/struct";
+import { FunctionParameter } from "../ast/function-parameter";
+import { StoreStatement } from "../ast/statement/store";
+import { SchemaType } from "../ast/type/schema";
 
 type AnyStructLike = StructEntity | SchemaEntity | SchemaType;
 

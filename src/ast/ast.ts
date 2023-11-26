@@ -1,113 +1,15 @@
-import { Location } from "#compiler/location";
-import {
-  FunctionEntity,
-  ExternalFunctionDeclaration,
-  BuiltInFunction,
-  SchemaEntity,
-  StructEntity,
-  Type,
-  InvokationExpression,
-  Namespace,
-  UsingEntity,
-} from ".";
-import { PatternMatch, RequireType } from "../location/pattern-match";
-
-export interface CFile {
-  add_global(data: string): void;
-  add_include(data: string): void;
-}
-
-type AnyFunction =
-  | FunctionEntity
-  | ExternalFunctionDeclaration
-  | BuiltInFunction;
-
-type AnyType = StructEntity | SchemaEntity;
-
-export type WriterContext = {
-  global_functions: Record<string, AnyFunction>;
-  global_types: Record<string, AnyType>;
-
-  namespace: string;
-  using: Array<string>;
-  parameters: Record<string, Type>;
-  locals: Record<string, Type>;
-
-  use_types: Record<string, Type>;
-
-  invokation?: InvokationExpression;
-
-  file: CFile;
-
-  prefix: Array<string>;
-  suffix: Array<string>;
-};
-
-export abstract class Component {
-  readonly #location: Location;
-
-  constructor(location: Location) {
-    this.#location = location;
-  }
-
-  get Location() {
-    return this.#location;
-  }
-
-  abstract get type_name(): string;
-
-  abstract c(ctx: WriterContext): string;
-}
-
-export class ComponentGroup {
-  readonly #components: Array<Component>;
-
-  constructor(...components: Array<Component>) {
-    this.#components = components;
-  }
-
-  get Length() {
-    return this.#components.length;
-  }
-
-  get First() {
-    return this.#components[0];
-  }
-
-  get Last() {
-    return this.#components[this.#components.length - 1];
-  }
-
-  get Location() {
-    return new Location(
-      this.First.Location.FileName,
-      this.First.Location.StartLine,
-      this.First.Location.StartColumn,
-      this.Last.Location.EndLine,
-      this.Last.Location.EndColumn
-    );
-  }
-
-  get json() {
-    return this.#components;
-  }
-
-  *iterator() {
-    for (const component of this.#components) yield component;
-  }
-
-  map<T>(handler: (input: Component) => T) {
-    return this.#components.map(handler);
-  }
-
-  find<T>(checker: abstract new (...args: any[]) => T): T {
-    return this.#components.find((c) => c instanceof checker) as T;
-  }
-
-  find_all<T>(checker: abstract new (...args: any[]) => T): T[] {
-    return this.#components.filter((c) => c instanceof checker) as T[];
-  }
-}
+import { PatternMatch } from "../location/pattern-match";
+import { RequireType } from "../location/require-type";
+import { Component } from "./component";
+import { ComponentGroup } from "./component-group";
+import { BuiltInFunction } from "./entity/built-in-function";
+import { ExternalFunctionDeclaration } from "./entity/external-function-declaration";
+import { FunctionEntity } from "./entity/function";
+import { SchemaEntity } from "./entity/schema";
+import { StructEntity } from "./entity/struct";
+import { UsingEntity } from "./entity/using";
+import { Namespace } from "./namespace";
+import { AnyFunction, AnyType } from "./writer";
 
 export class Ast {
   readonly #data: Array<Component>;

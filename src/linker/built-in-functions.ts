@@ -1,56 +1,54 @@
-import {
-  BuiltInFunction,
-  ComponentGroup,
-  FunctionParameter,
-  FunctionType,
-  Namespace,
-  PrimitiveType,
-  Property,
-  ReferenceType,
-  StructEntity,
-} from "#compiler/ast";
-import { Location } from "#compiler/location";
+import { ComponentGroup } from "../ast/component-group";
+import { BuiltInFunction } from "../ast/entity/built-in-function";
+import { StructEntity } from "../ast/entity/struct";
+import { FunctionParameter } from "../ast/function-parameter";
+import { Namespace } from "../ast/namespace";
+import { Property } from "../ast/property";
+import { FunctionType } from "../ast/type/function";
+import { PrimitiveType } from "../ast/type/primitive";
+import { ReferenceType } from "../ast/type/reference";
+import { CodeLocation } from "../location/code-location";
 
-const EmptyLocation = new Location("generated", -1, -1, -1, -1);
+const EmptyCodeLocation = new CodeLocation("generated", -1, -1, -1, -1);
 
 export const BuiltInFunctions = new ComponentGroup(
   new Namespace(
-    EmptyLocation,
+    EmptyCodeLocation,
     false,
     "__GENERATED_CODE__",
     new ComponentGroup(
       new StructEntity(
-        EmptyLocation,
+        EmptyCodeLocation,
         true,
         "Array",
         new ComponentGroup(
           new Property(
-            EmptyLocation,
+            EmptyCodeLocation,
             "next",
             new FunctionType(
-              EmptyLocation,
+              EmptyCodeLocation,
               new ComponentGroup(
                 new FunctionParameter(
-                  EmptyLocation,
+                  EmptyCodeLocation,
                   "ctx",
-                  new ReferenceType(EmptyLocation, "Array"),
+                  new ReferenceType(EmptyCodeLocation, "Array"),
                   false
                 )
               ),
-              new ReferenceType(EmptyLocation, "Array")
+              new ReferenceType(EmptyCodeLocation, "Array")
             ),
             false
           ),
           new Property(
-            EmptyLocation,
+            EmptyCodeLocation,
             "result",
-            new PrimitiveType(EmptyLocation, "any"),
+            new PrimitiveType(EmptyCodeLocation, "any"),
             true
           ),
           new Property(
-            EmptyLocation,
+            EmptyCodeLocation,
             "done",
-            new PrimitiveType(EmptyLocation, "bool"),
+            new PrimitiveType(EmptyCodeLocation, "bool"),
             true
           )
         ),
@@ -58,38 +56,38 @@ export const BuiltInFunctions = new ComponentGroup(
         []
       ),
       new BuiltInFunction(
-        EmptyLocation,
+        EmptyCodeLocation,
         "get_char",
         new ComponentGroup(
           new FunctionParameter(
-            EmptyLocation,
+            EmptyCodeLocation,
             "input",
-            new PrimitiveType(EmptyLocation, "string"),
+            new PrimitiveType(EmptyCodeLocation, "string"),
             false
           ),
           new FunctionParameter(
-            EmptyLocation,
+            EmptyCodeLocation,
             "index",
-            new PrimitiveType(EmptyLocation, "int"),
+            new PrimitiveType(EmptyCodeLocation, "int"),
             false
           )
         ),
-        new PrimitiveType(EmptyLocation, "char"),
+        new PrimitiveType(EmptyCodeLocation, "char"),
         `return input[index];`,
         []
       ),
       new BuiltInFunction(
-        EmptyLocation,
+        EmptyCodeLocation,
         "length",
         new ComponentGroup(
           new FunctionParameter(
-            EmptyLocation,
+            EmptyCodeLocation,
             "input",
-            new PrimitiveType(EmptyLocation, "string"),
+            new PrimitiveType(EmptyCodeLocation, "string"),
             false
           )
         ),
-        new PrimitiveType(EmptyLocation, "int"),
+        new PrimitiveType(EmptyCodeLocation, "int"),
         ` int index = 0;
         
           while (input[index] != 0) {
@@ -100,23 +98,23 @@ export const BuiltInFunctions = new ComponentGroup(
         []
       ),
       new BuiltInFunction(
-        EmptyLocation,
+        EmptyCodeLocation,
         "concat",
         new ComponentGroup(
           new FunctionParameter(
-            EmptyLocation,
+            EmptyCodeLocation,
             "first",
-            new PrimitiveType(EmptyLocation, "string"),
+            new PrimitiveType(EmptyCodeLocation, "string"),
             false
           ),
           new FunctionParameter(
-            EmptyLocation,
+            EmptyCodeLocation,
             "second",
-            new PrimitiveType(EmptyLocation, "string"),
+            new PrimitiveType(EmptyCodeLocation, "string"),
             false
           )
         ),
-        new PrimitiveType(EmptyLocation, "string"),
+        new PrimitiveType(EmptyCodeLocation, "string"),
         ` int first_length = 0;
         
           while (first[first_length] != 0) {
@@ -144,38 +142,38 @@ export const BuiltInFunctions = new ComponentGroup(
         true
       ),
       new BuiltInFunction(
-        EmptyLocation,
+        EmptyCodeLocation,
         "c_size",
         new ComponentGroup(
           new FunctionParameter(
-            EmptyLocation,
+            EmptyCodeLocation,
             "input",
-            new PrimitiveType(EmptyLocation, "string"),
+            new PrimitiveType(EmptyCodeLocation, "string"),
             false
           )
         ),
-        new PrimitiveType(EmptyLocation, "int"),
+        new PrimitiveType(EmptyCodeLocation, "int"),
         "return sizeof(input.data);",
         []
       ),
       new BuiltInFunction(
-        EmptyLocation,
+        EmptyCodeLocation,
         "sys_print",
         new ComponentGroup(
           new FunctionParameter(
-            EmptyLocation,
+            EmptyCodeLocation,
             "text",
-            new PrimitiveType(EmptyLocation, "string"),
+            new PrimitiveType(EmptyCodeLocation, "string"),
             false
           ),
           new FunctionParameter(
-            EmptyLocation,
+            EmptyCodeLocation,
             "length",
-            new PrimitiveType(EmptyLocation, "int"),
+            new PrimitiveType(EmptyCodeLocation, "int"),
             false
           )
         ),
-        new PrimitiveType(EmptyLocation, "int"),
+        new PrimitiveType(EmptyCodeLocation, "int"),
         `return syscall(SYS_write, 1, text, length);`,
         ["<sys/syscall.h>"]
       )
