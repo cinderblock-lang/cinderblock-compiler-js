@@ -3,6 +3,8 @@ const yargs = require("yargs/yargs");
 const { hideBin } = require("yargs/helpers");
 const { Compile } = require("../dist");
 
+Error.stackTraceLimit = 100;
+
 yargs(hideBin(process.argv))
   .command(
     "compile",
