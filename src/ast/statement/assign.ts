@@ -31,7 +31,7 @@ export class AssignStatement extends Statement {
     const expression = this.Equals.c(ctx);
     const type = this.Equals.resolve_type(ctx);
 
-    ctx.AddPrefix(`${type.c(ctx)} ${this.Name} = ${expression};`);
+    ctx.AddPrefix(`${type.c(ctx)} ${this.Name} = ${expression};`, this.Name);
 
     return this.Name;
   }

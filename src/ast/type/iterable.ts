@@ -24,7 +24,7 @@ export class IterableType extends Type {
   }
 
   c(ctx: WriterContext): string {
-    return `Array`;
+    return `void*`;
   }
 
   resolve_type(ctx: WriterContext): Component {

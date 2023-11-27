@@ -83,7 +83,7 @@ export class BuiltInFunction extends Component {
       BuiltInFunction.#already_made.push(this.Name);
 
       for (const requirement of this.Requires) ctx.AddInclude(requirement);
-      ctx.AddGlobal(`${this.Returns.c(ctx)} ${this.Name}(${params
+      const top_line = `${this.Returns.c(ctx)} ${this.Name}(${params
         .map((p) => {
           RequireType(FunctionParameter, p);
           const type = p.Type;
@@ -93,7 +93,9 @@ export class BuiltInFunction extends Component {
           RequireType(Type, type);
           return `${type.c(ctx)} ${p.Name}`;
         })
-        .join(", ")}) {
+        .join(", ")})`;
+      ctx.AddGlobalDeclaration(`${top_line};`);
+      ctx.AddGlobal(`${top_line} {
         ${this.Source}
       }`);
     }
@@ -102,7 +104,7 @@ export class BuiltInFunction extends Component {
       ctx
     );
 
-    ctx.AddPrefix(`${struct} ${name} = { &${this.Name}, NULL };`);
+    ctx.AddDeclaration(`${struct} ${name} = { &${this.Name}, NULL };`);
 
     return name;
   }

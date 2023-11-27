@@ -35,19 +35,27 @@ export class MakeExpression extends Expression {
     if (!type)
       throw new LinkerError(this.CodeLocation, "Could not resolve symbol");
     const name = Namer.GetName();
-    ctx.AddPrefix(`${type.c(ctx)} ${name} = malloc(sizeof(${type.c(ctx)}))`);
+    ctx.AddPrefix(
+      `${type.c(ctx)}* ${name} = malloc(sizeof(${type.c(ctx)}));`,
+      name
+    );
 
-    ctx = ctx.WithBody(this.Using);
+    ctx.AddSuffix(`free(${name});`);
+
+    ctx = ctx.WithBody(this.Using, "make_" + this.Struct);
 
     const inputs = this.Using.find_all(AssignStatement).map(
       (a) => `${name}->${a.Name} = ${a.c(ctx)};`
     );
 
-    ctx.AddPrefix(`{
+    ctx.AddPrefix(
+      `{
       ${ctx.Prefix}
       ${inputs.join("\n")}
       ${ctx.Suffix}
-    }`);
+    }`,
+      name
+    );
 
     return `*${name}`;
   }

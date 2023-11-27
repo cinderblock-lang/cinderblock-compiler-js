@@ -84,6 +84,7 @@ export class LambdaExpression extends Expression {
   }
 
   c(ctx: WriterContext): string {
+    const name = ctx.Callstack.join("__");
     const expected = [...this.Parameters.iterator()];
     const actual = [...(ctx.Invokation?.Parameters.iterator() ?? [])];
     const func_parameters: Array<FunctionParameter> = [];
@@ -110,11 +111,10 @@ export class LambdaExpression extends Expression {
       func_parameters.push(param);
     }
 
-    const name = Namer.GetName();
     const ctx_struct = new StructEntity(
       this.CodeLocation,
       true,
-      name,
+      name + "_struct",
       new ComponentGroup(
         ...ctx.Locals.map(
           ([k, t]) =>
@@ -132,7 +132,7 @@ export class LambdaExpression extends Expression {
     const func = new FunctionEntity(
       this.CodeLocation,
       true,
-      Namer.GetName(),
+      name,
       new ComponentGroup(...func_parameters),
       new ComponentGroup(
         new RawStatement(
@@ -167,7 +167,8 @@ export class LambdaExpression extends Expression {
         ),
         ...this.Body.iterator()
       ),
-      this.Returns?.resolve_type(ctx) ?? this.Body.resolve_block_type(ctx),
+      this.Returns?.resolve_type(ctx) ??
+        this.Body.resolve_block_type(ctx, name),
       ctx.Namespace,
       ctx.Using
     );
@@ -177,19 +178,23 @@ export class LambdaExpression extends Expression {
     const instance = func.c(ctx);
     const ctx_ref = ctx_struct.c(ctx);
     const data_name = Namer.GetName();
-    ctx.AddPrefix(`${instance}.data = malloc(sizeof(${ctx_ref}));`);
-    ctx.AddPrefix(`${ctx_ref}* ${data_name} = (${ctx_ref}*)${instance}.data;`);
+    ctx.AddPrefix(`${instance}.data = malloc(sizeof(${ctx_ref}));`, name);
+    ctx.AddPrefix(
+      `${ctx_ref}* ${data_name} = (${ctx_ref}*)${instance}.data;`,
+      name
+    );
 
     for (const item of [
       ...ctx.Locals.map(([k, t]) => `${data_name}->${k} = ${t.c(ctx)};`),
       ...ctx.Parameters.map(([k]) => `${data_name}->${k} = ${k};`),
     ])
-      ctx.AddPrefix(item);
+      ctx.AddPrefix(item, name);
 
     return instance;
   }
 
   resolve_type(ctx: WriterContext): Component {
+    const name = ctx.Callstack.join("__");
     const expected = [...this.Parameters.iterator()];
     const actual = [...(ctx.Invokation?.Parameters.iterator() ?? [])];
     const input: Array<FunctionParameter> = [];
@@ -233,7 +238,7 @@ export class LambdaExpression extends Expression {
       this.CodeLocation,
       new ComponentGroup(...input),
       this.Returns?.resolve_type(ctx) ??
-        this.Body.resolve_block_type(resolve_ctx)
+        this.Body.resolve_block_type(resolve_ctx, name)
     );
   }
 }

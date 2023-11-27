@@ -33,7 +33,7 @@ export class RawStatement extends Statement {
   }
 
   c(ctx: WriterContext): string {
-    ctx.AddPrefix(this.#c_code);
+    ctx.AddPrefix(this.#c_code, this.Reference);
     return this.#reference;
   }
 

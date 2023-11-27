@@ -43,17 +43,18 @@ export class IfExpression extends Expression {
   }
 
   c(ctx: WriterContext): string {
-    const type = this.If.resolve_block_type(ctx);
+    const type = this.If.resolve_block_type(ctx, "if");
     const name = Namer.GetName();
-    ctx.AddPrefix(`${type.c(ctx)} ${name};`);
-    const if_context = ctx.WithBody(this.If);
+    ctx.AddPrefix(`${type.c(ctx)} ${name};`, name);
+    const if_context = ctx.WithBody(this.If, "if");
 
     const if_return = this.If.find(ReturnStatement).c(if_context);
 
-    const else_context = ctx.WithBody(this.Else);
+    const else_context = ctx.WithBody(this.Else, "else");
     const else_return = this.Else.find(ReturnStatement).c(else_context);
 
-    ctx.AddPrefix(`if (${this.Check.c(ctx)}) {
+    ctx.AddPrefix(
+      `if (${this.Check.c(ctx)}) {
       ${if_context.Prefix}
       ${name} = ${if_return};
       ${if_context.Suffix}
@@ -61,12 +62,14 @@ export class IfExpression extends Expression {
       ${else_context.Prefix}
       ${name} = ${else_return};
       ${else_context.Suffix}
-    }`);
+    }`,
+      name
+    );
 
     return name;
   }
 
   resolve_type(ctx: WriterContext): Component {
-    return this.If.resolve_block_type(ctx);
+    return this.If.resolve_block_type(ctx, "if");
   }
 }

@@ -33,9 +33,12 @@ export type WriterContextProps = {
 
   use_types: Record<string, Type>;
 
+  callstack?: Array<string>;
+
   invokation?: InvokationExpression;
 
-  prefix?: Array<string>;
+  declaration?: Array<string>;
+  prefix?: Array<[string, string]>;
   suffix?: Array<string>;
 };
 
@@ -52,11 +55,15 @@ export class WriterContext {
 
   #invokation?: InvokationExpression;
 
-  #prefix: Array<string>;
+  #declaration: Array<string>;
+  #prefix: Array<[string, string]>;
   #suffix: Array<string>;
 
   static #includes: Array<string> = ["<stdlib.h>", "<dlfcn.h>"];
+  static #declarations: Array<string> = [];
   static #globals: Array<string> = [];
+
+  #callstack: Array<string>;
 
   constructor(props: WriterContextProps) {
     this.#global_functions = props.global_functions;
@@ -71,8 +78,10 @@ export class WriterContext {
 
     this.#invokation = props.invokation;
 
+    this.#declaration = props.declaration ?? [];
     this.#prefix = props.prefix ?? [];
     this.#suffix = props.suffix ?? [];
+    this.#callstack = props.callstack ?? [];
   }
 
   get #props(): WriterContextProps {
@@ -87,6 +96,8 @@ export class WriterContext {
       invokation: this.#invokation,
       prefix: this.#prefix,
       suffix: this.#suffix,
+      callstack: this.#callstack,
+      declaration: this.#declaration,
     };
   }
 
@@ -104,6 +115,10 @@ export class WriterContext {
 
   AddGlobal(line: string) {
     WriterContext.#globals.push(line);
+  }
+
+  AddGlobalDeclaration(line: string) {
+    WriterContext.#declarations.push(line);
   }
 
   AddInclude(line: string) {
@@ -205,11 +220,16 @@ export class WriterContext {
   get CText() {
     return `${WriterContext.#includes
       .map((i) => `#include ${i}`)
-      .join("\n")}\n\n${WriterContext.#globals.join("\n\n")}`;
+      .join("\n")}\n\n${WriterContext.#declarations.join(
+      "\n"
+    )}\n\n${WriterContext.#globals.join("\n\n")}`;
   }
 
   get Prefix() {
-    return this.#prefix.filter(Unique).join("\n");
+    return this.#declaration
+      .filter(Unique)
+      .concat(...this.#prefix.map((p) => p[1]).filter(Unique))
+      .join("\n");
   }
 
   get Suffix() {
@@ -226,8 +246,18 @@ export class WriterContext {
     );
   }
 
-  AddPrefix(line: string) {
-    this.#prefix.push(line);
+  Elevate(name: string) {
+    const found = this.#prefix.filter((p) => p[0] === name);
+
+    this.#prefix = [...found, ...this.#prefix.filter((p) => p[0] !== name)];
+  }
+
+  AddDeclaration(line: string) {
+    this.#declaration.push(line);
+  }
+
+  AddPrefix(line: string, name: string) {
+    this.#prefix.push([name, line]);
   }
 
   AddSuffix(line: string) {
@@ -247,10 +277,11 @@ export class WriterContext {
       locals: {},
       namespace,
       using,
+      invokation: undefined,
     });
   }
 
-  WithBody(content: ComponentGroup) {
+  WithBody(content: ComponentGroup, name: string) {
     const input = { ...this.#locals };
     for (const statement of content.iterator()) {
       if (statement instanceof StoreStatement) {
@@ -265,8 +296,10 @@ export class WriterContext {
     return new WriterContext({
       ...this.#props,
       locals: input,
+      declaration: [],
       prefix: [],
       suffix: [],
+      callstack: [...(this.#props.callstack ?? []), name],
     });
   }
 
@@ -277,11 +310,22 @@ export class WriterContext {
     });
   }
 
+  WithName(name: string) {
+    return new WriterContext({
+      ...this.#props,
+      callstack: [...(this.#props.callstack ?? []), name],
+    });
+  }
+
   AddGlobalFunction(name: string, func: FunctionEntity) {
     this.#global_functions[name] = func;
   }
 
   AddGlobalStruct(name: string, struct: StructEntity) {
     this.#global_types[name] = struct;
+  }
+
+  get Callstack() {
+    return this.#callstack;
   }
 }

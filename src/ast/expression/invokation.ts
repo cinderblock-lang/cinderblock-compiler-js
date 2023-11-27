@@ -79,7 +79,7 @@ export class InvokationExpression extends Expression {
     const returns = func.Returns;
 
     const name = Namer.GetName();
-    ctx.AddPrefix(
+    ctx.AddDeclaration(
       `${returns.c(ctx)} (*${name})(${[
         "void*",
         ...func.Parameters.map((p) => {

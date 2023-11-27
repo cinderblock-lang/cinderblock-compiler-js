@@ -5,14 +5,12 @@ import { ComponentGroup } from "../component-group";
 import { WriterContext } from "../writer";
 import { StoreStatement } from "../statement/store";
 import { Namer } from "../../location/namer";
-import { LambdaExpression } from "./lambda";
 import { FunctionParameter } from "../function-parameter";
 import { ReturnStatement } from "../statement/return";
 import { MakeExpression } from "./make";
 import { AssignStatement } from "../statement/assign";
 import { AccessExpression } from "./access";
 import { ReferenceExpression } from "./reference";
-import { ReferenceType } from "../type/reference";
 import { InvokationExpression } from "./invokation";
 import { IterableType } from "../type/iterable";
 import { FunctionEntity } from "../entity/function";
@@ -71,7 +69,8 @@ export class IterateExpression extends Expression {
           this.Over.resolve_type(ctx),
           false
         )
-      )
+      ),
+      "iterate"
     );
     const func_parameters: Array<FunctionParameter> = [
       new FunctionParameter(
@@ -82,18 +81,15 @@ export class IterateExpression extends Expression {
       ),
     ];
 
+    const over_type = this.Over.resolve_type(ctx);
+
     const name = Namer.GetName();
     const ctx_struct = new StructEntity(
       this.CodeLocation,
       true,
       name,
       new ComponentGroup(
-        new Property(
-          this.CodeLocation,
-          parent_name,
-          this.Over.resolve_type(ctx),
-          false
-        ),
+        new Property(this.CodeLocation, parent_name, over_type, false),
         ...ctx.Locals.map(
           ([k, t]) =>
             new Property(this.CodeLocation, k, t.resolve_type(ctx), false)
@@ -242,7 +238,7 @@ export class IterateExpression extends Expression {
         ),
         ...this.Body.iterator()
       ),
-      this.Body.resolve_block_type(ctx),
+      this.Body.resolve_block_type(ctx, "iterate"),
       ctx.Namespace,
       ctx.Using
     );
@@ -250,17 +246,21 @@ export class IterateExpression extends Expression {
     ctx.AddGlobalFunction(func.Name, func);
 
     const instance = func.c(ctx);
+    debugger;
     const ctx_ref = ctx_struct.c(ctx);
     const data_name = Namer.GetName();
-    ctx.AddPrefix(`${instance}.data = malloc(sizeof(${ctx_ref}));`);
-    ctx.AddPrefix(`${ctx_ref}* ${data_name} = (${ctx_ref}*)${instance}.data;`);
+    ctx.AddPrefix(`${instance}.data = malloc(sizeof(${ctx_ref}));`, name);
+    ctx.AddPrefix(
+      `${ctx_ref}* ${data_name} = (${ctx_ref}*)${instance}.data;`,
+      name
+    );
 
     for (const item of [
       ...ctx.Locals.map(([k, t]) => `${data_name}->${k} = ${t.c(ctx)};`),
       ...ctx.Parameters.map(([k]) => `${data_name}->${k} = ${k};`),
-      `${data_name}->${this.As} = ${this.Over.c(ctx)}`,
+      `${data_name}->${index_name} = ${this.Over.c(ctx)};`,
     ])
-      ctx.AddPrefix(item);
+      ctx.AddPrefix(item, name);
 
     return instance;
   }
@@ -277,7 +277,8 @@ export class IterateExpression extends Expression {
             this.Over.resolve_type(ctx),
             false
           )
-        )
+        ),
+        "iterate"
       )
     );
   }

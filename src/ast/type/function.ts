@@ -43,7 +43,7 @@ export class FunctionType extends Type {
   c(ctx: WriterContext): string {
     if (!FunctionType.#already_written) {
       FunctionType.#already_written = true;
-      ctx.AddGlobal(
+      ctx.AddGlobalDeclaration(
         `typedef struct _FUNCTION { void* handle; void* data; } _FUNCTION;`
       );
     }

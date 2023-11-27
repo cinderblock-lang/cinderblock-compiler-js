@@ -24,7 +24,7 @@ export class BracketsExpression extends Expression {
     const name = Namer.GetName();
     const type = this.Expression.resolve_type(ctx);
 
-    ctx.AddPrefix(`${type.c(ctx)} ${name} = ${this.Expression.c(ctx)};`);
+    ctx.AddPrefix(`${type.c(ctx)} ${name} = ${this.Expression.c(ctx)};`, name);
 
     return name;
   }

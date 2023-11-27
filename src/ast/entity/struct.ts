@@ -62,7 +62,7 @@ export class StructEntity extends Entity {
   c(ctx: WriterContext): string {
     if (!StructEntity.#already_made.includes(this.#full_name)) {
       StructEntity.#already_made.push(this.#full_name);
-      ctx.AddGlobal(`typedef struct ${this.#full_name} {
+      ctx.AddGlobalDeclaration(`typedef struct ${this.#full_name} {
         ${this.Properties.map((p) =>
           p.c(ctx.StartContext(this.CodeLocation, this.#namespace, this.#using))
         ).join("\n")}

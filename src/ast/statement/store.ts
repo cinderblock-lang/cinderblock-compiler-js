@@ -26,19 +26,28 @@ export class StoreStatement extends Statement {
     return "store_statement";
   }
 
+  static #written: Array<string> = [];
+
   c(ctx: WriterContext): string {
+    const name = ctx.Callstack.join("__") + "__" + this.Name;
+
+    if (StoreStatement.#written.includes(name)) {
+      ctx.Elevate(name);
+      return "*" + this.Name;
+    }
+    StoreStatement.#written.push(name);
+
     const type = this.Equals.resolve_type(ctx);
 
     const expression = this.Equals.c(ctx);
 
-    ctx.AddPrefix(
+    ctx.AddDeclaration(
       `${type.c(ctx)}* ${this.Name} = malloc(sizeof(${type.c(ctx)}));`
     );
 
     ctx.AddSuffix(`free(${this.Name});`);
 
-    ctx.AddPrefix(`*${this.Name} = ${expression};`);
-
+    ctx.AddPrefix(`*${this.Name} = ${expression};`, name);
     return "*" + this.Name;
   }
 

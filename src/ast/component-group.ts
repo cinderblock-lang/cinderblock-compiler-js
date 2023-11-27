@@ -55,8 +55,8 @@ export class ComponentGroup {
     return this.#components.filter((c) => c instanceof checker) as T[];
   }
 
-  resolve_block_type(ctx: WriterContext) {
-    ctx = ctx.WithBody(this);
+  resolve_block_type(ctx: WriterContext, name: string) {
+    ctx = ctx.WithBody(this, name);
     for (const statement of this.iterator()) {
       if (statement instanceof ReturnStatement) {
         return statement.Value.resolve_type(ctx);

@@ -23,7 +23,7 @@ export class ReturnStatement extends Statement {
   c(ctx: WriterContext): string {
     const type = this.Value.resolve_type(ctx);
     const expression = this.Value.c(ctx);
-    ctx.AddPrefix(`${type.c(ctx)} result = ${expression};`);
+    ctx.AddPrefix(`${type.c(ctx)} result = ${expression};`, "return");
 
     return `result`;
   }

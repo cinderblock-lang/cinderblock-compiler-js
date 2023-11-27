@@ -80,7 +80,7 @@ export class Ast {
           use_types: {},
         });
 
-        const c = entity.c(ctx);
+        const c = entity.c(ctx, true);
 
         return `${ctx.CText}\n\n${c}`;
       }
