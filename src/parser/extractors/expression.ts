@@ -1,3 +1,4 @@
+import { Component } from "../../ast/component";
 import { ComponentGroup } from "../../ast/component-group";
 import { AccessExpression } from "../../ast/expression/access";
 import { Expression } from "../../ast/expression/base";
@@ -71,12 +72,18 @@ function ExtractLambda(tokens: TokenGroup, look_for: Array<string>) {
     ExtractFunctionParameter(tokens)
   );
 
+  let returns: Component | undefined = undefined;
+  if (tokens.peek()?.Text === ":") {
+    ExpectNext(tokens, ":");
+    returns = ExtractType(tokens);
+  }
+
   ExpectNext(tokens, "->");
 
   if (tokens.peek()?.Text === "{") {
     const body = ExtractStatementBlock(tokens);
 
-    return { parameters, body };
+    return { parameters, body, returns };
   }
 
   const body = new ComponentGroup(
@@ -144,11 +151,12 @@ export function ExtractExpression(
       const right = ExtractType(tokens);
       result = new IsExpression(current.CodeLocation, result, right);
     } else if (text === "fn") {
-      const { parameters, body } = ExtractLambda(tokens, look_for);
+      const { parameters, body, returns } = ExtractLambda(tokens, look_for);
       result = new LambdaExpression(
         current.CodeLocation,
         new ComponentGroup(...parameters),
-        body
+        body,
+        returns
       );
     } else if (text === "(") {
       if (!result)

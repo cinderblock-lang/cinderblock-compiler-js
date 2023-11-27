@@ -20,15 +20,18 @@ import { FunctionType } from "../type/function";
 export class LambdaExpression extends Expression {
   readonly #parameters: ComponentGroup;
   readonly #body: ComponentGroup;
+  readonly #returns: Component | undefined;
 
   constructor(
     ctx: CodeLocation,
     parameters: ComponentGroup,
-    body: ComponentGroup
+    body: ComponentGroup,
+    returns: Component | undefined
   ) {
     super(ctx);
     this.#parameters = parameters;
     this.#body = body;
+    this.#returns = returns;
   }
 
   get Parameters() {
@@ -37,6 +40,10 @@ export class LambdaExpression extends Expression {
 
   get Body() {
     return this.#body;
+  }
+
+  get Returns() {
+    return this.#returns;
   }
 
   get type_name() {
@@ -71,7 +78,8 @@ export class LambdaExpression extends Expression {
     return new LambdaExpression(
       this.CodeLocation,
       new ComponentGroup(...input),
-      this.Body
+      this.Body,
+      this.Returns
     );
   }
 
@@ -159,7 +167,7 @@ export class LambdaExpression extends Expression {
         ),
         ...this.Body.iterator()
       ),
-      this.Body.resolve_block_type(ctx),
+      this.Returns?.resolve_type(ctx) ?? this.Body.resolve_block_type(ctx),
       ctx.Namespace,
       ctx.Using
     );
@@ -224,7 +232,8 @@ export class LambdaExpression extends Expression {
     return new FunctionType(
       this.CodeLocation,
       new ComponentGroup(...input),
-      this.Body.resolve_block_type(resolve_ctx)
+      this.Returns?.resolve_type(ctx) ??
+        this.Body.resolve_block_type(resolve_ctx)
     );
   }
 }
