@@ -17,44 +17,6 @@ export const BuiltInFunctions = new ComponentGroup(
     false,
     "___BUILT_IN_CODE___",
     new ComponentGroup(
-      new StructEntity(
-        EmptyCodeLocation,
-        true,
-        "Array",
-        new ComponentGroup(
-          new Property(
-            EmptyCodeLocation,
-            "next",
-            new FunctionType(
-              EmptyCodeLocation,
-              new ComponentGroup(
-                new FunctionParameter(
-                  EmptyCodeLocation,
-                  "ctx",
-                  new PrimitiveType(EmptyCodeLocation, "null"),
-                  false
-                )
-              ),
-              new ReferenceType(EmptyCodeLocation, "Array")
-            ),
-            false
-          ),
-          new Property(
-            EmptyCodeLocation,
-            "result",
-            new PrimitiveType(EmptyCodeLocation, "any"),
-            true
-          ),
-          new Property(
-            EmptyCodeLocation,
-            "done",
-            new PrimitiveType(EmptyCodeLocation, "bool"),
-            true
-          )
-        ),
-        "__GENERATED_CODE__",
-        []
-      ),
       new BuiltInFunction(
         EmptyCodeLocation,
         "get_char",

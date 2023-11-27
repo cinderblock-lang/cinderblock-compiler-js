@@ -37,7 +37,7 @@ export class InvokationExpression extends Expression {
     return "invokation_expression";
   }
 
-  BuildInvokation(ctx: WriterContext) {
+  #build_invokation(ctx: WriterContext) {
     if (this.Subject instanceof AccessExpression) {
       const target = this.Subject.Subject.resolve_type(ctx);
       if (
@@ -68,16 +68,21 @@ export class InvokationExpression extends Expression {
   }
 
   c(ctx: WriterContext): string {
-    const invokation = this.BuildInvokation(ctx);
+    const invokation = this.#build_invokation(ctx);
     const reference = invokation.Subject.c(ctx.WithInvokation(invokation));
+    const func = invokation.Subject.resolve_type(
+      ctx.WithInvokation(invokation)
+    );
+    if (!(func instanceof FunctionType))
+      throw new LinkerError(this.CodeLocation, "May only invoke functions");
 
-    const returns = this.resolve_type(ctx);
+    const returns = func.Returns;
 
     const name = Namer.GetName();
     ctx.AddPrefix(
       `${returns.c(ctx)} (*${name})(${[
         "void*",
-        ...invokation.Parameters.map((p) => {
+        ...func.Parameters.map((p) => {
           const type = p.resolve_type(ctx);
           return type.c(ctx);
         }),
@@ -91,7 +96,7 @@ export class InvokationExpression extends Expression {
   }
 
   resolve_type(ctx: WriterContext): Component {
-    const invokation = this.BuildInvokation(ctx);
+    const invokation = this.#build_invokation(ctx);
     const func = invokation.Subject.resolve_type(
       ctx.WithInvokation(invokation)
     );

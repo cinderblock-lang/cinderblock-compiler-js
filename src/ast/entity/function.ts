@@ -11,6 +11,7 @@ import { ReturnStatement } from "../statement/return";
 import { StoreStatement } from "../statement/store";
 import { Type } from "../type/base";
 import { FunctionType } from "../type/function";
+import { IterableType } from "../type/iterable";
 import { PrimitiveType } from "../type/primitive";
 import { ReferenceType } from "../type/reference";
 import { SchemaType } from "../type/schema";
@@ -104,6 +105,16 @@ export class FunctionEntity extends Entity {
 
     if (current instanceof UseType) {
       return { target: invoking_with, uses: { [current.Name]: invoking_with } };
+    }
+
+    if (current instanceof IterableType) {
+      RequireType(IterableType, invoking_with);
+      const { uses } = this.#process_type(
+        current.Type,
+        invoking_with.Type,
+        ctx
+      );
+      return { target: invoking_with, uses };
     }
 
     if (!current)
@@ -252,13 +263,13 @@ export class FunctionEntity extends Entity {
   }
 
   resolve_type(ctx_old: WriterContext): Component {
-    const { input_parameters, returns } =
+    const { input_parameters, returns, ctx } =
       this.#build_invokation_parameters(ctx_old);
 
     return new FunctionType(
       this.CodeLocation,
       new ComponentGroup(...input_parameters),
-      returns
+      returns.resolve_type(ctx)
     );
   }
 }

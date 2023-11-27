@@ -1,8 +1,11 @@
 import { CodeLocation } from "../../location/code-location";
 import { Component } from "../component";
+import { ComponentGroup } from "../component-group";
+import { FunctionParameter } from "../function-parameter";
 import { WriterContext } from "../writer";
 import { Type } from "./base";
-import { ReferenceType } from "./reference";
+import { FunctionType } from "./function";
+import { PrimitiveType } from "./primitive";
 
 export class IterableType extends Type {
   readonly #type: Type;
@@ -25,6 +28,17 @@ export class IterableType extends Type {
   }
 
   resolve_type(ctx: WriterContext): Component {
-    return new ReferenceType(this.CodeLocation, "Array").resolve_type(ctx);
+    return new FunctionType(
+      this.CodeLocation,
+      new ComponentGroup(
+        new FunctionParameter(
+          this.CodeLocation,
+          "index",
+          new PrimitiveType(this.CodeLocation, "int"),
+          false
+        )
+      ),
+      new PrimitiveType(this.CodeLocation, "any")
+    );
   }
 }

@@ -28,7 +28,7 @@ export class ReferenceType extends Type {
     const result = ctx.FindType(this.Name)?.resolve_type(ctx);
 
     if (!result)
-      throw new LinkerError(this.CodeLocation, "COuld not resolve reference");
+      throw new LinkerError(this.CodeLocation, "Could not resolve reference");
 
     return result;
   }

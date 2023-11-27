@@ -244,7 +244,6 @@ export class WriterContext {
       parameters: {
         ctx: new PrimitiveType(location, "null"),
       },
-      use_types: {},
       locals: {},
       namespace,
       using,
@@ -280,5 +279,9 @@ export class WriterContext {
 
   AddGlobalFunction(name: string, func: FunctionEntity) {
     this.#global_functions[name] = func;
+  }
+
+  AddGlobalStruct(name: string, struct: StructEntity) {
+    this.#global_types[name] = struct;
   }
 }
