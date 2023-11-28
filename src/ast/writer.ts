@@ -231,16 +231,29 @@ export class WriterContext {
   }
 
   get Prefix() {
-    const result = this.#declaration
-      .filter(Unique)
-      .concat(
-        ...this.#prefix
-          .sort((a, b) => (a[2].includes(b[1]) ? -1 : 1))
-          .map((p) => p[1])
-          .filter(Unique)
-      )
-      .join("\n");
-    return result;
+    const final = this.#prefix
+      .sort((a, b) => (a[2].includes(b[1]) ? -1 : 1))
+      .filter(([n, v], i, a) =>
+        Unique(
+          v,
+          i,
+          a.map((a) => a[1])
+        )
+      );
+
+    let result = this.#declaration.filter(Unique);
+
+    for (let i = 0; i < final.length; i++) {
+      const [name, value] = final[i];
+      result.push(value);
+
+      for (let b = 0; b < i; b++) {
+        const [_name, _value, _depends_on] = final[b];
+        if (_depends_on.includes(name)) result.push(_value);
+      }
+    }
+
+    return result.join("\n");
   }
 
   get Suffix() {
