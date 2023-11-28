@@ -12,6 +12,13 @@ import { FunctionType } from "../type/function";
 import { IterableType } from "../type/iterable";
 import { RequireType } from "../../location/require-type";
 import { FunctionParameter } from "../function-parameter";
+import { LambdaExpression } from "./lambda";
+import { ReturnStatement } from "../statement/return";
+import { StructEntity } from "../entity/struct";
+import { FunctionEntity } from "../entity/function";
+import { Property } from "../property";
+import { RawStatement } from "../statement/raw";
+import { StoreStatement } from "../statement/store";
 
 export class InvokationExpression extends Expression {
   readonly #subject: Component;
@@ -69,6 +76,108 @@ export class InvokationExpression extends Expression {
     return this;
   }
 
+  #partial_parameters(func: FunctionType) {
+    const p = [...func.Parameters.iterator()];
+
+    return p.slice(1, p.length - this.Parameters.Length);
+  }
+
+  #build_partial(
+    ctx: WriterContext,
+    func: FunctionType,
+    invokation: InvokationExpression
+  ) {
+    const name = Namer.GetName();
+    const existing = [...invokation.Parameters.iterator()];
+
+    const func_parameters: Array<Component> =
+      invokation.#partial_parameters(func);
+
+    const ctx_struct = new StructEntity(
+      this.CodeLocation,
+      true,
+      name + "_struct",
+      new ComponentGroup(
+        ...existing.map(
+          (e, i) =>
+            new Property(
+              this.CodeLocation,
+              "a" + i.toString(),
+              e.resolve_type(ctx),
+              false
+            )
+        )
+      ),
+      ctx.Namespace,
+      ctx.Using
+    );
+
+    const result = new FunctionEntity(
+      this.CodeLocation,
+      true,
+      name,
+      new ComponentGroup(...func_parameters),
+      new ComponentGroup(
+        new RawStatement(
+          this.CodeLocation,
+          `${ctx_struct.c(ctx)} _ctx = *(${ctx_struct.c(ctx)}*)ctx;`,
+          "_ctx",
+          ctx_struct
+        ),
+        new ReturnStatement(
+          this.CodeLocation,
+          new InvokationExpression(
+            this.CodeLocation,
+            invokation.Subject,
+            new ComponentGroup(
+              ...func_parameters.map((p) => {
+                RequireType(FunctionParameter, p);
+                return new ReferenceExpression(this.CodeLocation, p.Name);
+              }),
+              ...existing.map(
+                (_, i) =>
+                  new AccessExpression(
+                    this.CodeLocation,
+                    new ReferenceExpression(this.CodeLocation, "_ctx"),
+                    "a" + i.toString()
+                  )
+              )
+            )
+          )
+        )
+      ),
+      func.Returns,
+      ctx.Namespace,
+      ctx.Using
+    );
+
+    ctx.AddGlobalFunction(result.Name, result);
+
+    const instance = result.c(ctx);
+    const ctx_ref = ctx_struct.c(ctx);
+    const data_name = Namer.GetName();
+    ctx.AddPrefix(`${instance}.data = malloc(sizeof(${ctx_ref}));`, name, [
+      instance,
+    ]);
+    ctx.AddPrefix(
+      `${ctx_ref}* ${data_name} = (${ctx_ref}*)${instance}.data;`,
+      data_name,
+      [instance]
+    );
+
+    for (let i = 0; i < existing.length; i++) {
+      const k = "a" + i.toString();
+      const t = existing[i];
+      const val = t instanceof FunctionParameter ? k : t.c(ctx);
+      ctx.AddPrefix(`${data_name}->${k} = ${val};`, `${data_name}->${k}`, [
+        data_name,
+        val,
+      ]);
+    }
+
+    return instance;
+  }
+
   c(ctx: WriterContext): string {
     const invokation = this.#build_invokation(ctx);
     const reference = invokation.Subject.c(ctx.WithInvokation(invokation));
@@ -78,6 +187,10 @@ export class InvokationExpression extends Expression {
     );
     if (!(func instanceof FunctionType))
       throw new LinkerError(this.CodeLocation, "May only invoke functions");
+
+    if (func.Parameters.Length - 1 > invokation.Parameters.Length) {
+      return this.#build_partial(ctx, func, invokation);
+    }
 
     const returns = func.Returns;
 
@@ -110,6 +223,14 @@ export class InvokationExpression extends Expression {
     );
     if (!(func instanceof FunctionType))
       throw new LinkerError(this.CodeLocation, "May only invoke functions");
+
+    if (func.Parameters.Length - 1 > invokation.Parameters.Length) {
+      return new FunctionType(
+        this.CodeLocation,
+        new ComponentGroup(...invokation.#partial_parameters(func)),
+        func.Returns
+      );
+    }
 
     return func.Returns;
   }
