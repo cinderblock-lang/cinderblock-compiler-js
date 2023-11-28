@@ -1,6 +1,7 @@
 import { LinkerError } from "../linker/error";
 import { CodeLocation } from "../location/code-location";
 import { RequireType } from "../location/require-type";
+import { Component } from "./component";
 import { ComponentGroup } from "./component-group";
 import { BuiltInFunction } from "./entity/built-in-function";
 import { ExternalFunctionDeclaration } from "./entity/external-function-declaration";
@@ -36,9 +37,10 @@ export type WriterContextProps = {
   callstack?: Array<string>;
 
   invokation?: InvokationExpression;
+  iterable?: Component;
 
   declaration?: Array<string>;
-  prefix?: Array<[string, string]>;
+  prefix?: Array<[string, string, Array<string>]>;
   suffix?: Array<string>;
 };
 
@@ -54,9 +56,10 @@ export class WriterContext {
   #use_types: Record<string, Type>;
 
   #invokation?: InvokationExpression;
+  #iterable?: Component;
 
   #declaration: Array<string>;
-  #prefix: Array<[string, string]>;
+  #prefix: Array<[string, string, Array<string>]>;
   #suffix: Array<string>;
 
   static #includes: Array<string> = ["<stdlib.h>", "<dlfcn.h>"];
@@ -77,6 +80,7 @@ export class WriterContext {
     this.#use_types = props.use_types;
 
     this.#invokation = props.invokation;
+    this.#iterable = props.iterable;
 
     this.#declaration = props.declaration ?? [];
     this.#prefix = props.prefix ?? [];
@@ -94,6 +98,7 @@ export class WriterContext {
       locals: this.#locals,
       use_types: this.#use_types,
       invokation: this.#invokation,
+      iterable: this.#iterable,
       prefix: this.#prefix,
       suffix: this.#suffix,
       callstack: this.#callstack,
@@ -226,10 +231,16 @@ export class WriterContext {
   }
 
   get Prefix() {
-    return this.#declaration
+    const result = this.#declaration
       .filter(Unique)
-      .concat(...this.#prefix.map((p) => p[1]).filter(Unique))
+      .concat(
+        ...this.#prefix
+          .sort((a, b) => (a[2].includes(b[1]) ? -1 : 1))
+          .map((p) => p[1])
+          .filter(Unique)
+      )
       .join("\n");
+    return result;
   }
 
   get Suffix() {
@@ -246,18 +257,12 @@ export class WriterContext {
     );
   }
 
-  Elevate(name: string) {
-    const found = this.#prefix.filter((p) => p[0] === name);
-
-    this.#prefix = [...found, ...this.#prefix.filter((p) => p[0] !== name)];
-  }
-
   AddDeclaration(line: string) {
     this.#declaration.push(line);
   }
 
-  AddPrefix(line: string, name: string) {
-    this.#prefix.push([name, line]);
+  AddPrefix(line: string, name: string, depends_on: Array<string>) {
+    this.#prefix.push([name, line, depends_on]);
   }
 
   AddSuffix(line: string) {
@@ -327,5 +332,16 @@ export class WriterContext {
 
   get Callstack() {
     return this.#callstack;
+  }
+
+  WithIterable(iterable: Component) {
+    return new WriterContext({
+      ...this.#props,
+      iterable,
+    });
+  }
+
+  get Iterable() {
+    return this.#iterable;
   }
 }

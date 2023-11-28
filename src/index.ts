@@ -148,7 +148,7 @@ export async function Compile(
     switch (target) {
       case "linux":
         await Exec(
-          `gcc main.c ${options.debug ? "-g1" : ""} -o ${project.name}`,
+          `gcc main.c ${options.debug ? "-g" : ""} -o ${project.name}`,
           dir
         );
         break;

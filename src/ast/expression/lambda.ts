@@ -85,6 +85,9 @@ export class LambdaExpression extends Expression {
 
   c(ctx: WriterContext): string {
     const name = ctx.Callstack.join("__");
+
+    const all = [...ctx.Locals, ...ctx.Parameters].filter(([k]) => k !== "ctx");
+
     const expected = [...this.Parameters.iterator()];
     const actual = [...(ctx.Invokation?.Parameters.iterator() ?? [])];
     const func_parameters: Array<FunctionParameter> = [];
@@ -116,11 +119,7 @@ export class LambdaExpression extends Expression {
       true,
       name + "_struct",
       new ComponentGroup(
-        ...ctx.Locals.map(
-          ([k, t]) =>
-            new Property(this.CodeLocation, k, t.resolve_type(ctx), false)
-        ),
-        ...ctx.Parameters.map(
+        ...all.map(
           ([k, t]) =>
             new Property(this.CodeLocation, k, t.resolve_type(ctx), false)
         )
@@ -141,19 +140,7 @@ export class LambdaExpression extends Expression {
           "_ctx",
           ctx_struct
         ),
-        ...ctx.Locals.map(
-          ([k]) =>
-            new StoreStatement(
-              this.CodeLocation,
-              k,
-              new AccessExpression(
-                this.CodeLocation,
-                new ReferenceExpression(this.CodeLocation, "_ctx"),
-                k
-              )
-            )
-        ),
-        ...ctx.Parameters.map(
+        ...all.map(
           ([k]) =>
             new StoreStatement(
               this.CodeLocation,
@@ -178,17 +165,22 @@ export class LambdaExpression extends Expression {
     const instance = func.c(ctx);
     const ctx_ref = ctx_struct.c(ctx);
     const data_name = Namer.GetName();
-    ctx.AddPrefix(`${instance}.data = malloc(sizeof(${ctx_ref}));`, name);
+    ctx.AddPrefix(`${instance}.data = malloc(sizeof(${ctx_ref}));`, name, [
+      instance,
+    ]);
     ctx.AddPrefix(
       `${ctx_ref}* ${data_name} = (${ctx_ref}*)${instance}.data;`,
-      name
+      data_name,
+      [instance]
     );
 
-    for (const item of [
-      ...ctx.Locals.map(([k, t]) => `${data_name}->${k} = ${t.c(ctx)};`),
-      ...ctx.Parameters.map(([k]) => `${data_name}->${k} = ${k};`),
-    ])
-      ctx.AddPrefix(item, name);
+    for (const [k, t] of all) {
+      const val = t instanceof FunctionParameter ? k : t.c(ctx);
+      ctx.AddPrefix(`${data_name}->${k} = ${val};`, `${data_name}->${k}`, [
+        data_name,
+        val,
+      ]);
+    }
 
     return instance;
   }

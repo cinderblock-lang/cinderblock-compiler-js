@@ -24,7 +24,7 @@ export class PanicStatement extends Statement {
   c(ctx: WriterContext): string {
     const expression = this.Value.c(ctx);
 
-    ctx.AddPrefix(`exit(${expression});`, "panic");
+    ctx.AddPrefix(`exit(${expression});`, "panic", [expression]);
 
     return ``;
   }

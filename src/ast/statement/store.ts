@@ -32,7 +32,6 @@ export class StoreStatement extends Statement {
     const name = ctx.Callstack.join("__") + "__" + this.Name;
 
     if (StoreStatement.#written.includes(name)) {
-      ctx.Elevate(name);
       return "*" + this.Name;
     }
     StoreStatement.#written.push(name);
@@ -47,7 +46,9 @@ export class StoreStatement extends Statement {
 
     ctx.AddSuffix(`free(${this.Name});`);
 
-    ctx.AddPrefix(`*${this.Name} = ${expression};`, name);
+    ctx.AddPrefix(`*${this.Name} = ${expression};`, "*" + this.Name, [
+      expression,
+    ]);
     return "*" + this.Name;
   }
 

@@ -1,4 +1,5 @@
 import { CodeLocation } from "../../location/code-location";
+import { Namer } from "../../location/namer";
 import { Component } from "../component";
 import { Expression } from "../expression/base";
 import { WriterContext } from "../writer";
@@ -21,11 +22,14 @@ export class ReturnStatement extends Statement {
   }
 
   c(ctx: WriterContext): string {
+    const result_name = Namer.GetName();
     const type = this.Value.resolve_type(ctx);
     const expression = this.Value.c(ctx);
-    ctx.AddPrefix(`${type.c(ctx)} result = ${expression};`, "return");
+    ctx.AddPrefix(`${type.c(ctx)} ${result_name} = ${expression};`, "return", [
+      expression,
+    ]);
 
-    return `result`;
+    return result_name;
   }
 
   resolve_type(ctx: WriterContext): Component {

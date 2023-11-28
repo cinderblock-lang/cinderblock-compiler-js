@@ -10,6 +10,8 @@ import { IsAnyStructLike, IsAnyInvokable } from "../../linker/types";
 import { Namer } from "../../location/namer";
 import { FunctionType } from "../type/function";
 import { IterableType } from "../type/iterable";
+import { RequireType } from "../../location/require-type";
+import { FunctionParameter } from "../function-parameter";
 
 export class InvokationExpression extends Expression {
   readonly #subject: Component;
@@ -70,6 +72,7 @@ export class InvokationExpression extends Expression {
   c(ctx: WriterContext): string {
     const invokation = this.#build_invokation(ctx);
     const reference = invokation.Subject.c(ctx.WithInvokation(invokation));
+
     const func = invokation.Subject.resolve_type(
       ctx.WithInvokation(invokation)
     );
@@ -79,14 +82,19 @@ export class InvokationExpression extends Expression {
     const returns = func.Returns;
 
     const name = Namer.GetName();
-    ctx.AddDeclaration(
+    ctx.AddPrefix(
       `${returns.c(ctx)} (*${name})(${[
         "void*",
-        ...func.Parameters.map((p) => {
+        ...func.Parameters.filter((p) => {
+          RequireType(FunctionParameter, p);
+          return p.Name !== "ctx";
+        }).map((p) => {
           const type = p.resolve_type(ctx);
           return type.c(ctx);
         }),
-      ].join(", ")}) = ${reference}.handle;`
+      ].join(", ")}) = ${reference}.handle;`,
+      name,
+      [reference]
     );
 
     return `(*${name})(${[

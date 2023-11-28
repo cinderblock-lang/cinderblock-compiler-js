@@ -22,9 +22,12 @@ export class BracketsExpression extends Expression {
 
   c(ctx: WriterContext): string {
     const name = Namer.GetName();
+    const expression = this.Expression.c(ctx);
     const type = this.Expression.resolve_type(ctx);
 
-    ctx.AddPrefix(`${type.c(ctx)} ${name} = ${this.Expression.c(ctx)};`, name);
+    ctx.AddPrefix(`${type.c(ctx)} ${name} = ${expression};`, name, [
+      expression,
+    ]);
 
     return name;
   }

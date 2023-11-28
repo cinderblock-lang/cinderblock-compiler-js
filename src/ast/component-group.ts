@@ -47,6 +47,10 @@ export class ComponentGroup {
     return this.#components.map(handler);
   }
 
+  filter(predicate: (item: Component) => boolean) {
+    return this.#components.filter(predicate);
+  }
+
   find<T>(checker: abstract new (...args: any[]) => T): T {
     return this.#components.find((c) => c instanceof checker) as T;
   }

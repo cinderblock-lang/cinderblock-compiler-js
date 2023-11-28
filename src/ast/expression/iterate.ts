@@ -59,6 +59,7 @@ export class IterateExpression extends Expression {
     const index_name = Namer.GetName();
     const parent_name = Namer.GetName();
     const ctx_name = Namer.GetName();
+    const all = [...ctx.Locals, ...ctx.Parameters].filter(([k]) => k !== "ctx");
 
     const returns = this.Body.resolve_block_type(
       ctx.WithFunctionParameter(
@@ -72,6 +73,7 @@ export class IterateExpression extends Expression {
       ),
       "iterate"
     );
+
     const func_parameters: Array<FunctionParameter> = [
       new FunctionParameter(
         this.CodeLocation,
@@ -90,42 +92,19 @@ export class IterateExpression extends Expression {
       name,
       new ComponentGroup(
         new Property(this.CodeLocation, parent_name, over_type, false),
-        ...ctx.Locals.map(
-          ([k, t]) =>
-            new Property(this.CodeLocation, k, t.resolve_type(ctx), false)
-        ),
-        ...ctx.Parameters.map(
+        ...all.map(
           ([k, t]) =>
             new Property(this.CodeLocation, k, t.resolve_type(ctx), false)
         )
       ),
       ctx.Namespace,
       ctx.Using
-    );
-
-    const result_struct = new StructEntity(
-      this.CodeLocation,
-      true,
-      Namer.GetName(),
-      new ComponentGroup(
-        new Property(this.CodeLocation, "result", returns, true),
-        new Property(
-          this.CodeLocation,
-          "done",
-          new PrimitiveType(this.CodeLocation, "bool"),
-          false
-        )
-      ),
-      ctx.Namespace,
-      ctx.Using
-    );
-
-    ctx.AddGlobalStruct(
-      ctx.Namespace + "." + result_struct.Name,
-      result_struct
     );
 
     const nullptr_name = Namer.GetName();
+
+    const result = this.resolve_type(ctx).Result;
+    ctx.AddGlobalStruct(result.Name, result);
 
     const func = new FunctionEntity(
       this.CodeLocation,
@@ -148,19 +127,7 @@ export class IterateExpression extends Expression {
             parent_name
           )
         ),
-        ...ctx.Locals.map(
-          ([k]) =>
-            new StoreStatement(
-              this.CodeLocation,
-              k,
-              new AccessExpression(
-                this.CodeLocation,
-                new ReferenceExpression(this.CodeLocation, "_ctx"),
-                k
-              )
-            )
-        ),
-        ...ctx.Parameters.map(
+        ...all.map(
           ([k]) =>
             new StoreStatement(
               this.CodeLocation,
@@ -187,7 +154,7 @@ export class IterateExpression extends Expression {
           this.CodeLocation,
           new MakeExpression(
             this.CodeLocation,
-            result_struct.Name,
+            result.Name,
             new ComponentGroup(
               new AssignStatement(
                 this.CodeLocation,
@@ -216,7 +183,7 @@ export class IterateExpression extends Expression {
                       "done"
                     ),
                     "==",
-                    new LiteralExpression(this.CodeLocation, "bool", "true")
+                    new LiteralExpression(this.CodeLocation, "bool", "false")
                   ),
                   this.Body,
                   new ComponentGroup(
@@ -246,26 +213,36 @@ export class IterateExpression extends Expression {
     ctx.AddGlobalFunction(func.Name, func);
 
     const instance = func.c(ctx);
-    debugger;
     const ctx_ref = ctx_struct.c(ctx);
     const data_name = Namer.GetName();
-    ctx.AddPrefix(`${instance}.data = malloc(sizeof(${ctx_ref}));`, name);
+    ctx.AddPrefix(`${instance}.data = malloc(sizeof(${ctx_ref}));`, name, [
+      instance,
+    ]);
     ctx.AddPrefix(
       `${ctx_ref}* ${data_name} = (${ctx_ref}*)${instance}.data;`,
-      name
+      data_name,
+      [instance]
     );
 
-    for (const item of [
-      ...ctx.Locals.map(([k, t]) => `${data_name}->${k} = ${t.c(ctx)};`),
-      ...ctx.Parameters.map(([k]) => `${data_name}->${k} = ${k};`),
-      `${data_name}->${index_name} = ${this.Over.c(ctx)};`,
-    ])
-      ctx.AddPrefix(item, name);
+    for (const [k, t] of all) {
+      const val = t instanceof FunctionParameter ? k : t.c(ctx);
+      ctx.AddPrefix(`${data_name}->${k} = ${val};`, `${data_name}->${k}`, [
+        data_name,
+        val,
+      ]);
+    }
+
+    const over = this.Over.c(ctx);
+    ctx.AddPrefix(
+      `${data_name}->${parent_name} = ${over};`,
+      `${data_name}->${parent_name}`,
+      [data_name, over]
+    );
 
     return instance;
   }
 
-  resolve_type(ctx: WriterContext): Component {
+  resolve_type(ctx: WriterContext): IterableType {
     return new IterableType(
       this.CodeLocation,
       this.Body.resolve_block_type(
