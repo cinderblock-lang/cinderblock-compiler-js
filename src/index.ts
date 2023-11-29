@@ -152,7 +152,7 @@ async function Prepare(
         Path.join(path, "cinder.json")
       );
 
-      if (!library_project.supported.includes(target))
+      if (!library_project.targets.includes(target))
         throw new Error(`Library ${url} does not support target ${target}`);
 
       for (const file of library_project.files) {
