@@ -3,6 +3,7 @@ import { AssignStatement } from "../../ast/statement/assign";
 import { Statement } from "../../ast/statement/base";
 import { PanicStatement } from "../../ast/statement/panic";
 import { ReturnStatement } from "../../ast/statement/return";
+import { SideStatement } from "../../ast/statement/side";
 import { StoreStatement } from "../../ast/statement/store";
 import { ParserError } from "../error";
 import { TokenGroup } from "../token";
@@ -24,6 +25,10 @@ function ExtractAssign(tokens: TokenGroup) {
 }
 
 function ExtractReturn(tokens: TokenGroup) {
+  return ExtractExpression(tokens);
+}
+
+function ExtractSide(tokens: TokenGroup) {
   return ExtractExpression(tokens);
 }
 
@@ -50,6 +55,9 @@ export function ExtractStatement(tokens: TokenGroup): Statement {
       const { error } = ExtractPanic(tokens);
       return new PanicStatement(current.CodeLocation, error);
     }
+    case "side": {
+      return new SideStatement(current.CodeLocation, ExtractReturn(tokens));
+    }
     default:
       throw ParserError.UnexpectedSymbol(
         current,
@@ -57,7 +65,8 @@ export function ExtractStatement(tokens: TokenGroup): Statement {
         "return",
         "assign",
         "panic",
-        "asm"
+        "asm",
+        "side"
       );
   }
 }

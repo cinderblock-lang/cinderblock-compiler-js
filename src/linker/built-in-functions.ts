@@ -20,6 +20,7 @@ export const BuiltInFunctions = new ComponentGroup(
       new BuiltInFunction(
         EmptyCodeLocation,
         "get_char",
+        false,
         new ComponentGroup(
           new FunctionParameter(
             EmptyCodeLocation,
@@ -41,6 +42,7 @@ export const BuiltInFunctions = new ComponentGroup(
       new BuiltInFunction(
         EmptyCodeLocation,
         "length",
+        false,
         new ComponentGroup(
           new FunctionParameter(
             EmptyCodeLocation,
@@ -62,6 +64,7 @@ export const BuiltInFunctions = new ComponentGroup(
       new BuiltInFunction(
         EmptyCodeLocation,
         "concat",
+        false,
         new ComponentGroup(
           new FunctionParameter(
             EmptyCodeLocation,
@@ -106,6 +109,7 @@ export const BuiltInFunctions = new ComponentGroup(
       new BuiltInFunction(
         EmptyCodeLocation,
         "c_size",
+        false,
         new ComponentGroup(
           new FunctionParameter(
             EmptyCodeLocation,
@@ -121,6 +125,7 @@ export const BuiltInFunctions = new ComponentGroup(
       new BuiltInFunction(
         EmptyCodeLocation,
         "sys_print",
+        true,
         new ComponentGroup(
           new FunctionParameter(
             EmptyCodeLocation,

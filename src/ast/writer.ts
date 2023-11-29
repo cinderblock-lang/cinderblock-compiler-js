@@ -42,6 +42,8 @@ export type WriterContextProps = {
   declaration?: Array<string>;
   prefix?: Array<[string, string, Array<string>]>;
   suffix?: Array<string>;
+
+  allow_unsafe?: boolean;
 };
 
 export class WriterContext {
@@ -68,6 +70,8 @@ export class WriterContext {
 
   #callstack: Array<string>;
 
+  #allow_unsafe: boolean;
+
   constructor(props: WriterContextProps) {
     this.#global_functions = props.global_functions;
     this.#global_types = props.global_types;
@@ -86,6 +90,8 @@ export class WriterContext {
     this.#prefix = props.prefix ?? [];
     this.#suffix = props.suffix ?? [];
     this.#callstack = props.callstack ?? [];
+
+    this.#allow_unsafe = props.allow_unsafe ?? true;
   }
 
   get #props(): WriterContextProps {
@@ -103,6 +109,7 @@ export class WriterContext {
       suffix: this.#suffix,
       callstack: this.#callstack,
       declaration: this.#declaration,
+      allow_unsafe: this.#allow_unsafe,
     };
   }
 
@@ -116,6 +123,17 @@ export class WriterContext {
 
   get Using() {
     return this.#using;
+  }
+
+  get AllowUnsafe() {
+    return this.#allow_unsafe;
+  }
+
+  WithUnsafeState(state: boolean) {
+    return new WriterContext({
+      ...this.#props,
+      allow_unsafe: state,
+    });
   }
 
   AddGlobal(line: string) {

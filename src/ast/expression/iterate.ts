@@ -110,6 +110,7 @@ export class IterateExpression extends Expression {
       this.CodeLocation,
       true,
       Namer.GetName(),
+      ctx.AllowUnsafe,
       new ComponentGroup(...func_parameters),
       new ComponentGroup(
         new RawStatement(

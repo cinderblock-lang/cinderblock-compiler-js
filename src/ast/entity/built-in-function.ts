@@ -12,6 +12,7 @@ import { WriterContext } from "../writer";
 
 export class BuiltInFunction extends Component {
   readonly #name: string;
+  readonly #unsafe: boolean;
   readonly #parameters: ComponentGroup;
   readonly #returns: Component;
   readonly #source: string;
@@ -21,6 +22,7 @@ export class BuiltInFunction extends Component {
   constructor(
     ctx: CodeLocation,
     name: string,
+    unsafe: boolean,
     parameters: ComponentGroup,
     returns: Component,
     source: string,
@@ -29,6 +31,7 @@ export class BuiltInFunction extends Component {
   ) {
     super(ctx);
     this.#name = name;
+    this.#unsafe = unsafe;
     this.#parameters = parameters;
     this.#returns = returns;
     this.#source = source;
@@ -67,6 +70,14 @@ export class BuiltInFunction extends Component {
   static #already_made: Array<string> = [];
 
   c(ctx: WriterContext): string {
+    if (this.#unsafe && !ctx.AllowUnsafe)
+      throw new LinkerError(
+        this.CodeLocation,
+        "Calling an unsafe function from a safe context"
+      );
+
+    ctx = ctx.WithUnsafeState(this.#unsafe);
+
     const name = Namer.GetName();
 
     const params = new ComponentGroup(

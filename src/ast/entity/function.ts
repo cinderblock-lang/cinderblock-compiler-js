@@ -7,6 +7,7 @@ import { ComponentGroup } from "../component-group";
 import { FunctionParameter } from "../function-parameter";
 import { Property } from "../property";
 import { ReturnStatement } from "../statement/return";
+import { SideStatement } from "../statement/side";
 import { Type } from "../type/base";
 import { FunctionType } from "../type/function";
 import { IterableType } from "../type/iterable";
@@ -21,6 +22,7 @@ import { StructEntity } from "./struct";
 
 export class FunctionEntity extends Entity {
   readonly #name: string;
+  readonly #unsafe: boolean;
   readonly #parameters: ComponentGroup;
   readonly #content: ComponentGroup;
   readonly #returns: Component | undefined;
@@ -31,6 +33,7 @@ export class FunctionEntity extends Entity {
     ctx: CodeLocation,
     exported: boolean,
     name: string,
+    unsafe: boolean,
     parameters: ComponentGroup,
     content: ComponentGroup,
     returns: Component | undefined,
@@ -39,6 +42,7 @@ export class FunctionEntity extends Entity {
   ) {
     super(ctx, exported);
     this.#name = name;
+    this.#unsafe = unsafe;
     this.#parameters = parameters;
     this.#content = content;
     this.#returns = returns;
@@ -192,6 +196,7 @@ export class FunctionEntity extends Entity {
       this.CodeLocation,
       this.Exported,
       this.Name,
+      this.#unsafe,
       new ComponentGroup(...input_parameters),
       this.Content,
       returns,
@@ -203,10 +208,23 @@ export class FunctionEntity extends Entity {
   static #already_made: Array<string> = [];
 
   c(ctx_old: WriterContext, is_main = false): string {
+    if (this.#unsafe && !ctx_old.AllowUnsafe)
+      throw new LinkerError(
+        this.CodeLocation,
+        "Calling an unsafe function from a safe context"
+      );
+
+    ctx_old = ctx_old.WithUnsafeState(this.#unsafe);
+
     const { input_parameters, returns, ctx } =
       this.#build_invokation_parameters(ctx_old);
 
+    for (const side of this.Content.find_all(SideStatement)) {
+      side.c(ctx);
+    }
+
     const body = this.Content.find(ReturnStatement).c(ctx);
+
     RequireOneOfType([Type, StructEntity], returns);
     if (is_main) {
       return `${returns.c(ctx)} ${this.Name}(${input_parameters

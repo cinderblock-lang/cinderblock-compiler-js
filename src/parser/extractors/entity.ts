@@ -86,7 +86,8 @@ export function ExtractEntity(
   tokens: TokenGroup,
   namspace: string,
   using: Array<string>,
-  exported?: boolean
+  exported?: boolean,
+  unsafe?: boolean
 ): Entity {
   const current = NextBlock(tokens);
 
@@ -142,12 +143,16 @@ export function ExtractEntity(
         current.CodeLocation,
         exported ?? false,
         name,
+        unsafe ?? false,
         new ComponentGroup(...parameters),
         body,
         returns,
         namspace,
         using
       );
+    }
+    case "unsafe": {
+      return ExtractEntity(tokens, namspace, using, exported, true);
     }
     default:
       throw ParserError.UnexpectedSymbol(
@@ -158,7 +163,8 @@ export function ExtractEntity(
         "using",
         "lib",
         "system",
-        "export"
+        "export",
+        "unsafe"
       );
   }
 }

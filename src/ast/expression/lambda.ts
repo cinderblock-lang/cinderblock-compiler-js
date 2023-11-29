@@ -132,6 +132,7 @@ export class LambdaExpression extends Expression {
       this.CodeLocation,
       true,
       name,
+      ctx.AllowUnsafe,
       new ComponentGroup(...func_parameters),
       new ComponentGroup(
         new RawStatement(
