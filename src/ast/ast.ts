@@ -38,7 +38,7 @@ export class Ast {
     return new Ast(new ComponentGroup(...this.#data), input);
   }
 
-  c(): string {
+  get #globals() {
     const global_functions: Record<string, AnyFunction> = {};
     const global_types: Record<string, AnyType> = {};
 
@@ -74,6 +74,11 @@ export class Ast {
       }
     }
 
+    return { global_functions, global_types };
+  }
+
+  c(): string {
+    const { global_functions, global_types } = this.#globals;
     for (const namespace of this.iterator()) {
       RequireType(Namespace, namespace);
       if (namespace.Name !== "App") continue;
@@ -102,40 +107,7 @@ export class Ast {
   }
 
   c_test(): string {
-    const global_functions: Record<string, AnyFunction> = {};
-    const global_types: Record<string, AnyType> = {};
-
-    for (const namespace of this.iterator()) {
-      RequireType(Namespace, namespace);
-
-      for (const entity of namespace.Contents.iterator()) {
-        PatternMatch(
-          FunctionEntity,
-          ExternalFunctionDeclaration,
-          BuiltInFunction,
-          StructEntity,
-          SchemaEntity,
-          UsingEntity
-        )(
-          (f) => {
-            global_functions[namespace.Name + "." + f.Name] = f;
-          },
-          (f) => {
-            global_functions[namespace.Name + "." + f.Name] = f;
-          },
-          (f) => {
-            global_functions[f.Name] = f;
-          },
-          (f) => {
-            global_types[namespace.Name + "." + f.Name] = f;
-          },
-          (f) => {
-            global_types[namespace.Name + "." + f.Name] = f;
-          },
-          (f) => {}
-        )(entity);
-      }
-    }
+    const { global_functions, global_types } = this.#globals;
 
     const state_name = Namer.GetName();
 
@@ -144,124 +116,6 @@ export class Ast {
 
     const success_message = "All tests passed!";
     const success_message_length = success_message.length;
-
-    const main = new FunctionEntity(
-      EmptyCodeLocation,
-      true,
-      "main",
-      true,
-      new ComponentGroup(),
-      new ComponentGroup(
-        new RawStatement(
-          EmptyCodeLocation,
-          `_Bool ${state_name} = 0;`,
-          state_name,
-          new PrimitiveType(EmptyCodeLocation, "bool")
-        ),
-        ...[...this.iterator()].flatMap((namespace) => {
-          RequireType(Namespace, namespace);
-
-          return namespace.Contents.find_all(TestEntity).flatMap((t) => {
-            const message = `Running test: ${t.Description}`;
-            const message_length = message.length;
-            const success_name = Namer.GetName();
-            return [
-              new SideStatement(
-                EmptyCodeLocation,
-                new InvokationExpression(
-                  EmptyCodeLocation,
-                  new ReferenceExpression(EmptyCodeLocation, "sys_print"),
-                  new ComponentGroup(
-                    new LiteralExpression(EmptyCodeLocation, "string", message),
-                    new LiteralExpression(
-                      EmptyCodeLocation,
-                      "int",
-                      message_length.toString() + "i"
-                    )
-                  )
-                )
-              ),
-              new StoreStatement(
-                EmptyCodeLocation,
-                success_name,
-                new InvokationExpression(
-                  EmptyCodeLocation,
-                  new ReferenceExpression(EmptyCodeLocation, t.Name),
-                  new ComponentGroup()
-                )
-              ),
-
-              new RawStatement(
-                EmptyCodeLocation,
-                `${state_name} = ${state_name} || !(*!${success_name})`,
-                Namer.GetName(),
-                new PrimitiveType(EmptyCodeLocation, "null")
-              ),
-            ];
-          });
-        }),
-        new ReturnStatement(
-          EmptyCodeLocation,
-          new IfExpression(
-            EmptyCodeLocation,
-            new ReferenceExpression(EmptyCodeLocation, state_name),
-            new ComponentGroup(
-              new SideStatement(
-                EmptyCodeLocation,
-                new InvokationExpression(
-                  EmptyCodeLocation,
-                  new ReferenceExpression(EmptyCodeLocation, "sys_print"),
-                  new ComponentGroup(
-                    new LiteralExpression(
-                      EmptyCodeLocation,
-                      "string",
-                      failure_message
-                    ),
-                    new LiteralExpression(
-                      EmptyCodeLocation,
-                      "int",
-                      failure_message_length.toString() + "i"
-                    )
-                  )
-                )
-              ),
-              new ReturnStatement(
-                EmptyCodeLocation,
-                new LiteralExpression(EmptyCodeLocation, "int", "1i")
-              )
-            ),
-            new ComponentGroup(
-              new SideStatement(
-                EmptyCodeLocation,
-                new InvokationExpression(
-                  EmptyCodeLocation,
-                  new ReferenceExpression(EmptyCodeLocation, "sys_print"),
-                  new ComponentGroup(
-                    new LiteralExpression(
-                      EmptyCodeLocation,
-                      "string",
-                      success_message
-                    ),
-                    new LiteralExpression(
-                      EmptyCodeLocation,
-                      "int",
-                      success_message_length.toString() + "i"
-                    )
-                  )
-                )
-              ),
-              new ReturnStatement(
-                EmptyCodeLocation,
-                new LiteralExpression(EmptyCodeLocation, "int", "0i")
-              )
-            )
-          )
-        )
-      ),
-      new PrimitiveType(EmptyCodeLocation, "bool"),
-      "App",
-      []
-    );
 
     const ctx = new WriterContext({
       global_functions,
@@ -273,7 +127,46 @@ export class Ast {
       use_types: {},
     });
 
-    const c = main.c(ctx, true);
-    return `${ctx.CText}\n\n${c}`;
+    const functions = [...this.iterator()].flatMap((namespace) => {
+      RequireType(Namespace, namespace);
+
+      return namespace.Contents.find_all(TestEntity).map(
+        (t) => [t.c(ctx, false), t.Description] as const
+      );
+    });
+
+    ctx.AddInclude("<stdio.h>");
+
+    ctx.AddGlobal(`int main() {
+      _Bool failures = 0;
+
+      ${ctx.Prefix}
+
+      ${functions
+        .map(
+          ([f, d]) => `
+        _Bool (*${f}_h)() = ${f}.handle;
+        printf("Running test: ${d}\\n");
+        if (!(*${f}_h)()) {
+          printf("Test Failed\\n\\n\\n");
+          failures = 1;
+        } else {
+          printf("Test Passed\\n\\n\\n");
+        }
+      `
+        )
+        .join("\n")}
+
+      ${ctx.Suffix}
+
+      if (failures) {
+        printf("You had some failues.\\n");
+        return 1;
+      }
+
+      printf("All tests passed!\\n");
+      return 0;
+    }`);
+    return `${ctx.CText}`;
   }
 }

@@ -135,6 +135,8 @@ export function ExtractExpression(
     } else if (text === "empty") {
       const { of } = ExtractEmpty(tokens);
       result = new EmptyExpression(current.CodeLocation, of);
+    } else if (text === "true" || text === "false") {
+      result = new LiteralExpression(current.CodeLocation, "bool", text);
     } else if (text === "iterate") {
       const { to, as, block } = ExtractIterate(tokens);
       result = new IterateExpression(current.CodeLocation, to, as, block);
