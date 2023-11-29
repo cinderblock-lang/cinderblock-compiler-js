@@ -225,8 +225,8 @@ export async function Compile(
         );
         break;
       default:
-        throw new Error(
-          "Currently, only compiling for linux on linux is supported. Expect more when the compiler is written in cinderblock"
+        console.warn(
+          "Currently, only linux is supported as a target. Other targets will be ignored."
         );
     }
   }
@@ -251,8 +251,8 @@ export async function Test(root_dir: string) {
         await Exec(`gcc test.c -g -o ${project.name}_tests`, dir);
         break;
       default:
-        throw new Error(
-          "Currently, only compiling for linux on linux is supported. Expect more when the compiler is written in cinderblock"
+        console.warn(
+          "Currently, only linux is supported as a target. Other targets will be ignored."
         );
     }
   }

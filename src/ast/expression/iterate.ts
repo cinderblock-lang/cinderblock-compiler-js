@@ -21,6 +21,9 @@ import { PrimitiveType } from "../type/primitive";
 import { IfExpression } from "./if";
 import { OperatorExpression } from "./operator";
 import { LiteralExpression } from "./literal";
+import { LinkerError } from "../../linker/error";
+import { RequireType } from "../../location/require-type";
+import { FunctionType } from "../type/function";
 
 export class IterateExpression extends Expression {
   readonly #over: Component;
@@ -53,6 +56,21 @@ export class IterateExpression extends Expression {
 
   get type_name() {
     return "iterate_expression";
+  }
+
+  #input_type(ctx: WriterContext) {
+    const over_type = this.Over.resolve_type(ctx);
+    RequireType(FunctionType, over_type);
+    const returns = over_type.Returns;
+    RequireType(StructEntity, returns);
+    const item = returns.GetKey("result");
+    if (!item)
+      throw new LinkerError(
+        this.CodeLocation,
+        "Could not resolve iterator type"
+      );
+
+    return item;
   }
 
   c(ctx: WriterContext): string {
@@ -105,6 +123,10 @@ export class IterateExpression extends Expression {
 
     const result = this.resolve_type(ctx).Result;
     ctx.AddGlobalStruct(result.Name, result);
+
+    const item = result.GetKey("result")?.Type;
+    if (!item)
+      throw new LinkerError(this.CodeLocation, "Could not find result type");
 
     const func = new FunctionEntity(
       this.CodeLocation,
@@ -186,13 +208,24 @@ export class IterateExpression extends Expression {
                     "==",
                     new LiteralExpression(this.CodeLocation, "bool", "false")
                   ),
-                  this.Body,
+                  new ComponentGroup(
+                    new StoreStatement(
+                      this.CodeLocation,
+                      this.As,
+                      new AccessExpression(
+                        this.CodeLocation,
+                        new ReferenceExpression(this.CodeLocation, ctx_name),
+                        "result"
+                      )
+                    ),
+                    ...this.Body.iterator()
+                  ),
                   new ComponentGroup(
                     new RawStatement(
                       this.CodeLocation,
-                      `${returns.c(ctx)} ${nullptr_name};`,
+                      `${item.c(ctx)} ${nullptr_name};`,
                       nullptr_name,
-                      returns
+                      item
                     ),
                     new ReturnStatement(
                       this.CodeLocation,
@@ -206,7 +239,7 @@ export class IterateExpression extends Expression {
         ),
         ...this.Body.iterator()
       ),
-      this.Body.resolve_block_type(ctx, "iterate"),
+      returns,
       ctx.Namespace,
       ctx.Using
     );
@@ -252,7 +285,7 @@ export class IterateExpression extends Expression {
           new FunctionParameter(
             this.CodeLocation,
             this.As,
-            this.Over.resolve_type(ctx),
+            this.#input_type(ctx),
             false
           )
         ),

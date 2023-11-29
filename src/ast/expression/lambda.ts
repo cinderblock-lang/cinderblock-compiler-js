@@ -84,7 +84,7 @@ export class LambdaExpression extends Expression {
   }
 
   c(ctx: WriterContext): string {
-    const name = ctx.Callstack.join("__");
+    const name = ctx.Callstack.join("__") + Namer.GetName();
 
     const all = [...ctx.Locals, ...ctx.Parameters].filter(([k]) => k !== "ctx");
 
