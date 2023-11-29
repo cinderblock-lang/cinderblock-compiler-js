@@ -4,7 +4,8 @@
   "description": "A new programming language",
   "scripts": {
     "build": "tsc",
-    "test": "npm run build && cd ../tests/tests && cinderblock test"
+    "test": "npm run build && cd ../tests/tests && cinderblock test",
+    "package": "pkg ."
   },
   "private": true,
   "bin": {
@@ -22,9 +23,16 @@
   "homepage": "https://github.com/cinderblock-lang/cinderblock-compiler#readme",
   "devDependencies": {
     "@types/node": "^20.8.10",
+    "pkg": "^5.8.1",
     "typescript": "^5.2.2"
   },
   "dependencies": {
     "yargs": "^17.7.2"
+  },
+  "pkg": {
+    "targets": [
+      "node18-linux-x64"
+    ],
+    "outputPath": "pkg"
   }
 }

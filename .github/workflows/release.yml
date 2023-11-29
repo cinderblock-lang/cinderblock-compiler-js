@@ -1,0 +1,46 @@
+name: Compile
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: compiler
+
+      - name: Checkout Tests
+        uses: actions/checkout@master
+        with:
+          repository: cinderblock-lang/cinderblock-tests
+          path: tests
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18.x"
+
+      - run: npm install
+        working-directory: compiler
+
+      - run: npm run build
+        working-directory: compiler
+
+      - run: ./test.sh
+        working-directory: tests
+        env:
+          CINDERBLOCK: node ../../compiler/bin/index.js
+
+      - run: npm run package
+        working-directory: compiler
+
+      - name: Release with Notes
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            compiler/pkg/cinderblock
