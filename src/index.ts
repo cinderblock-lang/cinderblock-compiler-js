@@ -23,7 +23,7 @@ type Project = {
 type Library = {
   files: Array<File>;
   libs?: Array<string>;
-  supported: Target;
+  targets: Array<Target>;
 };
 
 async function EnsureDir(path: string) {
