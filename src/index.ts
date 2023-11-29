@@ -1,4 +1,6 @@
 import Path from "path";
+import Http from "https";
+import FsOld from "fs";
 import Fs from "fs/promises";
 import Child from "child_process";
 import { ParseCinderblock } from "./parser";
@@ -12,7 +14,7 @@ type File = string | Partial<Record<Target, string>>;
 type Project = {
   name: string;
   files: Array<File>;
-  libs?: Array<[string, string]>;
+  libs?: Array<string>;
   targets: Array<Target>;
   bin: string;
   std_tag?: string;
@@ -24,25 +26,72 @@ type Library = {
   supported: Target;
 };
 
+async function EnsureDir(path: string) {
+  try {
+    await Fs.mkdir(path, { recursive: true });
+  } catch {}
+}
+
+function JoinUrl(...parts: Array<string>) {
+  let result = "";
+
+  for (const part of parts) {
+    if (result && !result.endsWith("/")) result = result + "/";
+
+    if (part.startsWith("/")) result = result + part.replace("/", "");
+    else if (part.startsWith("./")) result = result + part.replace("./", "");
+    else result = result + part;
+  }
+
+  return result;
+}
+
+async function GetFile(url: string, path: string) {
+  await EnsureDir(Path.dirname(path));
+  const stream = FsOld.createWriteStream(path);
+
+  return new Promise<string>((res) => {
+    Http.get(url, (response) => {
+      response.pipe(stream);
+
+      stream.on("finish", () => {
+        stream.close();
+        Fs.readFile(path, "utf-8").then((text) => res(text));
+      });
+    });
+  });
+}
+
 function Exec(command: string, cwd: string) {
   return new Promise<void>(async (res, rej) => {
     Child.exec(command, { cwd }, (err) => (err ? rej(err) : res()));
   });
 }
 
-async function Clone(git: string, version: string, path: string) {
-  await Fs.mkdir(path, { recursive: true });
+async function Clone(url: string, path: string) {
+  await EnsureDir(path);
 
-  await Exec(
-    `git clone --depth=1 ${
-      version !== "*" ? `--branch ${version}` : ""
-    } ${git} .`,
-    path
+  const file = await GetFile(
+    JoinUrl(url, "cinder.json"),
+    Path.join(path, "cinder.json")
   );
+
+  const data: Library = JSON.parse(file);
+
+  for (const file of data.files) {
+    if (typeof file === "string")
+      await GetFile(JoinUrl(url, file), Path.join(path, file));
+    else
+      for (const key in file)
+        await GetFile(
+          JoinUrl(url, (file as any)[key]),
+          Path.join(path, (file as any)[key])
+        );
+  }
 }
 
-function LibraryUrl(cache_dir: string, url: string, version: string) {
-  const dir = Buffer.from(url + "#" + version).toString("hex");
+function LibraryUrl(cache_dir: string, url: string) {
+  const dir = Buffer.from(url).toString("hex");
   return Path.resolve(cache_dir, dir);
 }
 
@@ -56,7 +105,7 @@ async function ReadText(path: string) {
 
 export async function Compile(
   root_dir: string,
-  options: { debug?: boolean } = {}
+  options: { debug?: boolean; no_cache?: boolean } = {}
 ) {
   const project: Project = await ReadJson(
     Path.resolve(root_dir, "cinder.json")
@@ -65,14 +114,20 @@ export async function Compile(
   const cache_dir = Path.resolve(root_dir, ".cinder_cache");
 
   const libs = (project.libs ?? []).concat([
-    [
-      "https://github.com/cinderblock-lang/cinderblock-std.git",
-      project.std_tag ?? "*",
-    ],
+    `https://raw.githubusercontent.com/cinderblock-lang/cinderblock-std/${
+      project.std_tag ?? "master"
+    }`,
   ]);
 
-  for (const [url, tag] of libs) {
-    const path = LibraryUrl(cache_dir, url, tag);
+  for (const url of libs) {
+    const path = LibraryUrl(cache_dir, url);
+    if (options.no_cache) {
+      console.log(`Caches disabled for ${url}, pulling from remote`);
+
+      await Clone(url, path);
+      continue;
+    }
+
     try {
       const stat = await Fs.stat(path);
       if (!stat.isDirectory()) throw new Error("Not found");
@@ -81,15 +136,15 @@ export async function Compile(
     } catch {
       console.log(`Could not use cache for ${url}, pulling from remote`);
 
-      await Clone(url, tag, path);
+      await Clone(url, path);
     }
   }
 
   for (const target of project.targets) {
     let parsed = new Ast().with(BuiltInFunctions);
 
-    for (const [url, tag] of libs) {
-      const path = LibraryUrl(cache_dir, url, tag);
+    for (const url of libs) {
+      const path = LibraryUrl(cache_dir, url);
 
       const library_project: Library = await ReadJson(
         Path.join(path, "cinder.json")

@@ -13,11 +13,15 @@ yargs(hideBin(process.argv))
       return yargs;
     },
     (argv) => {
-      Compile(".", { debug: argv.debug });
+      Compile(".", { debug: argv.debug, no_cache: argv["no-cache"] });
     }
   )
   .option("debug", {
     alias: "d",
+    type: "boolean",
+  })
+  .option("no-cache", {
+    alias: "c",
     type: "boolean",
   })
   .parse();
