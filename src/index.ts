@@ -103,7 +103,7 @@ async function ReadText(path: string) {
   return await Fs.readFile(path, "utf-8");
 }
 
-export async function Compile(
+async function Prepare(
   root_dir: string,
   options: { debug?: boolean; no_cache?: boolean } = {}
 ) {
@@ -139,6 +139,8 @@ export async function Compile(
       await Clone(url, path);
     }
   }
+
+  const result: Partial<Record<Target, [string, Ast]>> = {};
 
   for (const target of project.targets) {
     let parsed = new Ast().with(BuiltInFunctions);
@@ -196,6 +198,21 @@ export async function Compile(
     const dir = Path.resolve(root_dir, project.bin, target);
     await Fs.mkdir(dir, { recursive: true });
 
+    result[target] = [dir, parsed];
+  }
+
+  return { result, project };
+}
+
+export async function Compile(
+  root_dir: string,
+  options: { debug?: boolean; no_cache?: boolean } = {}
+) {
+  const { result: prepared, project } = await Prepare(root_dir, options);
+  for (const target in prepared) {
+    const item = prepared[target as Target];
+    if (!item) continue;
+    const [dir, parsed] = item;
     const c_code = parsed.c();
 
     await Fs.writeFile(Path.join(dir, "main.c"), c_code);
@@ -206,6 +223,32 @@ export async function Compile(
           `gcc main.c ${options.debug ? "-g" : ""} -o ${project.name}`,
           dir
         );
+        break;
+      default:
+        throw new Error(
+          "Currently, only compiling for linux on linux is supported. Expect more when the compiler is written in cinderblock"
+        );
+    }
+  }
+}
+
+export async function Test(root_dir: string) {
+  const { result: prepared, project } = await Prepare(root_dir, {
+    debug: true,
+    no_cache: true,
+  });
+
+  for (const target in prepared) {
+    const item = prepared[target as Target];
+    if (!item) continue;
+    const [dir, parsed] = item;
+    const c_code = parsed.c_test();
+
+    await Fs.writeFile(Path.join(dir, "test.c"), c_code);
+
+    switch (target) {
+      case "linux":
+        await Exec(`gcc test.c -g -o ${project.name}_tests`, dir);
         break;
       default:
         throw new Error(

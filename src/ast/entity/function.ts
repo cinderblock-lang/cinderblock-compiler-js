@@ -66,6 +66,10 @@ export class FunctionEntity extends Entity {
     return this.#returns;
   }
 
+  get Namespace() {
+    return this.#namespace;
+  }
+
   get type_name() {
     return "function_entity";
   }

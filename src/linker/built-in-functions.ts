@@ -1,15 +1,9 @@
 import { ComponentGroup } from "../ast/component-group";
 import { BuiltInFunction } from "../ast/entity/built-in-function";
-import { StructEntity } from "../ast/entity/struct";
 import { FunctionParameter } from "../ast/function-parameter";
 import { Namespace } from "../ast/namespace";
-import { Property } from "../ast/property";
-import { FunctionType } from "../ast/type/function";
 import { PrimitiveType } from "../ast/type/primitive";
-import { ReferenceType } from "../ast/type/reference";
-import { CodeLocation } from "../location/code-location";
-
-const EmptyCodeLocation = new CodeLocation("generated", -1, -1, -1, -1);
+import { EmptyCodeLocation } from "../location/empty";
 
 export const BuiltInFunctions = new ComponentGroup(
   new Namespace(

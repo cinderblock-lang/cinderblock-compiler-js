@@ -19,6 +19,7 @@ import { SchemaEntity } from "../../ast/entity/schema";
 import { StructEntity } from "../../ast/entity/struct";
 import { SystemEntity } from "../../ast/entity/system";
 import { UsingEntity } from "../../ast/entity/using";
+import { TestEntity } from "../../ast/entity/test";
 
 function ExtractExternalFunction(tokens: TokenGroup) {
   const start = ExpectNext(tokens, "fn");
@@ -46,6 +47,19 @@ function ExtractFunction(tokens: TokenGroup) {
   const returns = IfIs(tokens, ":", () => ExtractType(tokens));
 
   return { name, parameters, returns, body: ExtractStatementBlock(tokens) };
+}
+
+function ExtractTest(tokens: TokenGroup) {
+  const name_token = NextBlock(tokens);
+  const name = name_token.Text;
+
+  if (!name.startsWith('"') || !name.endsWith('"'))
+    throw new ParserError(
+      name_token.CodeLocation,
+      "Tests must have a string as the name"
+    );
+
+  return { name: name.replace(/"/gm, ""), body: ExtractStatementBlock(tokens) };
 }
 
 function ExtractLib(tokens: TokenGroup) {
@@ -84,7 +98,7 @@ function ExtractUsing(tokens: TokenGroup) {
 
 export function ExtractEntity(
   tokens: TokenGroup,
-  namspace: string,
+  namespace: string,
   using: Array<string>,
   exported?: boolean,
   unsafe?: boolean
@@ -108,7 +122,7 @@ export function ExtractEntity(
         exported ?? false,
         name,
         new ComponentGroup(...properties),
-        namspace,
+        namespace,
         using
       );
     }
@@ -118,7 +132,7 @@ export function ExtractEntity(
       return new UsingEntity(current.CodeLocation, false, name);
     }
     case "export": {
-      return ExtractEntity(tokens, namspace, using, true);
+      return ExtractEntity(tokens, namespace, using, true);
     }
     case "lib": {
       const { path, declarations } = ExtractLib(tokens);
@@ -147,12 +161,23 @@ export function ExtractEntity(
         new ComponentGroup(...parameters),
         body,
         returns,
-        namspace,
+        namespace,
         using
       );
     }
     case "unsafe": {
-      return ExtractEntity(tokens, namspace, using, exported, true);
+      return ExtractEntity(tokens, namespace, using, exported, true);
+    }
+    case "test": {
+      const { name, body } = ExtractTest(tokens);
+      return new TestEntity(
+        current.CodeLocation,
+        false,
+        name,
+        body,
+        namespace,
+        using
+      );
     }
     default:
       throw ParserError.UnexpectedSymbol(
@@ -164,7 +189,8 @@ export function ExtractEntity(
         "lib",
         "system",
         "export",
-        "unsafe"
+        "unsafe",
+        "test"
       );
   }
 }

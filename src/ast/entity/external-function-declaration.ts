@@ -1,4 +1,3 @@
-import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { Component } from "../component";
 import { ComponentGroup } from "../component-group";
