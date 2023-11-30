@@ -61,7 +61,7 @@ export class IterateExpression extends Expression {
   #input_type(ctx: WriterContext) {
     const over_type = this.Over.resolve_type(ctx);
     RequireType(FunctionType, over_type);
-    const returns = over_type.Returns;
+    const returns = over_type.Returns.resolve_type(ctx);
     RequireType(StructEntity, returns);
     const item = returns.GetKey("result");
     if (!item)
@@ -239,7 +239,7 @@ export class IterateExpression extends Expression {
         ),
         ...this.Body.iterator()
       ),
-      returns,
+      result,
       ctx.Namespace,
       ctx.Using
     );

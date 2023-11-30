@@ -22,6 +22,8 @@ export class LambdaExpression extends Expression {
   readonly #body: ComponentGroup;
   readonly #returns: Component | undefined;
 
+  readonly #name: string;
+
   constructor(
     ctx: CodeLocation,
     parameters: ComponentGroup,
@@ -32,6 +34,8 @@ export class LambdaExpression extends Expression {
     this.#parameters = parameters;
     this.#body = body;
     this.#returns = returns;
+
+    this.#name = Namer.GetName();
   }
 
   get Parameters() {
@@ -84,7 +88,7 @@ export class LambdaExpression extends Expression {
   }
 
   c(ctx: WriterContext): string {
-    const name = ctx.Callstack.join("__") + Namer.GetName();
+    const name = ctx.Callstack.join("__") + this.#name;
 
     const all = [...ctx.Locals, ...ctx.Parameters].filter(([k]) => k !== "ctx");
 

@@ -11,16 +11,7 @@ import { SchemaEntity } from "./entity/schema";
 import { StructEntity } from "./entity/struct";
 import { TestEntity } from "./entity/test";
 import { UsingEntity } from "./entity/using";
-import { IfExpression } from "./expression/if";
-import { InvokationExpression } from "./expression/invokation";
-import { LiteralExpression } from "./expression/literal";
-import { ReferenceExpression } from "./expression/reference";
 import { Namespace } from "./namespace";
-import { RawStatement } from "./statement/raw";
-import { ReturnStatement } from "./statement/return";
-import { SideStatement } from "./statement/side";
-import { StoreStatement } from "./statement/store";
-import { PrimitiveType } from "./type/primitive";
 import { AnyFunction, AnyType, WriterContext } from "./writer";
 
 export class Ast {
@@ -109,14 +100,6 @@ export class Ast {
   c_test(): string {
     const { global_functions, global_types } = this.#globals;
 
-    const state_name = Namer.GetName();
-
-    const failure_message = "Some tests failed. Check the logs above.";
-    const failure_message_length = failure_message.length;
-
-    const success_message = "All tests passed!";
-    const success_message_length = success_message.length;
-
     const ctx = new WriterContext({
       global_functions,
       global_types,
@@ -127,13 +110,15 @@ export class Ast {
       use_types: {},
     });
 
-    const functions = [...this.iterator()].flatMap((namespace) => {
-      RequireType(Namespace, namespace);
+    const functions = [...this.iterator()]
+      .filter((c) => !c.CodeLocation.FileName.includes(".cinder_cache"))
+      .flatMap((namespace) => {
+        RequireType(Namespace, namespace);
 
-      return namespace.Contents.find_all(TestEntity).map(
-        (t) => [t.c(ctx, false), t.Description] as const
-      );
-    });
+        return namespace.Contents.find_all(TestEntity).map(
+          (t) => [t.c(ctx, false), t.Description] as const
+        );
+      });
 
     ctx.AddInclude("<stdio.h>");
 

@@ -75,7 +75,7 @@ export class FunctionEntity extends Entity {
   }
 
   get #full_name() {
-    return this.#namespace.replace(/\./gm, "__") + "__" + this.Name;
+    return (this.#namespace + "__" + this.Name).replace(/\./gm, "__");
   }
 
   #process_type(
@@ -187,7 +187,9 @@ export class FunctionEntity extends Entity {
 
     return {
       input_parameters: input,
-      returns: this.Content.resolve_block_type(ctx, this.Name),
+      returns:
+        this.Returns?.resolve_type(ctx) ??
+        this.Content.resolve_block_type(ctx, this.Name),
       ctx,
     };
   }
@@ -227,10 +229,9 @@ export class FunctionEntity extends Entity {
       side.c(ctx);
     }
 
-    const body = this.Content.find(ReturnStatement).c(ctx);
-
     RequireOneOfType([Type, StructEntity], returns);
     if (is_main) {
+      const body = this.Content.find(ReturnStatement).c(ctx);
       return `${returns.c(ctx)} ${this.Name}(${input_parameters
         .map((p) => {
           RequireType(FunctionParameter, p);
@@ -250,6 +251,7 @@ export class FunctionEntity extends Entity {
 
     if (!FunctionEntity.#already_made.includes(this.#full_name)) {
       FunctionEntity.#already_made.push(this.#full_name);
+      const body = this.Content.find(ReturnStatement).c(ctx);
       const top_line = `${returns.c(ctx)} ${this.#full_name}(${input_parameters
         .map((p) => {
           RequireType(FunctionParameter, p);
