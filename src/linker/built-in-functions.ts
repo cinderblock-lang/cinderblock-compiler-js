@@ -95,6 +95,45 @@ export const BuiltInFunctions = new ComponentGroup(
           for (int i = 0 ; i < second_length ; i++) {
             result[first_length + i] = second[i];
           }
+
+          result[first_length + second_length] = 0;
+          return result;`,
+        [],
+        true
+      ),
+      new BuiltInFunction(
+        EmptyCodeLocation,
+        "add_char",
+        false,
+        new ComponentGroup(
+          new FunctionParameter(
+            EmptyCodeLocation,
+            "first",
+            new PrimitiveType(EmptyCodeLocation, "string"),
+            false
+          ),
+          new FunctionParameter(
+            EmptyCodeLocation,
+            "second",
+            new PrimitiveType(EmptyCodeLocation, "char"),
+            false
+          )
+        ),
+        new PrimitiveType(EmptyCodeLocation, "string"),
+        ` int length = 0;
+        
+          while (first[length] != 0) {
+            length = length + 1;
+          }
+
+          char *result = malloc(sizeof(char) * (length + 2));
+
+          for (int i = 0 ; i < length ; i++) {
+            result[i] = first[i];
+          }
+
+          result[length] = second;
+          result[length + 1] = 0;
           
           return result;`,
         [],
