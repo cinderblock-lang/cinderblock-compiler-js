@@ -66,7 +66,7 @@ export class AccessExpression extends Expression {
         if (!target || !IsAnyInvokable(target))
           throw new LinkerError(this.CodeLocation, "Could not resolve");
 
-        return target;
+        return target.resolve_type(ctx);
       }
     )(subject);
   }

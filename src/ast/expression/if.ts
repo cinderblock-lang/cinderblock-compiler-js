@@ -43,6 +43,7 @@ export class IfExpression extends Expression {
   }
 
   c(ctx: WriterContext): string {
+    debugger;
     const type = this.If.resolve_block_type(ctx, "if");
     const name = Namer.GetName();
     ctx.AddPrefix(`${type.c(ctx)} ${name};`, name, []);

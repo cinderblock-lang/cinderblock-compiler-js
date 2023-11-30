@@ -233,6 +233,6 @@ export class InvokationExpression extends Expression {
       );
     }
 
-    return func.Returns;
+    return func.Returns.resolve_type(ctx);
   }
 }
