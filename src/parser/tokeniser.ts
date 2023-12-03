@@ -41,7 +41,7 @@ class StringTraversal {
   }
 }
 
-const is_symbol_character = /^[=\-\/\\+?*<>]+$/gm;
+const is_symbol_character = /^[=\-\/\\+?*<>&%\|]+$/gm;
 const is_word_character = /^[a-zA-Z0-9_]+$/gm;
 const is_quote_mark = /^['"`]$/gm;
 

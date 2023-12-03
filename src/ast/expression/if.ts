@@ -1,11 +1,8 @@
-import { Unique } from "../utils";
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Component } from "../component";
 import { ComponentGroup } from "../component-group";
 import { WriterContext } from "../writer";
-import { StoreStatement } from "../statement/store";
-import { RawStatement } from "../statement/raw";
 import { ReturnStatement } from "../statement/return";
 import { Namer } from "../../location/namer";
 
@@ -43,7 +40,6 @@ export class IfExpression extends Expression {
   }
 
   c(ctx: WriterContext): string {
-    debugger;
     const type = this.If.resolve_block_type(ctx, "if");
     const name = Namer.GetName();
     ctx.AddPrefix(`${type.c(ctx)} ${name};`, name, []);

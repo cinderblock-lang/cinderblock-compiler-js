@@ -18,6 +18,7 @@ type Project = {
   targets: Array<Target>;
   bin: string;
   std_tag?: string;
+  no_std?: boolean;
 };
 
 type Library = {
@@ -113,11 +114,15 @@ async function Prepare(
 
   const cache_dir = Path.resolve(root_dir, ".cinder_cache");
 
-  const libs = (project.libs ?? []).concat([
-    `https://raw.githubusercontent.com/cinderblock-lang/cinderblock-std/${
-      project.std_tag ?? "master"
-    }`,
-  ]);
+  const libs = (project.libs ?? []).concat(
+    !project.no_std
+      ? [
+          `https://raw.githubusercontent.com/cinderblock-lang/cinderblock-std/${
+            project.std_tag ?? "master"
+          }`,
+        ]
+      : []
+  );
 
   for (const url of libs) {
     const path = LibraryUrl(cache_dir, url);

@@ -102,7 +102,6 @@ export class IterateExpression extends Expression {
     ];
 
     const over_type = this.Over.resolve_type(ctx);
-    debugger;
 
     const name = Namer.GetName();
     const ctx_struct = new StructEntity(
