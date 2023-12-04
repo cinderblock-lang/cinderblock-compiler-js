@@ -11,11 +11,13 @@ import { IterateExpression } from "../../ast/expression/iterate";
 import { LambdaExpression } from "../../ast/expression/lambda";
 import { LiteralExpression } from "../../ast/expression/literal";
 import { MakeExpression } from "../../ast/expression/make";
+import { MatchExpression } from "../../ast/expression/match";
 import {
   Operator,
   Operators,
   OperatorExpression,
 } from "../../ast/expression/operator";
+import { PickExpression } from "../../ast/expression/pick";
 import { ReferenceExpression } from "../../ast/expression/reference";
 import { ReturnStatement } from "../../ast/statement/return";
 import { ParserError } from "../error";
@@ -65,6 +67,32 @@ function ExtractMake(tokens: TokenGroup) {
   const block = ExtractStatementBlock(tokens);
 
   return { name, block };
+}
+
+function ExtractPick(tokens: TokenGroup) {
+  const enum_name = NextBlock(tokens);
+  ExpectNext(tokens, ".");
+  const enum_key = NextBlock(tokens);
+
+  const block = ExtractStatementBlock(tokens);
+  return { name: enum_name.Text, key: enum_key.Text, block };
+}
+
+function ExtractMatch(tokens: TokenGroup) {
+  ExpectNext(tokens, "(");
+  const subject = ExtractExpression(tokens, ["as"]);
+  ExpectNext(tokens, "as");
+  const as = NextBlock(tokens);
+  ExpectNext(tokens, ")");
+  const matchers = BuildWhile(tokens, "{", ",", "}", () => {
+    const name = NextBlock(tokens);
+    ExpectNext(tokens, ":");
+    const block = ExtractStatementBlock(tokens);
+
+    return { name, block };
+  });
+
+  return { subject, as: as.Text, matchers };
 }
 
 function ExtractLambda(tokens: TokenGroup, look_for: Array<string>) {
@@ -143,6 +171,20 @@ export function ExtractExpression(
     } else if (text === "make") {
       const { name, block } = ExtractMake(tokens);
       result = new MakeExpression(current.CodeLocation, name, block);
+    } else if (text === "pick") {
+      const { name, key, block } = ExtractPick(tokens);
+      result = new PickExpression(current.CodeLocation, name, key, block);
+    } else if (text === "match") {
+      const { subject, as, matchers } = ExtractMatch(tokens);
+      result = new MatchExpression(
+        current.CodeLocation,
+        subject,
+        as,
+        matchers.reduce(
+          (c, n) => ({ ...c, [n.name.Text]: n.block }),
+          {} as Record<string, ComponentGroup>
+        )
+      );
     } else if (text === "is") {
       if (!result)
         throw new ParserError(

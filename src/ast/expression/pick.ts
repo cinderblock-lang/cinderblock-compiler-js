@@ -59,7 +59,7 @@ export class PickExpression extends Expression {
     const line = `{
       ${ctx_new.Prefix}
       ${name}.type = ${type.GetKeyIndex(this.Key)};
-      ${name}.data = ${value_text};
+      ${name}.data = &${value_text};
       ${ctx_new.Suffix}
     }`;
 

@@ -41,7 +41,9 @@ export function ExtractStatement(tokens: TokenGroup): Statement {
 
   switch (current.Text) {
     case "store": {
+      debugger;
       const { name, equals } = ExtractStore(tokens);
+      debugger;
       return new StoreStatement(current.CodeLocation, name, equals);
     }
     case "return": {

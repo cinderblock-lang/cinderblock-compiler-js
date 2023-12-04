@@ -8,33 +8,27 @@ import { Namer } from "../../location/namer";
 import { RequireType } from "../../location/require-type";
 import { EnumEntity } from "../entity/enum";
 import { ReturnStatement } from "../statement/return";
+import { RawStatement } from "../statement/raw";
 
 export class MatchExpression extends Expression {
   readonly #subject: Expression;
-  readonly #name: string;
   readonly #as: string;
   readonly #using: Record<string, ComponentGroup>;
 
   constructor(
     ctx: CodeLocation,
     subject: Expression,
-    name: string,
     as: string,
     using: Record<string, ComponentGroup>
   ) {
     super(ctx);
     this.#subject = subject;
-    this.#name = name;
     this.#as = as;
     this.#using = using;
   }
 
   get Subject() {
     return this.#subject;
-  }
-
-  get Name() {
-    return this.#name;
   }
 
   get type_name() {
@@ -64,17 +58,22 @@ export class MatchExpression extends Expression {
       if (!item_type)
         throw new LinkerError(this.CodeLocation, "Could not resolve key");
 
-      const item_ctx = ctx
-        .WithBody(this.#using[key], key)
-        .WithLocal(this.#as, item_type);
+      const storage = new RawStatement(
+        this.CodeLocation,
+        `${item_type.c(ctx)} ${this.#as} = *(${item_type.c(
+          ctx
+        )}*)${item_name}.data;`,
+        this.#as,
+        item_type
+      );
 
+      const item_ctx = ctx
+        .WithLocal(this.#as, storage)
+        .WithBody(this.#using[key], key);
       const item_return = this.#using[key].find(ReturnStatement).c(item_ctx);
 
       ctx.AddPrefix(
         `if (${item_name}.type == ${index}) {
-        ${item_type.c(ctx)} ${this.#as} = (${item_type.c(
-          ctx
-        )})${item_name}.data;
         ${item_ctx.Prefix}
         ${name} = ${item_return};
         ${item_ctx.Suffix}

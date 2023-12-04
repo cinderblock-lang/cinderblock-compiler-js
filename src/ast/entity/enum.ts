@@ -71,7 +71,7 @@ export class EnumEntity extends Entity {
       EnumEntity.#already_made = true;
       ctx.AddGlobalDeclaration(`typedef struct _ENUM {
         int type;
-        void data;
+        void* data;
       } _ENUM;`);
     }
 

@@ -17,6 +17,7 @@ import { SchemaType } from "../type/schema";
 import { UseType } from "../type/use";
 import { WriterContext } from "../writer";
 import { Entity } from "./base";
+import { EnumEntity } from "./enum";
 import { SchemaEntity } from "./schema";
 import { StructEntity } from "./struct";
 
@@ -229,7 +230,7 @@ export class FunctionEntity extends Entity {
       side.c(ctx);
     }
 
-    RequireOneOfType([Type, StructEntity], returns);
+    RequireOneOfType([Type, StructEntity, EnumEntity], returns);
     if (is_main) {
       const body = this.Content.find(ReturnStatement).c(ctx);
       return `${returns.c(ctx)} ${this.Name}(${input_parameters
@@ -239,7 +240,7 @@ export class FunctionEntity extends Entity {
           if (!type)
             throw new LinkerError(p.CodeLocation, "Could not resolve type");
 
-          RequireOneOfType([Type, StructEntity], type);
+          RequireOneOfType([Type, StructEntity, EnumEntity], type);
           return `${type.c(ctx)} ${p.Name}`;
         })
         .join(", ")}) {
@@ -259,7 +260,7 @@ export class FunctionEntity extends Entity {
           if (!type)
             throw new LinkerError(p.CodeLocation, "Could not resolve type");
 
-          RequireOneOfType([Type, StructEntity], type);
+          RequireOneOfType([Type, StructEntity, EnumEntity], type);
           return `${type.c(ctx)} ${p.Name}`;
         })
         .join(", ")})`;
