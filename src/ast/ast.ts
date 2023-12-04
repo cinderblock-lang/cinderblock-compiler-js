@@ -5,6 +5,7 @@ import { RequireType } from "../location/require-type";
 import { Component } from "./component";
 import { ComponentGroup } from "./component-group";
 import { BuiltInFunction } from "./entity/built-in-function";
+import { EnumEntity } from "./entity/enum";
 import { ExternalFunctionDeclaration } from "./entity/external-function-declaration";
 import { FunctionEntity } from "./entity/function";
 import { SchemaEntity } from "./entity/schema";
@@ -43,7 +44,8 @@ export class Ast {
           BuiltInFunction,
           StructEntity,
           SchemaEntity,
-          UsingEntity
+          UsingEntity,
+          EnumEntity
         )(
           (f) => {
             global_functions[namespace.Name + "." + f.Name] = f;
@@ -60,7 +62,10 @@ export class Ast {
           (f) => {
             global_types[namespace.Name + "." + f.Name] = f;
           },
-          (f) => {}
+          (f) => {},
+          (e) => {
+            global_types[namespace.Name + "." + e.Name] = e;
+          }
         )(entity);
       }
     }

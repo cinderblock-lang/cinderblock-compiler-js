@@ -12,13 +12,11 @@ import { FunctionType } from "../type/function";
 import { IterableType } from "../type/iterable";
 import { RequireType } from "../../location/require-type";
 import { FunctionParameter } from "../function-parameter";
-import { LambdaExpression } from "./lambda";
 import { ReturnStatement } from "../statement/return";
 import { StructEntity } from "../entity/struct";
 import { FunctionEntity } from "../entity/function";
 import { Property } from "../property";
 import { RawStatement } from "../statement/raw";
-import { StoreStatement } from "../statement/store";
 
 export class InvokationExpression extends Expression {
   readonly #subject: Component;

@@ -4,6 +4,7 @@ import { RequireType } from "../location/require-type";
 import { Component } from "./component";
 import { ComponentGroup } from "./component-group";
 import { BuiltInFunction } from "./entity/built-in-function";
+import { EnumEntity } from "./entity/enum";
 import { ExternalFunctionDeclaration } from "./entity/external-function-declaration";
 import { FunctionEntity } from "./entity/function";
 import { SchemaEntity } from "./entity/schema";
@@ -21,7 +22,7 @@ export type AnyFunction =
   | ExternalFunctionDeclaration
   | BuiltInFunction;
 
-export type AnyType = StructEntity | SchemaEntity;
+export type AnyType = StructEntity | SchemaEntity | EnumEntity;
 
 export type WriterContextProps = {
   global_functions: Record<string, AnyFunction>;
@@ -336,6 +337,16 @@ export class WriterContext {
       prefix: [],
       suffix: [],
       callstack: [...(this.#props.callstack ?? []), name],
+    });
+  }
+
+  WithLocal(name: string, type: Component) {
+    return new WriterContext({
+      ...this.#props,
+      locals: {
+        ...this.#locals,
+        [name]: type,
+      },
     });
   }
 
