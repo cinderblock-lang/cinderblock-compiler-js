@@ -235,6 +235,8 @@ export function ExtractExpression(
       );
     } else if (text.match(/^[0-9]+i$/gm)) {
       result = new LiteralExpression(current.CodeLocation, "int", text);
+    } else if (text.match(/^0b[0-9]+$/gm)) {
+      result = new LiteralExpression(current.CodeLocation, "int", text);
     } else if (text.match(/^[0-9]+$/gm)) {
       ExpectNext(tokens, ".");
       const next = NextBlock(tokens);
