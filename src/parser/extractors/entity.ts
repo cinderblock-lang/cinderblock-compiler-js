@@ -20,6 +20,7 @@ import { StructEntity } from "../../ast/entity/struct";
 import { SystemEntity } from "../../ast/entity/system";
 import { UsingEntity } from "../../ast/entity/using";
 import { TestEntity } from "../../ast/entity/test";
+import { EnumEntity } from "../../ast/entity/enum";
 
 function ExtractExternalFunction(tokens: TokenGroup) {
   const start = ExpectNext(tokens, "fn");
@@ -126,6 +127,17 @@ export function ExtractEntity(
         using
       );
     }
+    case "enum": {
+      const { name, properties } = ExtractSchemaOrStruct(tokens);
+      return new EnumEntity(
+        current.CodeLocation,
+        exported ?? false,
+        name,
+        new ComponentGroup(...properties),
+        namespace,
+        using
+      );
+    }
     case "using": {
       const name = ExtractUsing(tokens);
       using.push(name);
@@ -190,7 +202,8 @@ export function ExtractEntity(
         "system",
         "export",
         "unsafe",
-        "test"
+        "test",
+        "enum"
       );
   }
 }
