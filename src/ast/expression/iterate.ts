@@ -79,19 +79,6 @@ export class IterateExpression extends Expression {
     const ctx_name = Namer.GetName();
     const all = [...ctx.Locals, ...ctx.Parameters].filter(([k]) => k !== "ctx");
 
-    const returns = this.Body.resolve_block_type(
-      ctx.WithFunctionParameter(
-        this.As,
-        new FunctionParameter(
-          this.CodeLocation,
-          this.As,
-          this.Over.resolve_type(ctx),
-          false
-        )
-      ),
-      "iterate"
-    );
-
     const func_parameters: Array<FunctionParameter> = [
       new FunctionParameter(
         this.CodeLocation,
@@ -191,6 +178,15 @@ export class IterateExpression extends Expression {
                   ),
                   "==",
                   new LiteralExpression(this.CodeLocation, "bool", "true")
+                )
+              ),
+              new AssignStatement(
+                this.CodeLocation,
+                "next",
+                new AccessExpression(
+                  this.CodeLocation,
+                  new ReferenceExpression(this.CodeLocation, ctx_name),
+                  "next"
                 )
               ),
               new AssignStatement(

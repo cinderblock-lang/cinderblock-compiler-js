@@ -1,4 +1,5 @@
 import { CodeLocation } from "../../location/code-location";
+import { Namer } from "../../location/namer";
 import { Component } from "../component";
 import { Expression } from "../expression/base";
 import { WriterContext } from "../writer";
@@ -26,30 +27,31 @@ export class StoreStatement extends Statement {
     return "store_statement";
   }
 
-  static #written: Array<string> = [];
+  static #written: Record<string, string> = {};
 
   c(ctx: WriterContext): string {
     const name = ctx.Callstack.join("__") + "__" + this.Name;
 
-    if (StoreStatement.#written.includes(name)) {
-      return "*" + this.Name;
+    if (StoreStatement.#written[name]) {
+      return StoreStatement.#written[name];
     }
-    StoreStatement.#written.push(name);
+    const id = Namer.GetName();
+    StoreStatement.#written[name] = "*" + id;
 
     const type = this.Equals.resolve_type(ctx);
 
     const expression = this.Equals.c(ctx);
 
     ctx.AddDeclaration(
-      `${type.c(ctx)}* ${this.Name} = malloc(sizeof(${type.c(ctx)}));`
+      `${type.c(ctx)}* ${id} = malloc(sizeof(${type.c(ctx)}));`
     );
 
-    ctx.AddSuffix(`free(${this.Name});`);
+    ctx.AddSuffix(`free(${id});`);
 
-    ctx.AddPrefix(`*${this.Name} = ${expression};`, "*" + this.Name, [
+    ctx.AddPrefix(`*${id} = ${expression};`, StoreStatement.#written[name], [
       expression,
     ]);
-    return "*" + this.Name;
+    return StoreStatement.#written[name];
   }
 
   resolve_type(ctx: WriterContext): Component {

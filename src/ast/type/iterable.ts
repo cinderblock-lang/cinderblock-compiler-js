@@ -29,6 +29,12 @@ export class IterableType extends Type {
           "done",
           new PrimitiveType(this.CodeLocation, "bool"),
           false
+        ),
+        new Property(
+          this.CodeLocation,
+          "next",
+          new PrimitiveType(this.CodeLocation, "int"),
+          false
         )
       ),
       "",

@@ -101,7 +101,10 @@ export class OperatorExpression extends Expression {
 
       if (_ctx->crossover >= 0 && index >= _ctx->crossover) {
         ${right_type_reference} right_result = (*right)(_ctx->right.data, index - _ctx->crossover);
-        ${left_type_reference} done = { right_result.result, right_result.done };
+        ${left_type_reference} done;
+        done.result = right_result.result;
+        done.done = right_result.done;
+        done.next = _ctx->crossover + right_result.next;
         return done;
       }
 
