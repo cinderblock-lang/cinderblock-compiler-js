@@ -41,6 +41,8 @@ export class PrimitiveType extends Type {
     return "primitive_type";
   }
 
+  static #added = false;
+
   c(ctx: WriterContext): string {
     switch (this.Name) {
       case "any":

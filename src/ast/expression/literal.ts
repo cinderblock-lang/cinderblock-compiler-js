@@ -3,6 +3,7 @@ import { CodeLocation } from "../../location/code-location";
 import { WriterContext } from "../writer";
 import { Component } from "../component";
 import { PrimitiveType } from "../type/primitive";
+import { Namer } from "../../location/namer";
 
 export type LiteralType =
   | "string"
@@ -54,7 +55,16 @@ export class LiteralExpression extends Expression {
       case "long":
         return this.Value;
       case "string":
-        return `"${this.Value}"`;
+        const name = Namer.GetName();
+        ctx.AddGlobal(
+          `char ${name}[] = {${new TextEncoder()
+            .encode(eval(`"${this.Value}"`))
+            .reduce((c, n) => [...c, n.toString()], [] as Array<string>)
+            .concat(["0"])
+            .join(",")}};`
+        );
+
+        return name;
     }
   }
 
