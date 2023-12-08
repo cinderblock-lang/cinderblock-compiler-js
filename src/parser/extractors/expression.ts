@@ -20,6 +20,7 @@ import {
 import { PickExpression } from "../../ast/expression/pick";
 import { ReferenceExpression } from "../../ast/expression/reference";
 import { ReturnStatement } from "../../ast/statement/return";
+import { EmptyCodeLocation } from "../../location/empty";
 import { ParserError } from "../error";
 import { TokenGroup } from "../token";
 import { BuildWhile, BuildWhileOnStart, ExpectNext, NextBlock } from "../utils";
@@ -34,9 +35,25 @@ function ExtractIf(tokens: TokenGroup) {
   ExpectNext(tokens, "(");
   const check = ExtractExpression(tokens, [")"]);
   ExpectNext(tokens, ")");
-  const if_block = ExtractStatementBlock(tokens);
+  const if_block =
+    tokens.peek()?.Text === "{"
+      ? ExtractStatementBlock(tokens)
+      : new ComponentGroup(
+          new ReturnStatement(
+            EmptyCodeLocation,
+            ExtractExpression(tokens, [";"])
+          )
+        );
   ExpectNext(tokens, "else");
-  const else_block = ExtractStatementBlock(tokens);
+  const else_block =
+    tokens.peek()?.Text === "{"
+      ? ExtractStatementBlock(tokens)
+      : new ComponentGroup(
+          new ReturnStatement(
+            EmptyCodeLocation,
+            ExtractExpression(tokens, [";"])
+          )
+        );
 
   return { check, if_block, else_block };
 }
