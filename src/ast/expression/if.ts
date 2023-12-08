@@ -5,6 +5,7 @@ import { ComponentGroup } from "../component-group";
 import { WriterContext } from "../writer";
 import { ReturnStatement } from "../statement/return";
 import { Namer } from "../../location/namer";
+import { SideStatement } from "../statement/side";
 
 export class IfExpression extends Expression {
   readonly #check: Component;
@@ -45,11 +46,18 @@ export class IfExpression extends Expression {
     ctx.AddPrefix(`${type.c(ctx)} ${name};`, name, []);
     const check = this.Check.c(ctx);
     const if_context = ctx.WithBody(this.If, "if");
-
     const if_return = this.If.find(ReturnStatement).c(if_context);
+
+    for (const side of this.If.find_all(SideStatement)) {
+      side.c(if_context);
+    }
 
     const else_context = ctx.WithBody(this.Else, "else");
     const else_return = this.Else.find(ReturnStatement).c(else_context);
+
+    for (const side of this.Else.find_all(SideStatement)) {
+      side.c(else_context);
+    }
 
     ctx.AddPrefix(
       `if (${check}) {
