@@ -64,7 +64,7 @@ export class LiteralExpression extends Expression {
             .join(",")}};`
         );
 
-        return name;
+        return '&' + name;
     }
   }
 
