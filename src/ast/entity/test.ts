@@ -17,7 +17,7 @@ export class TestEntity extends FunctionEntity {
     super(
       ctx,
       exported,
-      Buffer.from(description).toString("base64").replace("==", ""),
+      Buffer.from(description).toString("base64").replace(/=/gm, ""),
       true,
       new ComponentGroup(),
       content,
