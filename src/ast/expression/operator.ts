@@ -21,6 +21,10 @@ export const Operators = [
   "&&",
   "||",
   "%",
+  "<<",
+  ">>",
+  "&",
+  "|"
 ] as const;
 export type Operator = (typeof Operators)[number];
 

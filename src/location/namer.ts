@@ -1,8 +1,19 @@
 const name_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+const reserved_names: Array<string> = [
+  "if",
+  "fn",
+  "make",
+  "struct",
+  "namespace",
+  "pick",
+  "else",
+];
+
 export class Namer {
   static #index: number = 0;
 
-  static GetName() {
+  static GetName(): string {
     let name = "";
     let current = this.#index;
 
@@ -12,6 +23,8 @@ export class Namer {
     } while (current > 0);
 
     this.#index += 1;
+
+    if (reserved_names.includes(name)) return Namer.GetName();
     return name;
   }
 
