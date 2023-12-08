@@ -250,10 +250,13 @@ export class FunctionEntity extends Entity {
       }`;
     }
 
-    if (!FunctionEntity.#already_made.includes(this.#full_name)) {
-      FunctionEntity.#already_made.push(this.#full_name);
+    const name_check =
+      this.#full_name +
+      input_parameters.map((p) => p.resolve_type(ctx).type_name).join("_");
+    if (!FunctionEntity.#already_made.includes(name_check)) {
+      FunctionEntity.#already_made.push(name_check);
       const body = this.Content.find(ReturnStatement).c(ctx);
-      const top_line = `${returns.c(ctx)} ${this.#full_name}(${input_parameters
+      const top_line = `${returns.c(ctx)} ${name_check}(${input_parameters
         .map((p) => {
           RequireType(FunctionParameter, p);
           const type = p.Type;
@@ -280,7 +283,7 @@ export class FunctionEntity extends Entity {
 
     const instance_name = Namer.GetName();
     ctx_old.AddDeclaration(
-      `${struct} ${instance_name} = { &${this.#full_name}, NULL };`
+      `${struct} ${instance_name} = { &${name_check}, NULL };`
     );
 
     return instance_name;

@@ -34,7 +34,7 @@ export class FunctionParameter extends Component {
   }
 
   get type_name() {
-    return "function_parameter";
+    return `p_${this.Type?.type_name}`;
   }
 
   c(ctx: WriterContext): string {

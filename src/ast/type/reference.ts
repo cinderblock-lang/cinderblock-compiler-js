@@ -17,7 +17,7 @@ export class ReferenceType extends Type {
   }
 
   get type_name() {
-    return "reference_type";
+    return `ref_${this.Name}`;
   }
 
   c(ctx: WriterContext): string {

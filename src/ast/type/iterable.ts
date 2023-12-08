@@ -51,7 +51,7 @@ export class IterableType extends Type {
   }
 
   get type_name() {
-    return "iterable_type";
+    return `iterable_${this.Type.type_name}`;
   }
 
   c(ctx: WriterContext): string {

@@ -28,7 +28,7 @@ export class FunctionType extends Type {
   }
 
   get type_name() {
-    return "function_type";
+    return `func_${this.Parameters.map((p) => p.type_name).join("_")}`;
   }
 
   get extra_json() {

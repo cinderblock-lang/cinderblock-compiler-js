@@ -50,7 +50,7 @@ export class StructEntity extends Entity {
   }
 
   get type_name() {
-    return "struct_entity";
+    return this.#full_name;
   }
 
   get #full_name() {

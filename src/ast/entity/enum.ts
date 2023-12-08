@@ -61,7 +61,7 @@ export class EnumEntity extends Entity {
   }
 
   get type_name() {
-    return "enum_entity";
+    return (this.#namespace + "__" + this.Name).replace(/\./gm, "__");
   }
 
   static #already_made: boolean = false;

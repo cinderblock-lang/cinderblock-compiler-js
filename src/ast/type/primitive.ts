@@ -38,10 +38,8 @@ export class PrimitiveType extends Type {
   }
 
   get type_name() {
-    return "primitive_type";
+    return `prim_${this.Name}`;
   }
-
-  static #added = false;
 
   c(ctx: WriterContext): string {
     switch (this.Name) {
