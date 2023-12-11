@@ -21,10 +21,11 @@ import { SystemEntity } from "../../ast/entity/system";
 import { UsingEntity } from "../../ast/entity/using";
 import { TestEntity } from "../../ast/entity/test";
 import { EnumEntity } from "../../ast/entity/enum";
+import { ExternalStructEntity } from "../../ast/entity/external-struct-declaration";
 
 function ExtractExternalFunction(tokens: TokenGroup) {
-  const start = ExpectNext(tokens, "fn");
-  const name = NextBlock(tokens).Text;
+  const start = NextBlock(tokens);
+  const name = start.Text;
   const parameters = BuildWhile(tokens, "(", ",", ")", () =>
     ExtractFunctionParameter(tokens)
   );
@@ -66,19 +67,52 @@ function ExtractTest(tokens: TokenGroup) {
 function ExtractLib(tokens: TokenGroup) {
   const path = ExtractExpression(tokens);
 
-  const declarations = BuildWhile(tokens, "{", ";", "}", () =>
-    ExtractExternalFunction(tokens)
-  );
+  const declarations = BuildWhile(tokens, "{", ";", "}", () => {
+    const next = NextBlock(tokens);
+    switch (next.Text) {
+      case "fn":
+        return ExtractExternalFunction(tokens);
+      case "struct":
+        const { name, properties } = ExtractSchemaOrStruct(tokens);
+        return new ExternalStructEntity(
+          next.CodeLocation,
+          name,
+          new ComponentGroup(...properties)
+        );
+      default:
+        throw ParserError.UnexpectedSymbol(next, "struct", "fn");
+    }
+  });
 
   return { path: path, declarations };
 }
 
 function ExtractSystem(tokens: TokenGroup) {
-  const declarations = BuildWhile(tokens, "{", ";", "}", () =>
-    ExtractExternalFunction(tokens)
-  );
+  const name = NextBlock(tokens);
+  if (!name.Text.startsWith('"') || !name.Text.endsWith('"'))
+    throw new ParserError(
+      name.CodeLocation,
+      "System entities must have an include"
+    );
 
-  return { declarations };
+    const declarations = BuildWhile(tokens, "{", ";", "}", () => {
+      const next = NextBlock(tokens);
+      switch (next.Text) {
+        case "fn":
+          return ExtractExternalFunction(tokens);
+        case "struct":
+          const { name, properties } = ExtractSchemaOrStruct(tokens);
+          return new ExternalStructEntity(
+            next.CodeLocation,
+            name,
+            new ComponentGroup(...properties)
+          );
+        default:
+          throw ParserError.UnexpectedSymbol(next, "struct", "fn");
+      }
+    });
+
+  return { declarations, name: name.Text.replace(/"/gm, "") };
 }
 
 function ExtractSchemaOrStruct(tokens: TokenGroup) {
@@ -156,10 +190,11 @@ export function ExtractEntity(
       );
     }
     case "system": {
-      const { declarations } = ExtractSystem(tokens);
+      const { declarations, name } = ExtractSystem(tokens);
       return new SystemEntity(
         current.CodeLocation,
         exported ?? false,
+        name,
         new ComponentGroup(...declarations)
       );
     }

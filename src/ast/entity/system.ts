@@ -6,11 +6,22 @@ import { WriterContext } from "../writer";
 import { Entity } from "./base";
 
 export class SystemEntity extends Entity {
+  readonly #name: string;
   readonly #content: ComponentGroup;
 
-  constructor(ctx: CodeLocation, exported: boolean, content: ComponentGroup) {
+  constructor(
+    ctx: CodeLocation,
+    exported: boolean,
+    name: string,
+    content: ComponentGroup
+  ) {
     super(ctx, exported);
+    this.#name = name;
     this.#content = content;
+  }
+
+  get Name() {
+    return this.#name;
   }
 
   get Content() {

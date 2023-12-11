@@ -5,9 +5,12 @@ import { ComponentGroup } from "./component-group";
 import { BuiltInFunction } from "./entity/built-in-function";
 import { EnumEntity } from "./entity/enum";
 import { ExternalFunctionDeclaration } from "./entity/external-function-declaration";
+import { ExternalStructEntity } from "./entity/external-struct-declaration";
 import { FunctionEntity } from "./entity/function";
+import { LibEntity } from "./entity/lib";
 import { SchemaEntity } from "./entity/schema";
 import { StructEntity } from "./entity/struct";
+import { SystemEntity } from "./entity/system";
 import { TestEntity } from "./entity/test";
 import { UsingEntity } from "./entity/using";
 import { Namespace } from "./namespace";
@@ -38,21 +41,19 @@ export class Ast {
       for (const entity of namespace.Contents.iterator()) {
         PatternMatch(
           FunctionEntity,
-          ExternalFunctionDeclaration,
           BuiltInFunction,
           StructEntity,
           SchemaEntity,
           UsingEntity,
-          EnumEntity
+          EnumEntity,
+          SystemEntity,
+          LibEntity
         )(
           (f) => {
             global_functions[namespace.Name + "." + f.Name] = f;
           },
           (f) => {
             global_functions[namespace.Name + "." + f.Name] = f;
-          },
-          (f) => {
-            global_functions[f.Name] = f;
           },
           (f) => {
             global_types[namespace.Name + "." + f.Name] = f;
@@ -63,6 +64,38 @@ export class Ast {
           (f) => {},
           (e) => {
             global_types[namespace.Name + "." + e.Name] = e;
+          },
+          sys => {
+            WriterContext.AddInclude(`<${sys.Name}>`);
+            for (const item of sys.Content.iterator()) {
+              PatternMatch(
+                ExternalFunctionDeclaration,
+                ExternalStructEntity
+              )(
+                f => {
+                  global_functions[namespace.Name + "." + f.Name] = f;
+                },
+                f => {
+                  global_types[namespace.Name + "." + f.Name] = f;
+                },
+              )(item)
+            }
+          },
+          sys => {
+            WriterContext.AddInclude(`"${sys.Name}"`);
+            for (const item of sys.Content.iterator()) {
+              PatternMatch(
+                ExternalFunctionDeclaration,
+                ExternalStructEntity
+              )(
+                f => {
+                  global_functions[namespace.Name + "." + f.Name] = f;
+                },
+                f => {
+                  global_types[namespace.Name + "." + f.Name] = f;
+                },
+              )(item)
+            }
           }
         )(entity);
       }

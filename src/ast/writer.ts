@@ -6,6 +6,7 @@ import { ComponentGroup } from "./component-group";
 import { BuiltInFunction } from "./entity/built-in-function";
 import { EnumEntity } from "./entity/enum";
 import { ExternalFunctionDeclaration } from "./entity/external-function-declaration";
+import { ExternalStructEntity } from "./entity/external-struct-declaration";
 import { FunctionEntity } from "./entity/function";
 import { SchemaEntity } from "./entity/schema";
 import { StructEntity } from "./entity/struct";
@@ -22,7 +23,11 @@ export type AnyFunction =
   | ExternalFunctionDeclaration
   | BuiltInFunction;
 
-export type AnyType = StructEntity | SchemaEntity | EnumEntity;
+export type AnyType =
+  | StructEntity
+  | SchemaEntity
+  | EnumEntity
+  | ExternalStructEntity;
 
 export type WriterContextProps = {
   global_functions: Record<string, AnyFunction>;
@@ -149,6 +154,10 @@ export class WriterContext {
     WriterContext.#includes.push(line);
   }
 
+  static AddInclude(line: string) {
+    WriterContext.#includes.push(line);
+  }
+
   WithUseTypes(input: Record<string, Type>) {
     return new WriterContext({
       ...this.#props,
@@ -207,7 +216,8 @@ export class WriterContext {
 
       if (area === this.#namespace) return possible;
 
-      if (possible.Exported) return possible;
+      if (!(possible instanceof ExternalStructEntity) && possible.Exported)
+        return possible;
     }
 
     return undefined;
