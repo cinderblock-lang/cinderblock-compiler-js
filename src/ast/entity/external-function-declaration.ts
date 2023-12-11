@@ -23,7 +23,7 @@ export class ExternalFunctionDeclaration extends BuiltInFunction {
           RequireType(FunctionParameter, p);
           return p.Name;
         })
-        .join(",")})`,
+        .join(",")});`,
       [],
       false
     );
