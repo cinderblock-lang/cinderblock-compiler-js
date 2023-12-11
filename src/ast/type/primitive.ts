@@ -5,10 +5,16 @@ import { Type } from "./base";
 
 export const PrimitiveNames = [
   "int",
+  "uint",
+  "short",
+  "ushort",
   "char",
+  "udouble",
   "double",
+  "ufloat",
   "float",
   "bool",
+  "ulong",
   "long",
   "any",
   "string",
@@ -51,12 +57,24 @@ export class PrimitiveType extends Type {
         return "char";
       case "float":
         return "float";
+      case "ufloat":
+        return "unsigned float";
       case "double":
         return "double";
+      case "udouble":
+        return "unsigned double";
       case "int":
         return "int";
+      case "uint":
+        return "unsigned int";
+      case "short":
+        return "short";
+      case "ushort":
+        return "unsigned short";
       case "long":
         return "long";
+      case "ulong":
+        return "unsigned long";
       case "string":
         return "char*";
       case "null":
