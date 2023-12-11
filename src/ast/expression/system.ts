@@ -45,8 +45,10 @@ export class SystemExpression extends Expression {
         .join(",")})`;
     }
 
-    const name = Namer.GetName();
-    ctx.AddDeclaration(`${this.resolve_type(ctx).c(ctx)}* ${name};`);
+    const type = this.resolve_type(ctx).c(ctx);
+    const name = type.endsWith("*") ? Namer.GetName() : "*" + Namer.GetName();
+
+    ctx.AddDeclaration(`${type} ${name};`);
     ctx.AddPrefix(
       `syscall(${this.#parameters
         .map((p) => {
@@ -57,11 +59,11 @@ export class SystemExpression extends Expression {
           return p.c(ctx);
         })
         .join(",")});`,
-      "*" + name,
+      name,
       []
     );
 
-    return "*" + name;
+    return name;
   }
 
   resolve_type(ctx: WriterContext): Component {
