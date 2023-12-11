@@ -3,6 +3,7 @@ import { BuiltInFunction } from "../ast/entity/built-in-function";
 import { FunctionParameter } from "../ast/function-parameter";
 import { Namespace } from "../ast/namespace";
 import { PrimitiveType } from "../ast/type/primitive";
+import { UseType } from "../ast/type/use";
 import { EmptyCodeLocation } from "../location/empty";
 
 export const BuiltInFunctions = new ComponentGroup(
@@ -157,24 +158,78 @@ export const BuiltInFunctions = new ComponentGroup(
       ),
       new BuiltInFunction(
         EmptyCodeLocation,
-        "sys_print",
+        "system",
         true,
         new ComponentGroup(
           new FunctionParameter(
             EmptyCodeLocation,
-            "text",
-            new PrimitiveType(EmptyCodeLocation, "string"),
-            false
+            "rax",
+            new PrimitiveType(EmptyCodeLocation, "int"),
+            true
           ),
           new FunctionParameter(
             EmptyCodeLocation,
-            "length",
-            new PrimitiveType(EmptyCodeLocation, "int"),
-            false
+            "rdi",
+            new UseType(
+              EmptyCodeLocation,
+              "RDI",
+              new ComponentGroup(new PrimitiveType(EmptyCodeLocation, "any"))
+            ),
+            true
+          ),
+          new FunctionParameter(
+            EmptyCodeLocation,
+            "rsi",
+            new UseType(
+              EmptyCodeLocation,
+              "RSI",
+              new ComponentGroup(new PrimitiveType(EmptyCodeLocation, "any"))
+            ),
+            true
+          ),
+          new FunctionParameter(
+            EmptyCodeLocation,
+            "rdx",
+            new UseType(
+              EmptyCodeLocation,
+              "RDX",
+              new ComponentGroup(new PrimitiveType(EmptyCodeLocation, "any"))
+            ),
+            true
+          ),
+          new FunctionParameter(
+            EmptyCodeLocation,
+            "rten",
+            new UseType(
+              EmptyCodeLocation,
+              "RTEN",
+              new ComponentGroup(new PrimitiveType(EmptyCodeLocation, "any"))
+            ),
+            true
+          ),
+          new FunctionParameter(
+            EmptyCodeLocation,
+            "reight",
+            new UseType(
+              EmptyCodeLocation,
+              "REIGHT",
+              new ComponentGroup(new PrimitiveType(EmptyCodeLocation, "any"))
+            ),
+            true
+          ),
+          new FunctionParameter(
+            EmptyCodeLocation,
+            "rnine",
+            new UseType(
+              EmptyCodeLocation,
+              "RNINE",
+              new ComponentGroup(new PrimitiveType(EmptyCodeLocation, "any"))
+            ),
+            true
           )
         ),
         new PrimitiveType(EmptyCodeLocation, "int"),
-        `return syscall(SYS_write, 1, text, length);`,
+        `return syscall(rax, rdi, rsi, rdx, rten, reight, rnine);`,
         ["<sys/syscall.h>"]
       )
     )

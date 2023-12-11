@@ -79,6 +79,8 @@ export class FunctionEntity extends Entity {
     return (this.#namespace + "__" + this.Name).replace(/\./gm, "__");
   }
 
+  static #already_made: Record<string, string> = {};
+
   #process_type(
     current: Component | undefined,
     invoking_with: Component,
@@ -163,7 +165,17 @@ export class FunctionEntity extends Entity {
             "Cannot resolve function parameter type in this location"
           );
 
-        ctx = ctx.WithFunctionParameter(e.Name, e);
+        if (e.Optional)
+          ctx = ctx.WithFunctionParameter(
+            e.Name,
+            new FunctionParameter(
+              e.CodeLocation,
+              e.Name,
+              new PrimitiveType(e.CodeLocation, "null"),
+              true
+            )
+          );
+        else ctx = ctx.WithFunctionParameter(e.Name, e);
         continue;
       }
 
@@ -212,8 +224,6 @@ export class FunctionEntity extends Entity {
     );
   }
 
-  static #already_made: Array<string> = [];
-
   c(ctx_old: WriterContext, is_main = false): string {
     if (this.#unsafe && !ctx_old.AllowUnsafe)
       throw new LinkerError(
@@ -250,13 +260,14 @@ export class FunctionEntity extends Entity {
       }`;
     }
 
+    const write_name = Namer.GetName();
     const name_check =
       this.#full_name +
       input_parameters.map((p) => p.resolve_type(ctx).type_name).join("_");
-    if (!FunctionEntity.#already_made.includes(name_check)) {
-      FunctionEntity.#already_made.push(name_check);
+    if (!FunctionEntity.#already_made[name_check]) {
+      FunctionEntity.#already_made[name_check] = write_name;
       const body = this.Content.find(ReturnStatement).c(ctx);
-      const top_line = `${returns.c(ctx)} ${name_check}(${input_parameters
+      const top_line = `${returns.c(ctx)} ${write_name}(${input_parameters
         .map((p) => {
           RequireType(FunctionParameter, p);
           const type = p.Type;
@@ -283,7 +294,9 @@ export class FunctionEntity extends Entity {
 
     const instance_name = Namer.GetName();
     ctx_old.AddDeclaration(
-      `${struct} ${instance_name} = { &${name_check}, NULL };`
+      `${struct} ${instance_name} = { &${
+        FunctionEntity.#already_made[name_check]
+      }, NULL };`
     );
 
     return instance_name;

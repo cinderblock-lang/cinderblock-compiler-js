@@ -187,9 +187,18 @@ export class InvokationExpression extends Expression {
     if (!(func instanceof FunctionType))
       throw new LinkerError(this.CodeLocation, "May only invoke functions");
 
-    if (func.Parameters.Length - 1 > invokation.Parameters.Length) {
+    if (
+      func.Parameters.filter((p) => {
+        RequireType(FunctionParameter, p);
+        return !p.Optional;
+      }).length -
+        1 >
+      invokation.Parameters.Length
+    ) {
       return this.#build_partial(ctx, func, invokation);
     }
+
+    const padding = func.Parameters.Length - 1 - invokation.Parameters.Length;
 
     const returns = func.Returns;
 
@@ -212,6 +221,7 @@ export class InvokationExpression extends Expression {
     return `(*${name})(${[
       `${reference}.data`,
       ...invokation.Parameters.map((p) => p.c(ctx)),
+      ...Array.apply(null, Array(Math.max(padding, 0))).map(() => "NULL"),
     ].join(", ")})`;
   }
 
@@ -223,7 +233,14 @@ export class InvokationExpression extends Expression {
     if (!(func instanceof FunctionType))
       throw new LinkerError(this.CodeLocation, "May only invoke functions");
 
-    if (func.Parameters.Length - 1 > invokation.Parameters.Length) {
+    if (
+      func.Parameters.filter((p) => {
+        RequireType(FunctionParameter, p);
+        return !p.Optional;
+      }).length -
+        1 >
+      invokation.Parameters.Length
+    ) {
       return new FunctionType(
         this.CodeLocation,
         new ComponentGroup(...invokation.#partial_parameters(func)),

@@ -1,5 +1,3 @@
-import { EmptyCodeLocation } from "../location/empty";
-import { Namer } from "../location/namer";
 import { PatternMatch } from "../location/pattern-match";
 import { RequireType } from "../location/require-type";
 import { Component } from "./component";

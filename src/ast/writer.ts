@@ -243,6 +243,7 @@ export class WriterContext {
 
   get CText() {
     return `${WriterContext.#includes
+      .filter(Unique)
       .map((i) => `#include ${i}`)
       .join("\n")}\n\n${WriterContext.#declarations.join(
       "\n"
