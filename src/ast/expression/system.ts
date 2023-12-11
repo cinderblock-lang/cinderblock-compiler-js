@@ -28,27 +28,21 @@ export class SystemExpression extends Expression {
   }
 
   get OutType() {
-    return this.UnsafeType ?? new PrimitiveType(this.CodeLocation, "null");
+    return this.UnsafeType ?? new PrimitiveType(this.CodeLocation, "int");
   }
 
   c(ctx: WriterContext): string {
     ctx.AddInclude(`<sys/syscall.h>`);
     if (!this.UnsafeType) {
-      ctx.AddPrefix(
-        `syscall(${this.#parameters
-          .map((p) => {
-            if (p instanceof FunctionParameter && p.Name === "out") {
-              return name;
-            }
+      return `syscall(${this.#parameters
+        .map((p) => {
+          if (p instanceof FunctionParameter && p.Name === "out") {
+            return name;
+          }
 
-            return p.c(ctx);
-          })
-          .join(",")});`,
-        "undefined",
-        []
-      );
-
-      return "NULL";
+          return p.c(ctx);
+        })
+        .join(",")})`;
     }
 
     const name = Namer.GetName();
