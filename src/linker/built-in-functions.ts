@@ -3,7 +3,6 @@ import { BuiltInFunction } from "../ast/entity/built-in-function";
 import { FunctionParameter } from "../ast/function-parameter";
 import { Namespace } from "../ast/namespace";
 import { PrimitiveType } from "../ast/type/primitive";
-import { UseType } from "../ast/type/use";
 import { EmptyCodeLocation } from "../location/empty";
 
 export const BuiltInFunctions = new ComponentGroup(

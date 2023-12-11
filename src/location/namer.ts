@@ -8,6 +8,7 @@ const reserved_names: Array<string> = [
   "namespace",
   "pick",
   "else",
+  "P"
 ];
 
 export class Namer {

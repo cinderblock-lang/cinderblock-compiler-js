@@ -1,6 +1,5 @@
 import { Component } from "../ast/component";
 import { BuiltInFunction } from "../ast/entity/built-in-function";
-import { ExternalFunctionDeclaration } from "../ast/entity/external-function-declaration";
 import { FunctionEntity } from "../ast/entity/function";
 import { SchemaEntity } from "../ast/entity/schema";
 import { StructEntity } from "../ast/entity/struct";
@@ -21,7 +20,6 @@ export function IsAnyStructLike(target: Component): target is AnyStructLike {
 type AnyInvokable =
   | FunctionEntity
   | BuiltInFunction
-  | ExternalFunctionDeclaration
   | FunctionParameter
   | StoreStatement;
 
@@ -31,7 +29,6 @@ export function IsAnyInvokable(
   return (
     target instanceof FunctionEntity ||
     target instanceof BuiltInFunction ||
-    target instanceof ExternalFunctionDeclaration ||
     target instanceof StoreStatement ||
     target instanceof FunctionParameter
   );

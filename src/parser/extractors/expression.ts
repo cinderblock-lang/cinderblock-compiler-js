@@ -19,6 +19,7 @@ import {
 } from "../../ast/expression/operator";
 import { PickExpression } from "../../ast/expression/pick";
 import { ReferenceExpression } from "../../ast/expression/reference";
+import { SystemExpression } from "../../ast/expression/system";
 import { ReturnStatement } from "../../ast/statement/return";
 import { EmptyCodeLocation } from "../../location/empty";
 import { ParserError } from "../error";
@@ -218,6 +219,21 @@ export function ExtractExpression(
         new ComponentGroup(...parameters),
         body,
         returns
+      );
+    } else if (text === "system") {
+      ExpectNext(tokens, "(");
+      const parameters =
+        tokens.peek()?.Text !== ")"
+          ? BuildWhileOnStart(tokens, ",", ")", () =>
+              tokens.peek()?.Text === "out"
+                ? ExtractFunctionParameter(tokens)
+                : ExtractExpression(tokens, [",", ")"])
+            )
+          : tokens.next() && [];
+
+      result = new SystemExpression(
+        current.CodeLocation,
+        new ComponentGroup(...parameters)
       );
     } else if (text === "(") {
       if (!result)

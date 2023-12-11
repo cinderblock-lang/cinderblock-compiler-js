@@ -5,8 +5,6 @@ import { Component } from "./component";
 import { ComponentGroup } from "./component-group";
 import { BuiltInFunction } from "./entity/built-in-function";
 import { EnumEntity } from "./entity/enum";
-import { ExternalFunctionDeclaration } from "./entity/external-function-declaration";
-import { ExternalStructEntity } from "./entity/external-struct-declaration";
 import { FunctionEntity } from "./entity/function";
 import { SchemaEntity } from "./entity/schema";
 import { StructEntity } from "./entity/struct";
@@ -20,14 +18,12 @@ import { Unique } from "./utils";
 
 export type AnyFunction =
   | FunctionEntity
-  | ExternalFunctionDeclaration
   | BuiltInFunction;
 
 export type AnyType =
   | StructEntity
   | SchemaEntity
-  | EnumEntity
-  | ExternalStructEntity;
+  | EnumEntity;
 
 export type WriterContextProps = {
   global_functions: Record<string, AnyFunction>;
@@ -70,7 +66,7 @@ export class WriterContext {
   #prefix: Array<[string, string, Array<string>]>;
   #suffix: Array<string>;
 
-  static #includes: Array<string> = ["<stdlib.h>", "<dlfcn.h>"];
+  static #includes: Array<string> = ["<stdlib.h>"];
   static #declarations: Array<string> = [];
   static #globals: Array<string> = [];
 
@@ -216,7 +212,7 @@ export class WriterContext {
 
       if (area === this.#namespace) return possible;
 
-      if (!(possible instanceof ExternalStructEntity) && possible.Exported)
+      if (possible.Exported)
         return possible;
     }
 
@@ -242,8 +238,6 @@ export class WriterContext {
       if (possible instanceof BuiltInFunction) return possible;
 
       if (area === this.#namespace) return possible;
-
-      if (possible instanceof ExternalFunctionDeclaration) continue;
 
       if (possible.Exported) return possible;
     }

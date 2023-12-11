@@ -2,44 +2,20 @@ import { TokenGroup } from "../token";
 import {
   BuildWhile,
   BuildWhileOnStart,
-  ExpectNext,
   IfIs,
   NextBlock,
 } from "../utils";
 import { ExtractFunctionParameter, ExtractProperty, ExtractType } from "./type";
 import { ParserError } from "../error";
 import { ExtractStatementBlock } from "./statement";
-import { ExtractExpression } from "./expression";
 import { ComponentGroup } from "../../ast/component-group";
 import { Entity } from "../../ast/entity/base";
-import { ExternalFunctionDeclaration } from "../../ast/entity/external-function-declaration";
 import { FunctionEntity } from "../../ast/entity/function";
-import { LibEntity } from "../../ast/entity/lib";
 import { SchemaEntity } from "../../ast/entity/schema";
 import { StructEntity } from "../../ast/entity/struct";
-import { SystemEntity } from "../../ast/entity/system";
 import { UsingEntity } from "../../ast/entity/using";
 import { TestEntity } from "../../ast/entity/test";
 import { EnumEntity } from "../../ast/entity/enum";
-import { ExternalStructEntity } from "../../ast/entity/external-struct-declaration";
-
-function ExtractExternalFunction(tokens: TokenGroup) {
-  const start = NextBlock(tokens);
-  const name = start.Text;
-  const parameters = BuildWhile(tokens, "(", ",", ")", () =>
-    ExtractFunctionParameter(tokens)
-  );
-  ExpectNext(tokens, ":");
-  const returns = ExtractType(tokens);
-  ExpectNext(tokens, ";");
-
-  return new ExternalFunctionDeclaration(
-    start.CodeLocation,
-    name,
-    new ComponentGroup(...parameters),
-    returns
-  );
-}
 
 function ExtractFunction(tokens: TokenGroup) {
   const name = NextBlock(tokens).Text;
@@ -62,57 +38,6 @@ function ExtractTest(tokens: TokenGroup) {
     );
 
   return { name: name.replace(/"/gm, ""), body: ExtractStatementBlock(tokens) };
-}
-
-function ExtractLib(tokens: TokenGroup) {
-  const path = ExtractExpression(tokens);
-
-  const declarations = BuildWhile(tokens, "{", ";", "}", () => {
-    const next = NextBlock(tokens);
-    switch (next.Text) {
-      case "fn":
-        return ExtractExternalFunction(tokens);
-      case "struct":
-        const { name, properties } = ExtractSchemaOrStruct(tokens);
-        return new ExternalStructEntity(
-          next.CodeLocation,
-          name,
-          new ComponentGroup(...properties)
-        );
-      default:
-        throw ParserError.UnexpectedSymbol(next, "struct", "fn");
-    }
-  });
-
-  return { path: path, declarations };
-}
-
-function ExtractSystem(tokens: TokenGroup) {
-  const name = NextBlock(tokens);
-  if (!name.Text.startsWith('"') || !name.Text.endsWith('"'))
-    throw new ParserError(
-      name.CodeLocation,
-      "System entities must have an include"
-    );
-
-    const declarations = BuildWhile(tokens, "{", ";", "}", () => {
-      const next = NextBlock(tokens);
-      switch (next.Text) {
-        case "fn":
-          return ExtractExternalFunction(tokens);
-        case "struct":
-          const { name, properties } = ExtractSchemaOrStruct(tokens);
-          return new ExternalStructEntity(
-            next.CodeLocation,
-            name,
-            new ComponentGroup(...properties)
-          );
-        default:
-          throw ParserError.UnexpectedSymbol(next, "struct", "fn");
-      }
-    });
-
-  return { declarations, name: name.Text.replace(/"/gm, "") };
 }
 
 function ExtractSchemaOrStruct(tokens: TokenGroup) {
@@ -180,24 +105,6 @@ export function ExtractEntity(
     case "export": {
       return ExtractEntity(tokens, namespace, using, true);
     }
-    case "lib": {
-      const { path, declarations } = ExtractLib(tokens);
-      return new LibEntity(
-        current.CodeLocation,
-        exported ?? false,
-        path,
-        new ComponentGroup(...declarations)
-      );
-    }
-    case "system": {
-      const { declarations, name } = ExtractSystem(tokens);
-      return new SystemEntity(
-        current.CodeLocation,
-        exported ?? false,
-        name,
-        new ComponentGroup(...declarations)
-      );
-    }
     case "fn": {
       const { name, parameters, returns, body } = ExtractFunction(tokens);
       return new FunctionEntity(
@@ -233,8 +140,6 @@ export function ExtractEntity(
         "struct",
         "fn",
         "using",
-        "lib",
-        "system",
         "export",
         "unsafe",
         "test",
