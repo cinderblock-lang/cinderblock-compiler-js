@@ -1,3 +1,4 @@
+import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { Namer } from "../../location/namer";
 import { Component } from "../component";
@@ -9,10 +10,16 @@ import { Expression } from "./base";
 
 export class SystemExpression extends Expression {
   readonly #parameters: ComponentGroup;
+  readonly #out_length: Expression;
 
-  constructor(ctx: CodeLocation, parameters: ComponentGroup) {
+  constructor(
+    ctx: CodeLocation,
+    parameters: ComponentGroup,
+    out_length: Expression
+  ) {
     super(ctx);
     this.#parameters = parameters;
+    this.#out_length = out_length;
   }
 
   get type_name(): string {
@@ -32,6 +39,8 @@ export class SystemExpression extends Expression {
   }
 
   c(ctx: WriterContext): string {
+    if (!ctx.AllowUnsafe)
+      throw new LinkerError(this.CodeLocation, "Attempting in a safe context");
     ctx.AddInclude(`<sys/syscall.h>`);
     if (!this.UnsafeType) {
       return `syscall(${this.#parameters
@@ -48,7 +57,11 @@ export class SystemExpression extends Expression {
     const type = this.resolve_type(ctx).c(ctx);
     const name = type.endsWith("*") ? Namer.GetName() : "*" + Namer.GetName();
 
-    ctx.AddDeclaration(`${type} ${name};`);
+    ctx.AddDeclaration(
+      `${type} ${name} = malloc(sizeof(${type}) * ${this.#out_length.c(ctx)});`
+    );
+
+    ctx.AddSuffix(`free(${name});`);
     ctx.AddPrefix(
       `syscall(${this.#parameters
         .map((p) => {

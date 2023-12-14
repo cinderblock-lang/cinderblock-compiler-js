@@ -231,9 +231,18 @@ export function ExtractExpression(
             )
           : tokens.next() && [];
 
+      let length: Expression = new LiteralExpression(EmptyCodeLocation, "int", "0i");
+
+      if (tokens.peek()?.Text === "[") {
+        ExpectNext(tokens, "[");
+        length = ExtractExpression(tokens, ["]"]);
+        ExpectNext(tokens, "]");
+      }
+
       result = new SystemExpression(
         current.CodeLocation,
-        new ComponentGroup(...parameters)
+        new ComponentGroup(...parameters),
+        length
       );
     } else if (text === "(") {
       if (!result)
