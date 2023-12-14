@@ -2,6 +2,7 @@
 const yargs = require("yargs/yargs");
 const { hideBin } = require("yargs/helpers");
 const { Compile, Test } = require("../dist");
+const path = require("path");
 
 Error.stackTraceLimit = 100;
 
@@ -13,7 +14,11 @@ yargs(hideBin(process.argv))
       return yargs;
     },
     (argv) => {
-      Compile(".", { debug: argv.debug, no_cache: argv["no-cache"] });
+      Compile(".", {
+        debug: argv.debug,
+        no_cache: argv["no-cache"],
+        resources_path: path.resolve(__dirname, "../resources"),
+      });
     }
   )
   .command(
@@ -23,7 +28,11 @@ yargs(hideBin(process.argv))
       return yargs;
     },
     (argv) => {
-      Test(".");
+      Test(".", {
+        debug: true,
+        no_cache: true,
+        resources_path: path.resolve(__dirname, "../resources"),
+      });
     }
   )
   .option("debug", {

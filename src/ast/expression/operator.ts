@@ -5,6 +5,7 @@ import { WriterContext } from "../writer";
 import { IterableType } from "../type/iterable";
 import { LinkerError } from "../../linker/error";
 import { Namer } from "../../location/namer";
+import { PrimitiveType } from "../type/primitive";
 
 export const Operators = [
   "+",
@@ -24,7 +25,7 @@ export const Operators = [
   "<<",
   ">>",
   "&",
-  "|"
+  "|",
 ] as const;
 export type Operator = (typeof Operators)[number];
 
@@ -76,45 +77,53 @@ export class OperatorExpression extends Expression {
     const left_type_reference = left_type.Result.resolve_type(ctx).c(ctx);
     const right_type_reference = right_type.Result.resolve_type(ctx).c(ctx);
 
+    const not_primitive = !(left_type.Type.resolve_type(ctx) instanceof PrimitiveType);
+
     const name = Namer.GetName();
 
     ctx.AddGlobalDeclaration(`typedef struct ${name}_context {
-      _FUNCTION left;
-      _FUNCTION right;
+      _FUNCTION* left;
+      _FUNCTION* right;
       int crossover;
     } ${name}_context;`);
 
     ctx.AddGlobalDeclaration(
-      `${left_type_reference} ${name}(void* ctx, int index);`
+      `${left_type_reference} ${name}(void* old_scope, void* ctx, int index);`
     );
 
-    ctx.AddGlobal(`${left_type_reference} ${name}(void* ctx, int index) {
+    ctx.AddGlobal(`${left_type_reference} ${name}(void* old_scope, void* ctx, int index) {
+      void* current_scope = _OpenScope(old_scope);
       ${name}_context* _ctx = (${name}_context*)ctx;
 
-      ${left_type_reference} (*left)(void*, int) = _ctx->left.handle;
-      ${right_type_reference} (*right)(void*, int) = _ctx->right.handle;
+      ${left_type_reference} (*left)(void*, void*, int) = _ctx->left->handle;
+      ${right_type_reference} (*right)(void*, void*, int) = _ctx->right->handle;
 
       if (_ctx->crossover < 0 || index < _ctx->crossover) {
-        ${left_type_reference} left_result = (*left)(_ctx->left.data, index);
-        if (!left_result.done) {
-          return left_result;
+        ${left_type_reference} left_result = (*left)(current_scope,  _ctx->left->data, index);
+        if (!left_result->done) {
+          return _Return(current_scope, left_result);
         } else {
           _ctx->crossover = index;
         }
       }
 
       if (_ctx->crossover >= 0 && index >= _ctx->crossover) {
-        ${right_type_reference} right_result = (*right)(_ctx->right.data, index - _ctx->crossover);
-        ${left_type_reference} done;
-        done.result = right_result.result;
-        done.done = right_result.done;
-        done.next = _ctx->crossover + right_result.next;
-        return done;
+        ${right_type_reference} right_result = (*right)(current_scope, _ctx->right->data, index - _ctx->crossover);
+        ${left_type_reference} done = _Allocate(
+            current_scope, sizeof(${left_type_reference.replace("*", "")})
+          );
+        done->result = right_result->result;
+        ${not_primitive ? '_Assign(current_scope, right_result->result, done);' : ''}
+        done->done = right_result->done;
+        done->next = _ctx->crossover + right_result->next;
+        return _Return(current_scope, done);
       }
 
-      ${left_type_reference} done_final;
-      done_final.done = 1;
-      return done_final;
+      ${left_type_reference} done_final = _Allocate(
+        current_scope, sizeof(${left_type_reference.replace("*", "")})
+      );
+      done_final->done = 1;
+      return _Return(current_scope, done_final);
     }`);
 
     const instance_name = Namer.GetName();
@@ -124,22 +133,22 @@ export class OperatorExpression extends Expression {
     const right_reference = this.Right.c(ctx);
 
     ctx.AddDeclaration(
-      `${name}_context* ${ctx_name} = malloc(sizeof(${name}_context));`
+      `${name}_context* ${ctx_name} = _Allocate(current_scope, sizeof(${name}_context));`
     );
     ctx.AddDeclaration(
-      `_FUNCTION ${instance_name} = { &${name}, ${ctx_name} };`
+      `_FUNCTION* ${instance_name} = _Allocate(current_scope, sizeof(_FUNCTION));
+      ${instance_name}->handle = ${name};
+      ${instance_name}->data = ${ctx_name};`
     );
 
-    ctx.AddSuffix(`free(${ctx_name});`);
-
     ctx.AddPrefix(
-      `${ctx_name}->left = ${left_reference};`,
+      `${ctx_name}->left = _Assign(current_scope, ${left_reference}, ${ctx_name});`,
       `${ctx_name}->left`,
       [left_reference, ctx_name]
     );
 
     ctx.AddPrefix(
-      `${ctx_name}->right = ${right_reference};`,
+      `${ctx_name}->right = _Assign(current_scope, ${right_reference}, ${ctx_name});`,
       `${ctx_name}->right`,
       [right_reference, ctx_name]
     );

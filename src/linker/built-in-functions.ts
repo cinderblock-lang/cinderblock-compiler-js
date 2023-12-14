@@ -52,6 +52,7 @@ export const BuiltInFunctions = new ComponentGroup(
             index = index + 1;
           }
           
+          _Cleanup(current_scope);
           return index;`,
         []
       ),
@@ -97,6 +98,7 @@ export const BuiltInFunctions = new ComponentGroup(
           }
 
           result[first_length + second_length] = 0;
+          _Cleanup(current_scope);
           return result;`,
         [],
         true
@@ -126,7 +128,7 @@ export const BuiltInFunctions = new ComponentGroup(
             length = length + 1;
           }
 
-          char *result = malloc(sizeof(char) * (length + 2));
+          char *result = _Allocate(current_scope, sizeof(char) * (length + 2));
 
           for (int i = 0 ; i < length ; i++) {
             result[i] = first[i];
@@ -135,7 +137,7 @@ export const BuiltInFunctions = new ComponentGroup(
           result[length] = second;
           result[length + 1] = 0;
           
-          return result;`,
+          return _Return(current_scope, result);`,
         [],
         true
       ),
@@ -152,9 +154,10 @@ export const BuiltInFunctions = new ComponentGroup(
           )
         ),
         new PrimitiveType(EmptyCodeLocation, "int"),
-        "return sizeof(input.data);",
+        `_Cleanup(current_scope);
+        return sizeof(input.data);`,
         []
-      ),
+      )
     )
   )
 );

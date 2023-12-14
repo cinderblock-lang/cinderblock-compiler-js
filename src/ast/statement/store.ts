@@ -2,8 +2,10 @@ import { CodeLocation } from "../../location/code-location";
 import { Namer } from "../../location/namer";
 import { Component } from "../component";
 import { Expression } from "../expression/base";
+import { PrimitiveType } from "../type/primitive";
 import { WriterContext } from "../writer";
 import { Statement } from "./base";
+import { IgnoreCallstack } from "./common";
 
 export class StoreStatement extends Statement {
   readonly #name: string;
@@ -30,25 +32,28 @@ export class StoreStatement extends Statement {
   static #written: Record<string, string> = {};
 
   c(ctx: WriterContext): string {
-    const name = ctx.Callstack.join("__") + "__" + this.Name;
+    const name =
+      ctx.Callstack.filter((c) => !IgnoreCallstack.includes(c)).join("__") +
+      "__" +
+      this.Name;
 
     if (StoreStatement.#written[name]) {
       return StoreStatement.#written[name];
     }
     const id = Namer.GetName();
-    StoreStatement.#written[name] = "*" + id;
+    StoreStatement.#written[name] = id;
 
     const type = this.Equals.resolve_type(ctx);
 
     const expression = this.Equals.c(ctx);
 
     ctx.AddDeclaration(
-      `${type.c(ctx)}* ${id} = malloc(sizeof(${type.c(ctx)}));`
+      type instanceof PrimitiveType
+        ? `${type.c(ctx)} ${id};`
+        : `${type.c(ctx)} ${id} = NULL;`
     );
 
-    ctx.AddSuffix(`free(${id});`);
-
-    ctx.AddPrefix(`*${id} = ${expression};`, StoreStatement.#written[name], [
+    ctx.AddPrefix(`${id} = ${expression};`, StoreStatement.#written[name], [
       expression,
     ]);
     return StoreStatement.#written[name];

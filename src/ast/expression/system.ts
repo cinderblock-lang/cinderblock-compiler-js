@@ -46,7 +46,7 @@ export class SystemExpression extends Expression {
     }
 
     const type = this.resolve_type(ctx).c(ctx);
-    const name = type.endsWith("*") ? Namer.GetName() : "*" + Namer.GetName();
+    const name = Namer.GetName();
 
     ctx.AddDeclaration(`${type} ${name};`);
     ctx.AddPrefix(

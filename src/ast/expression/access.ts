@@ -5,8 +5,6 @@ import { PatternMatch } from "../../location/pattern-match";
 import { Component } from "../component";
 import { SchemaEntity } from "../entity/schema";
 import { StructEntity } from "../entity/struct";
-import { IterableType } from "../type/iterable";
-import { PrimitiveType } from "../type/primitive";
 import { SchemaType } from "../type/schema";
 import { WriterContext } from "../writer";
 import { Expression } from "./base";
@@ -34,7 +32,7 @@ export class AccessExpression extends Expression {
   }
 
   c(ctx: WriterContext): string {
-    return `${this.Subject.c(ctx)}.${this.Target}`;
+    return `${this.Subject.c(ctx)}->${this.Target}`;
   }
 
   resolve_type(ctx: WriterContext): Component {

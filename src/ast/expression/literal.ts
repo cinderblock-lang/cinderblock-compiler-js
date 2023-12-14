@@ -56,7 +56,7 @@ export class LiteralExpression extends Expression {
         return this.Value;
       case "string":
         const name = Namer.GetName();
-        ctx.AddGlobal(
+        ctx.AddGlobalDeclaration(
           `char ${name}[] = {${new TextEncoder()
             .encode(eval(`"${this.Value}"`))
             .reduce((c, n) => [...c, n.toString()], [] as Array<string>)

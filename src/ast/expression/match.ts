@@ -9,6 +9,7 @@ import { RequireType } from "../../location/require-type";
 import { EnumEntity } from "../entity/enum";
 import { ReturnStatement } from "../statement/return";
 import { RawStatement } from "../statement/raw";
+import { PrimitiveType } from "../type/primitive";
 
 export class MatchExpression extends Expression {
   readonly #subject: Expression;
@@ -45,7 +46,13 @@ export class MatchExpression extends Expression {
 
     const returns = this.resolve_type(ctx);
 
-    ctx.AddPrefix(`${returns.c(ctx)} ${name};`, name, []);
+    ctx.AddPrefix(
+      type instanceof PrimitiveType
+        ? `${returns.c(ctx)} ${name};`
+        : `${returns.c(ctx)} ${name} = NULL;`,
+      name,
+      []
+    );
     const subject = this.Subject.c(ctx);
     ctx.AddPrefix(`${type.c(ctx)} ${item_name} = ${subject};`, item_name, [
       subject,
@@ -60,20 +67,20 @@ export class MatchExpression extends Expression {
 
       const storage = new RawStatement(
         this.CodeLocation,
-        `${item_type.c(ctx)} ${this.#as} = *(${item_type.c(
+        `${item_type.c(ctx)} ${this.#as} = (${item_type.c(
           ctx
-        )}*)${item_name}.data;`,
+        )})${item_name}->data;`,
         this.#as,
         item_type
       );
 
       const item_ctx = ctx
         .WithLocal(this.#as, storage)
-        .WithBody(this.#using[key], key);
+        .WithBody(this.#using[key], "match");
       const item_return = this.#using[key].find(ReturnStatement).c(item_ctx);
 
       ctx.AddPrefix(
-        `if (${item_name}.type == ${index}) {
+        `if (${item_name}->type == ${index}) {
         ${item_ctx.Prefix}
         ${name} = ${item_return};
         ${item_ctx.Suffix}

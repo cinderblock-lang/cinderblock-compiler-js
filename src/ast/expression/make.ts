@@ -35,16 +35,20 @@ export class MakeExpression extends Expression {
     if (!type)
       throw new LinkerError(this.CodeLocation, "Could not resolve symbol");
     const name = Namer.GetName();
+    const reference = type.c(ctx);
     ctx.AddDeclaration(
-      `${type.c(ctx)}* ${name} = malloc(sizeof(${type.c(ctx)}));`
+      `${reference} ${name} = _Allocate(current_scope, sizeof(${reference.replace(
+        "*",
+        ""
+      )}));`
     );
 
-    ctx.AddSuffix(`free(${name});`);
-
-    const ctx_new = ctx.WithBody(this.Using, "make_" + this.Struct);
+    const ctx_new = ctx.WithBody(this.Using, "make");
 
     const inputs = this.Using.find_all(AssignStatement).map(
-      (a) => `${name}->${a.Name} = ${a.c(ctx_new)};`
+      (a) => `
+        ${name}->${a.Name} = ${a.c(ctx_new, name)};
+      `
     );
 
     const line = `{
@@ -53,9 +57,9 @@ export class MakeExpression extends Expression {
       ${ctx_new.Suffix}
     }`;
 
-    ctx.AddPrefix(line, `*${name}`, [name]);
+    ctx.AddPrefix(line, name, [name]);
 
-    return `*${name}`;
+    return name;
   }
 
   resolve_type(ctx: WriterContext): Component {

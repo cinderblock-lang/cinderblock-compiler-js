@@ -69,7 +69,7 @@ export class StructEntity extends Entity {
       } ${this.#full_name};`);
     }
 
-    return this.#full_name;
+    return this.#full_name + "*";
   }
 
   resolve_type(ctx: WriterContext): Component {

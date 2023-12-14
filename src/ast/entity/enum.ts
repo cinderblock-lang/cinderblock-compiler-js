@@ -75,7 +75,7 @@ export class EnumEntity extends Entity {
       } _ENUM;`);
     }
 
-    return "_ENUM";
+    return "_ENUM*";
   }
 
   resolve_type(ctx: WriterContext): Component {

@@ -16,6 +16,7 @@ import { Namer } from "../../location/namer";
 import { RequireType } from "../../location/require-type";
 import { Component } from "../component";
 import { FunctionType } from "../type/function";
+import { PrimitiveType } from "../type/primitive";
 
 export class LambdaExpression extends Expression {
   readonly #parameters: ComponentGroup;
@@ -141,7 +142,7 @@ export class LambdaExpression extends Expression {
       new ComponentGroup(
         new RawStatement(
           this.CodeLocation,
-          `${ctx_struct.c(ctx)} _ctx = *(${ctx_struct.c(ctx)}*)ctx;`,
+          `${ctx_struct.c(ctx)} _ctx = ctx;`,
           "_ctx",
           ctx_struct
         ),
@@ -170,21 +171,28 @@ export class LambdaExpression extends Expression {
     const instance = func.c(ctx);
     const ctx_ref = ctx_struct.c(ctx);
     const data_name = Namer.GetName();
-    ctx.AddPrefix(`${instance}.data = malloc(sizeof(${ctx_ref}));`, name, [
-      instance,
-    ]);
     ctx.AddPrefix(
-      `${ctx_ref}* ${data_name} = (${ctx_ref}*)${instance}.data;`,
-      data_name,
+      `${instance}->data = _Assign(current_scope, _Allocate(current_scope, sizeof(${ctx_ref})), ${instance});`,
+      name,
       [instance]
     );
+    ctx.AddPrefix(`${ctx_ref} ${data_name} = ${instance}->data;`, data_name, [
+      instance,
+    ]);
 
     for (const [k, t] of all) {
-      const val = t instanceof FunctionParameter ? k : t.c(ctx);
-      ctx.AddPrefix(`${data_name}->${k} = ${val};`, `${data_name}->${k}`, [
-        data_name,
-        val,
-      ]);
+      const val = t instanceof FunctionParameter ? t.CName : t.c(ctx);
+      if (!(t.resolve_type(ctx) instanceof PrimitiveType))
+        ctx.AddPrefix(
+          `${data_name}->${k} = _Assign(current_scope, ${val}, ${data_name});`,
+          `${data_name}->${k}`,
+          [data_name, val]
+        );
+      else
+        ctx.AddPrefix(`${data_name}->${k} = ${val};`, `${data_name}->${k}`, [
+          data_name,
+          val,
+        ]);
     }
 
     return instance;

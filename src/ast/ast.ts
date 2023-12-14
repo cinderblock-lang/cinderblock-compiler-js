@@ -66,7 +66,7 @@ export class Ast {
     return { global_functions, global_types };
   }
 
-  c(): string {
+  c(includes: Array<string>): string {
     const { global_functions, global_types } = this.#globals;
     for (const namespace of this.iterator()) {
       RequireType(Namespace, namespace);
@@ -86,6 +86,8 @@ export class Ast {
           use_types: {},
         });
 
+        for (const include of includes) ctx.AddInclude(include);
+
         const c = entity.c(ctx, true);
 
         return `${ctx.CText}\n\n${c}`;
@@ -95,7 +97,7 @@ export class Ast {
     throw new Error("Could not find a main function");
   }
 
-  c_test(): string {
+  c_test(includes: Array<string>): string {
     const { global_functions, global_types } = this.#globals;
 
     const ctx = new WriterContext({
@@ -107,6 +109,7 @@ export class Ast {
       locals: {},
       use_types: {},
     });
+    for (const include of includes) ctx.AddInclude(include);
 
     const functions = [...this.iterator()]
       .filter((c) => !c.CodeLocation.FileName.includes(".cinder_cache"))
@@ -121,6 +124,7 @@ export class Ast {
     ctx.AddInclude("<stdio.h>");
 
     ctx.AddGlobal(`int main() {
+      void* current_scope = _OpenScope(NULL);
       _Bool failures = 0;
 
       ${ctx.Prefix}
@@ -128,9 +132,9 @@ export class Ast {
       ${functions
         .map(
           ([f, d]) => `
-        _Bool (*${f}_h)() = ${f}.handle;
+        _Bool (*${f}_h)(void*) = ${f}->handle;
         printf("Running test: ${d}\\n");
-        if (!(*${f}_h)()) {
+        if (!(*${f}_h)(current_scope)) {
           printf("Test Failed\\n\\n\\n");
           failures = 1;
         } else {

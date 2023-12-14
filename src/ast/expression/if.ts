@@ -6,6 +6,7 @@ import { WriterContext } from "../writer";
 import { ReturnStatement } from "../statement/return";
 import { Namer } from "../../location/namer";
 import { SideStatement } from "../statement/side";
+import { PrimitiveType } from "../type/primitive";
 
 export class IfExpression extends Expression {
   readonly #check: Component;
@@ -43,7 +44,13 @@ export class IfExpression extends Expression {
   c(ctx: WriterContext): string {
     const type = this.If.resolve_block_type(ctx, "if");
     const name = Namer.GetName();
-    ctx.AddPrefix(`${type.c(ctx)} ${name};`, name, []);
+    ctx.AddPrefix(
+      type instanceof PrimitiveType
+        ? `${type.c(ctx)} ${name};`
+        : `${type.c(ctx)} ${name} = NULL;`,
+      name,
+      []
+    );
     const check = this.Check.c(ctx);
     const if_context = ctx.WithBody(this.If, "if");
     const if_return = this.If.find(ReturnStatement).c(if_context);

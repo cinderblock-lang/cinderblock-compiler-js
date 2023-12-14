@@ -16,14 +16,9 @@ import { Type } from "./type/base";
 import { PrimitiveType } from "./type/primitive";
 import { Unique } from "./utils";
 
-export type AnyFunction =
-  | FunctionEntity
-  | BuiltInFunction;
+export type AnyFunction = FunctionEntity | BuiltInFunction;
 
-export type AnyType =
-  | StructEntity
-  | SchemaEntity
-  | EnumEntity;
+export type AnyType = StructEntity | SchemaEntity | EnumEntity;
 
 export type WriterContextProps = {
   global_functions: Record<string, AnyFunction>;
@@ -212,8 +207,7 @@ export class WriterContext {
 
       if (area === this.#namespace) return possible;
 
-      if (possible.Exported)
-        return possible;
+      if (possible.Exported) return possible;
     }
 
     return undefined;
@@ -379,6 +373,10 @@ export class WriterContext {
 
   get Callstack() {
     return this.#callstack;
+  }
+
+  get BodyName() {
+    return this.#callstack[this.#callstack.length - 1];
   }
 
   WithIterable(iterable: Component) {

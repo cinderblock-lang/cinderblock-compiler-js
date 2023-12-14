@@ -1,5 +1,6 @@
 import { LinkerError } from "../linker/error";
 import { CodeLocation } from "../location/code-location";
+import { Namer } from "../location/namer";
 import { Component } from "./component";
 import { Type } from "./type/base";
 import { WriterContext } from "./writer";
@@ -8,6 +9,7 @@ export class FunctionParameter extends Component {
   readonly #name: string;
   readonly #type?: Type;
   readonly #optional: boolean;
+  readonly #cname: string;
 
   constructor(
     ctx: CodeLocation,
@@ -19,10 +21,15 @@ export class FunctionParameter extends Component {
     this.#name = name;
     this.#type = type;
     this.#optional = optional;
+    this.#cname = name === "ctx" ? name : Namer.GetName();
   }
 
   get Name() {
     return this.#name;
+  }
+
+  get CName() {
+    return this.#cname;
   }
 
   get Type() {
@@ -39,7 +46,7 @@ export class FunctionParameter extends Component {
 
   c(ctx: WriterContext): string {
     if (!this.Type) throw new LinkerError(this.CodeLocation, "Unresolved type");
-    return `${this.Type.c(ctx)} ${this.Name}`;
+    return `${this.Type.c(ctx)} ${this.#cname}`;
   }
 
   resolve_type(ctx: WriterContext): Component {

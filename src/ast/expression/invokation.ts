@@ -17,6 +17,7 @@ import { StructEntity } from "../entity/struct";
 import { FunctionEntity } from "../entity/function";
 import { Property } from "../property";
 import { RawStatement } from "../statement/raw";
+import { PrimitiveType } from "../type/primitive";
 
 export class InvokationExpression extends Expression {
   readonly #subject: Component;
@@ -119,7 +120,7 @@ export class InvokationExpression extends Expression {
       new ComponentGroup(
         new RawStatement(
           this.CodeLocation,
-          `${ctx_struct.c(ctx)} _ctx = *(${ctx_struct.c(ctx)}*)ctx;`,
+          `${ctx_struct.c(ctx)} _ctx = ctx;`,
           "_ctx",
           ctx_struct
         ),
@@ -155,23 +156,30 @@ export class InvokationExpression extends Expression {
     const instance = result.c(ctx);
     const ctx_ref = ctx_struct.c(ctx);
     const data_name = Namer.GetName();
-    ctx.AddPrefix(`${instance}.data = malloc(sizeof(${ctx_ref}));`, name, [
-      instance,
-    ]);
     ctx.AddPrefix(
-      `${ctx_ref}* ${data_name} = (${ctx_ref}*)${instance}.data;`,
-      data_name,
+      `${instance}->data = _Assign(current_scope, _Allocate(current_scope, sizeof(${ctx_ref})), ${instance});`,
+      name,
       [instance]
     );
+    ctx.AddPrefix(`${ctx_ref} ${data_name} = ${instance}->data;`, data_name, [
+      instance,
+    ]);
 
     for (let i = 0; i < existing.length; i++) {
       const k = "a" + i.toString();
       const t = existing[i];
-      const val = t instanceof FunctionParameter ? k : t.c(ctx);
-      ctx.AddPrefix(`${data_name}->${k} = ${val};`, `${data_name}->${k}`, [
-        data_name,
-        val,
-      ]);
+      const val = t instanceof FunctionParameter ? t.CName : t.c(ctx);
+      if (!(t.resolve_type(ctx) instanceof PrimitiveType))
+        ctx.AddPrefix(
+          `${data_name}->${k} = _Assign(current_scope, ${val}, ${data_name});`,
+          `${data_name}->${k}`,
+          [data_name, val]
+        );
+      else
+        ctx.AddPrefix(`${data_name}->${k} = ${val};`, `${data_name}->${k}`, [
+          data_name,
+          val,
+        ]);
     }
 
     return instance;
@@ -206,6 +214,7 @@ export class InvokationExpression extends Expression {
     ctx.AddPrefix(
       `${returns.c(ctx)} (*${name})(${[
         "void*",
+        "void*",
         ...func.Parameters.filter((p) => {
           RequireType(FunctionParameter, p);
           return p.Name !== "ctx";
@@ -213,13 +222,14 @@ export class InvokationExpression extends Expression {
           const type = p.resolve_type(ctx);
           return type.c(ctx);
         }),
-      ].join(", ")}) = ${reference}.handle;`,
+      ].join(", ")}) = ${reference}->handle;`,
       name,
       [reference]
     );
 
     return `(*${name})(${[
-      `${reference}.data`,
+      "current_scope",
+      `${reference}->data`,
       ...invokation.Parameters.map((p) => p.c(ctx)),
       ...Array.apply(null, Array(Math.max(padding, 0))).map(() => "NULL"),
     ].join(", ")})`;

@@ -48,9 +48,15 @@ export class PickExpression extends Expression {
       throw new LinkerError(this.CodeLocation, "Could not resolve symbol");
     RequireType(EnumEntity, type);
     const name = Namer.GetName();
-    ctx.AddDeclaration(`${type.c(ctx)} ${name};`);
+    const reference = type.c(ctx);
+    ctx.AddDeclaration(
+      `${reference} ${name} = _Allocate(current_scope, sizeof(${reference.replace(
+        "*",
+        ""
+      )}));`
+    );
 
-    const ctx_new = ctx.WithBody(this.Using, "pick_" + this.Enum);
+    const ctx_new = ctx.WithBody(this.Using, "pick");
 
     const value = this.Using.find(ReturnStatement);
 
@@ -58,8 +64,8 @@ export class PickExpression extends Expression {
 
     const line = `{
       ${ctx_new.Prefix}
-      ${name}.type = ${type.GetKeyIndex(this.Key)};
-      ${name}.data = &${value_text};
+      ${name}->type = ${type.GetKeyIndex(this.Key)};
+      ${name}->data = ${value_text};
       ${ctx_new.Suffix}
     }`;
 

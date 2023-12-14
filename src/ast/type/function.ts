@@ -47,7 +47,7 @@ export class FunctionType extends Type {
         `typedef struct _FUNCTION { void* handle; void* data; } _FUNCTION;`
       );
     }
-    return "_FUNCTION";
+    return "_FUNCTION*";
   }
 
   resolve_type(ctx: WriterContext): Component {

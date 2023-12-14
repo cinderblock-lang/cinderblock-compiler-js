@@ -1,7 +1,9 @@
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
+import { Namer } from "../../location/namer";
 import { Component } from "../component";
 import { Expression } from "../expression/base";
+import { PrimitiveType } from "../type/primitive";
 import { WriterContext } from "../writer";
 import { Statement } from "./base";
 
@@ -27,15 +29,25 @@ export class AssignStatement extends Statement {
     return "assign_statement";
   }
 
-  c(ctx: WriterContext): string {
+  c(ctx: WriterContext, assignee?: string): string {
     const expression = this.Equals.c(ctx);
     const type = this.Equals.resolve_type(ctx);
+    const name = Namer.GetName();
 
-    ctx.AddPrefix(`${type.c(ctx)} ${this.Name} = ${expression};`, this.Name, [
-      expression,
-    ]);
+    if (assignee && !(type instanceof PrimitiveType))
+      ctx.AddPrefix(
+        `${type.c(
+          ctx
+        )} ${name} = _Assign(current_scope, ${expression}, ${assignee});`,
+        name,
+        [expression]
+      );
+    else
+      ctx.AddPrefix(`${type.c(ctx)} ${name} = ${expression};`, name, [
+        expression,
+      ]);
 
-    return this.Name;
+    return name;
   }
 
   resolve_type(ctx: WriterContext): Component {

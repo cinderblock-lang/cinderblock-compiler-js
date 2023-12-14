@@ -7,6 +7,8 @@ import { ParseCinderblock } from "./parser";
 import { Ast } from "./ast/ast";
 import { BuiltInFunctions } from "./linker/built-in-functions";
 
+type Options = { debug?: boolean; no_cache?: boolean; resources_path: string };
+
 type Target = "linux" | "macos" | "windows" | "android" | "ios" | "wasm";
 
 type File = string | Partial<Record<Target, string>>;
@@ -104,10 +106,7 @@ async function ReadText(path: string) {
   return await Fs.readFile(path, "utf-8");
 }
 
-async function Prepare(
-  root_dir: string,
-  options: { debug?: boolean; no_cache?: boolean } = {}
-) {
+async function Prepare(root_dir: string, options: Options) {
   const project: Project = await ReadJson(
     Path.resolve(root_dir, "cinder.json")
   );
@@ -209,23 +208,24 @@ async function Prepare(
   return { result, project };
 }
 
-export async function Compile(
-  root_dir: string,
-  options: { debug?: boolean; no_cache?: boolean } = {}
-) {
+export async function Compile(root_dir: string, options: Options) {
   const { result: prepared, project } = await Prepare(root_dir, options);
   for (const target in prepared) {
     const item = prepared[target as Target];
     if (!item) continue;
     const [dir, parsed] = item;
-    const c_code = parsed.c();
+    const c_code = parsed.c([
+      `"${Path.resolve(options.resources_path, "memory.h")}"`,
+    ]);
 
     await Fs.writeFile(Path.join(dir, "main.c"), c_code);
 
     switch (target) {
       case "linux":
         await Exec(
-          `gcc main.c ${options.debug ? "-g" : ""} -o ${project.name}`,
+          `gcc main.c ${Path.resolve(options.resources_path, "memory.c")} ${
+            options.debug ? "-g" : ""
+          } -o ${project.name}`,
           dir
         );
         break;
@@ -237,23 +237,28 @@ export async function Compile(
   }
 }
 
-export async function Test(root_dir: string) {
-  const { result: prepared, project } = await Prepare(root_dir, {
-    debug: true,
-    no_cache: true,
-  });
+export async function Test(root_dir: string, options: Options) {
+  const { result: prepared, project } = await Prepare(root_dir, options);
 
   for (const target in prepared) {
     const item = prepared[target as Target];
     if (!item) continue;
     const [dir, parsed] = item;
-    const c_code = parsed.c_test();
+    const c_code = parsed.c_test([
+      `"${Path.resolve(options.resources_path, "memory.h")}"`,
+    ]);
 
     await Fs.writeFile(Path.join(dir, "test.c"), c_code);
 
     switch (target) {
       case "linux":
-        await Exec(`gcc test.c -g -o ${project.name}_tests`, dir);
+        await Exec(
+          `gcc test.c ${Path.resolve(
+            options.resources_path,
+            "memory.c"
+          )} -g -o ${project.name}_tests`,
+          dir
+        );
         break;
       default:
         console.warn(
