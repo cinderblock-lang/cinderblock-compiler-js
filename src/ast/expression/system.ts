@@ -61,7 +61,6 @@ export class SystemExpression extends Expression {
       `${type} ${name} = malloc(sizeof(${type}) * ${this.#out_length.c(ctx)});`
     );
 
-    ctx.AddSuffix(`free(${name});`);
     ctx.AddPrefix(
       `syscall(${this.#parameters
         .map((p) => {
