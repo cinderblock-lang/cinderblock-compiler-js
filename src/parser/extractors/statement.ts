@@ -4,17 +4,15 @@ import { Statement } from "../../ast/statement/base";
 import { PanicStatement } from "../../ast/statement/panic";
 import { ReturnStatement } from "../../ast/statement/return";
 import { SideStatement } from "../../ast/statement/side";
-import { StoreStatement } from "../../ast/statement/store";
-import { ParserError } from "../error";
+import { SubStatement } from "../../ast/statement/sub";
 import { TokenGroup } from "../token";
 import { BuildWhile, ExpectNext, NextBlock } from "../utils";
 import { ExtractExpression } from "./expression";
 
-function ExtractStore(tokens: TokenGroup) {
-  const name = NextBlock(tokens).Text;
-  ExpectNext(tokens, "=");
+function ExtractSub(tokens: TokenGroup) {
+  ExpectNext(tokens, "->");
 
-  return { name, equals: ExtractExpression(tokens) };
+  return { equals: ExtractExpression(tokens) };
 }
 
 function ExtractAssign(tokens: TokenGroup) {
@@ -40,10 +38,6 @@ export function ExtractStatement(tokens: TokenGroup): Statement {
   const current = NextBlock(tokens);
 
   switch (current.Text) {
-    case "store": {
-      const { name, equals } = ExtractStore(tokens);
-      return new StoreStatement(current.CodeLocation, name, equals);
-    }
     case "return": {
       return new ReturnStatement(current.CodeLocation, ExtractReturn(tokens));
     }
@@ -56,18 +50,11 @@ export function ExtractStatement(tokens: TokenGroup): Statement {
       return new PanicStatement(current.CodeLocation, error);
     }
     case "side": {
-      return new SideStatement(current.CodeLocation, ExtractReturn(tokens));
+      return new SideStatement(current.CodeLocation, ExtractSide(tokens));
     }
     default:
-      throw ParserError.UnexpectedSymbol(
-        current,
-        "store",
-        "return",
-        "assign",
-        "panic",
-        "asm",
-        "side"
-      );
+      const { equals } = ExtractSub(tokens);
+      return new SubStatement(current.CodeLocation, current.Text, equals);
   }
 }
 

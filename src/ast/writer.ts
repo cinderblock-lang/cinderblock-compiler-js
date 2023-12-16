@@ -11,7 +11,7 @@ import { StructEntity } from "./entity/struct";
 import { InvokationExpression } from "./expression/invokation";
 import { FunctionParameter } from "./function-parameter";
 import { RawStatement } from "./statement/raw";
-import { StoreStatement } from "./statement/store";
+import { SubStatement } from "./statement/sub";
 import { Type } from "./type/base";
 import { PrimitiveType } from "./type/primitive";
 import { Unique } from "./utils";
@@ -326,7 +326,7 @@ export class WriterContext {
   WithBody(content: ComponentGroup, name: string) {
     const input = { ...this.#locals };
     for (const statement of content.iterator()) {
-      if (statement instanceof StoreStatement) {
+      if (statement instanceof SubStatement) {
         input[statement.Name] = statement;
       }
 

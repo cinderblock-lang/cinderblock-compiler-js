@@ -9,7 +9,7 @@ import { Type } from "../type/base";
 import { StructEntity } from "../entity/struct";
 import { FunctionEntity } from "../entity/function";
 import { RawStatement } from "../statement/raw";
-import { StoreStatement } from "../statement/store";
+import { SubStatement } from "../statement/sub";
 import { CodeLocation } from "../../location/code-location";
 import { LinkerError } from "../../linker/error";
 import { Namer } from "../../location/namer";
@@ -147,7 +147,7 @@ export class LambdaExpression extends Expression {
         ),
         ...all.map(
           ([k]) =>
-            new StoreStatement(
+            new SubStatement(
               this.CodeLocation,
               k,
               new AccessExpression(

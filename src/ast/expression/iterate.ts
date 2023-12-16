@@ -3,7 +3,7 @@ import { CodeLocation } from "../../location/code-location";
 import { Component } from "../component";
 import { ComponentGroup } from "../component-group";
 import { WriterContext } from "../writer";
-import { StoreStatement } from "../statement/store";
+import { SubStatement } from "../statement/sub";
 import { Namer } from "../../location/namer";
 import { FunctionParameter } from "../function-parameter";
 import { ReturnStatement } from "../statement/return";
@@ -128,7 +128,7 @@ export class IterateExpression extends Expression {
           "_ctx",
           ctx_struct
         ),
-        new StoreStatement(
+        new SubStatement(
           this.CodeLocation,
           parent_name,
           new AccessExpression(
@@ -139,7 +139,7 @@ export class IterateExpression extends Expression {
         ),
         ...all.map(
           ([k]) =>
-            new StoreStatement(
+            new SubStatement(
               this.CodeLocation,
               k,
               new AccessExpression(
@@ -149,7 +149,7 @@ export class IterateExpression extends Expression {
               )
             )
         ),
-        new StoreStatement(
+        new SubStatement(
           this.CodeLocation,
           ctx_name,
           new InvokationExpression(
@@ -205,7 +205,7 @@ export class IterateExpression extends Expression {
                     new LiteralExpression(this.CodeLocation, "bool", "false")
                   ),
                   new ComponentGroup(
-                    new StoreStatement(
+                    new SubStatement(
                       this.CodeLocation,
                       this.As,
                       new AccessExpression(

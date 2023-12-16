@@ -1,9 +1,7 @@
 import { LinkerError } from "../linker/error";
 import { CodeLocation } from "../location/code-location";
 import { Component } from "./component";
-import { RawStatement } from "./statement/raw";
 import { ReturnStatement } from "./statement/return";
-import { StoreStatement } from "./statement/store";
 import { WriterContext } from "./writer";
 
 export class ComponentGroup {

@@ -5,7 +5,7 @@ import { Expression } from "../expression/base";
 import { WriterContext } from "../writer";
 import { Statement } from "./base";
 
-export class StoreStatement extends Statement {
+export class SubStatement extends Statement {
   readonly #name: string;
   readonly #equals: Component;
 
@@ -24,7 +24,7 @@ export class StoreStatement extends Statement {
   }
 
   get type_name() {
-    return "store_statement";
+    return "sub_statement";
   }
 
   static #written: Record<string, string> = {};
@@ -32,11 +32,11 @@ export class StoreStatement extends Statement {
   c(ctx: WriterContext): string {
     const name = ctx.Callstack.join("__") + "__" + this.Name;
 
-    if (StoreStatement.#written[name]) {
-      return StoreStatement.#written[name];
+    if (SubStatement.#written[name]) {
+      return SubStatement.#written[name];
     }
     const id = Namer.GetName();
-    StoreStatement.#written[name] = "*" + id;
+    SubStatement.#written[name] = "*" + id;
 
     const type = this.Equals.resolve_type(ctx);
 
@@ -48,10 +48,10 @@ export class StoreStatement extends Statement {
 
     ctx.AddSuffix(`free(${id});`);
 
-    ctx.AddPrefix(`*${id} = ${expression};`, StoreStatement.#written[name], [
+    ctx.AddPrefix(`*${id} = ${expression};`, SubStatement.#written[name], [
       expression,
     ]);
-    return StoreStatement.#written[name];
+    return SubStatement.#written[name];
   }
 
   resolve_type(ctx: WriterContext): Component {

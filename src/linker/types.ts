@@ -4,7 +4,7 @@ import { FunctionEntity } from "../ast/entity/function";
 import { SchemaEntity } from "../ast/entity/schema";
 import { StructEntity } from "../ast/entity/struct";
 import { FunctionParameter } from "../ast/function-parameter";
-import { StoreStatement } from "../ast/statement/store";
+import { SubStatement } from "../ast/statement/sub";
 import { SchemaType } from "../ast/type/schema";
 
 type AnyStructLike = StructEntity | SchemaEntity | SchemaType;
@@ -21,7 +21,7 @@ type AnyInvokable =
   | FunctionEntity
   | BuiltInFunction
   | FunctionParameter
-  | StoreStatement;
+  | SubStatement;
 
 export function IsAnyInvokable(
   target: Component | undefined
@@ -29,7 +29,7 @@ export function IsAnyInvokable(
   return (
     target instanceof FunctionEntity ||
     target instanceof BuiltInFunction ||
-    target instanceof StoreStatement ||
+    target instanceof SubStatement ||
     target instanceof FunctionParameter
   );
 }
