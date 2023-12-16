@@ -37,6 +37,10 @@ export class AccessExpression extends Expression {
     return `${this.Subject.c(ctx)}.${this.Target}`;
   }
 
+  compatible(target: Component): boolean {
+    return false;
+  }
+
   resolve_type(ctx: WriterContext): Component {
     const subject = this.Subject.resolve_type(ctx);
     return PatternMatch(StructEntity, SchemaEntity, SchemaType, Component)(
@@ -62,7 +66,7 @@ export class AccessExpression extends Expression {
         return result.resolve_type(ctx);
       },
       () => {
-        const target = ctx.FindReference(this.Target);
+        const target = ctx.FindReference(this.Target)[0];
         if (!target || !IsAnyInvokable(target))
           throw new LinkerError(this.CodeLocation, "Could not resolve");
 

@@ -72,6 +72,12 @@ export class StructEntity extends Entity {
     return this.#full_name;
   }
 
+  compatible(target: Component): boolean {
+    return (
+      target instanceof StructEntity && target.type_name === this.type_name
+    );
+  }
+
   resolve_type(ctx: WriterContext): Component {
     return this;
   }

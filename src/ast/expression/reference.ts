@@ -22,17 +22,21 @@ export class ReferenceExpression extends Expression {
 
   c(ctx: WriterContext): string {
     const target = ctx.FindReference(this.Name);
-    if (!target)
+    if (!target.length)
       throw new LinkerError(this.CodeLocation, "Could not find reference");
-    if (target instanceof FunctionParameter) return this.Name;
-    return `(${target.c(ctx)})`;
+    if (target[0] instanceof FunctionParameter) return this.Name;
+    return `(${target[0].c(ctx)})`;
+  }
+
+  compatible(target: Component): boolean {
+    return false;
   }
 
   resolve_type(ctx: WriterContext): Component {
     const target = ctx.FindReference(this.Name);
-    if (!target)
+    if (!target.length)
       throw new LinkerError(this.CodeLocation, "Unresolved reference");
 
-    return target.resolve_type(ctx);
+    return target[0].resolve_type(ctx);
   }
 }

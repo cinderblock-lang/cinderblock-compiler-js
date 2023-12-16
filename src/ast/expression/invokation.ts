@@ -53,7 +53,7 @@ export class InvokationExpression extends Expression {
       )
         return this;
 
-      const func = ctx.FindReference(this.Subject.Target);
+      const func = ctx.FindReference(this.Subject.Target)[0];
       if (!IsAnyInvokable(func))
         throw new LinkerError(
           this.Subject.CodeLocation,
@@ -223,6 +223,10 @@ export class InvokationExpression extends Expression {
       ...invokation.Parameters.map((p) => p.c(ctx)),
       ...Array.apply(null, Array(Math.max(padding, 0))).map(() => "NULL"),
     ].join(", ")})`;
+  }
+
+  compatible(target: Component): boolean {
+    return false;
   }
 
   resolve_type(ctx: WriterContext): Component {

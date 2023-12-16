@@ -1,7 +1,9 @@
 import { CodeLocation } from "../../location/code-location";
+import { RequireType } from "../../location/require-type";
 import { Component } from "../component";
 import { ComponentGroup } from "../component-group";
 import { Property } from "../property";
+import { SchemaType } from "../type/schema";
 import { WriterContext } from "../writer";
 import { Entity } from "./base";
 import { StructEntity } from "./struct";
@@ -54,6 +56,20 @@ export class SchemaEntity extends Entity {
 
   c(ctx: WriterContext): string {
     return ``;
+  }
+
+  compatible(target: Component, ctx: WriterContext): boolean {
+    return (
+      target instanceof SchemaEntity &&
+      target instanceof SchemaType &&
+      target instanceof StructEntity &&
+      ![...this.Properties.iterator()].find((p) => {
+        RequireType(Property, p);
+        return (
+          !target.HasKey(p.Name) || !target.GetKey(p.Name)?.resolve_type(ctx).compatible(p.Type, ctx)
+        );
+      })
+    );
   }
 
   resolve_type(ctx: WriterContext): Component {

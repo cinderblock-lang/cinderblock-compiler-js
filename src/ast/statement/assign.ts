@@ -38,6 +38,10 @@ export class AssignStatement extends Statement {
     return this.Name;
   }
 
+  compatible(target: Component): boolean {
+    return false;
+  }
+
   resolve_type(ctx: WriterContext): Component {
     throw new LinkerError(this.CodeLocation, "Should not be reachable");
   }

@@ -86,6 +86,10 @@ export class MatchExpression extends Expression {
     return name;
   }
 
+  compatible(target: Component): boolean {
+    return false;
+  }
+
   resolve_type(ctx: WriterContext): Component {
     const type = this.Subject.resolve_type(ctx);
     if (!type)

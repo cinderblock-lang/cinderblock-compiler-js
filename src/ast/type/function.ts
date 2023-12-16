@@ -50,6 +50,14 @@ export class FunctionType extends Type {
     return "_FUNCTION";
   }
 
+  compatible(target: Component, ctx: WriterContext): boolean {
+    return (
+      target instanceof FunctionType &&
+      target.#parameters.compatible(this.#parameters, ctx) &&
+      this.#returns.compatible(target.#returns, ctx)
+    );
+  }
+
   resolve_type(ctx: WriterContext): Component {
     return this;
   }

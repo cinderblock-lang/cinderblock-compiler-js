@@ -78,6 +78,10 @@ export class EnumEntity extends Entity {
     return "_ENUM";
   }
 
+  compatible(target: Component): boolean {
+    return target instanceof EnumEntity && target.type_name === this.type_name;
+  }
+
   resolve_type(ctx: WriterContext): Component {
     return this;
   }

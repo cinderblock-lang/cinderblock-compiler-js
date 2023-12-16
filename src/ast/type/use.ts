@@ -38,6 +38,10 @@ export class UseType extends Type {
     );
   }
 
+  compatible(target: Component, ctx: WriterContext): boolean {
+    return true;
+  }
+
   resolve_type(ctx: WriterContext): Component {
     throw new LinkerError(this.CodeLocation, "This should not be reachable");
   }

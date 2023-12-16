@@ -42,6 +42,10 @@ export class Property extends Component {
     return `${this.Type.c(ctx)} ${this.Name};`;
   }
 
+  compatible(target: Component, ctx: WriterContext): boolean {
+    return this.#type.compatible(target, ctx);
+  }
+
   resolve_type(ctx: WriterContext): Component {
     return this.Type.resolve_type(ctx);
   }

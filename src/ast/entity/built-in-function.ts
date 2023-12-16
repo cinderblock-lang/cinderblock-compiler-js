@@ -247,6 +247,10 @@ export class BuiltInFunction extends Component {
     return name;
   }
 
+  compatible(target: Component): boolean {
+    return false;
+  }
+
   resolve_type(ctx_old: WriterContext): Component {
     const { input_parameters, returns, ctx } =
       this.#build_invokation_parameters(ctx_old);

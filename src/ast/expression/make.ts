@@ -58,6 +58,10 @@ export class MakeExpression extends Expression {
     return `*${name}`;
   }
 
+  compatible(target: Component): boolean {
+    return false;
+  }
+
   resolve_type(ctx: WriterContext): Component {
     const entity = ctx.FindType(this.Struct);
     if (!entity || !(entity instanceof StructEntity))

@@ -151,6 +151,10 @@ export class OperatorExpression extends Expression {
     return instance_name;
   }
 
+  compatible(target: Component): boolean {
+    return false;
+  }
+
   c(ctx: WriterContext): string {
     if (this.Operator === "++") {
       return this.#build_concat(ctx);

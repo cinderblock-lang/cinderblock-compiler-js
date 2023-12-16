@@ -54,6 +54,10 @@ export class SubStatement extends Statement {
     return SubStatement.#written[name];
   }
 
+  compatible(target: Component): boolean {
+    return false;
+  }
+
   resolve_type(ctx: WriterContext): Component {
     return this.Equals.resolve_type(ctx);
   }

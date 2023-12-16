@@ -29,6 +29,10 @@ export class PanicStatement extends Statement {
     return ``;
   }
 
+  compatible(target: Component): boolean {
+    return false;
+  }
+
   resolve_type(ctx: WriterContext): Component {
     throw new LinkerError(this.CodeLocation, "Should not be reachable");
   }

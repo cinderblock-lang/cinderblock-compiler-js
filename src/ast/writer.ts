@@ -16,17 +16,12 @@ import { Type } from "./type/base";
 import { PrimitiveType } from "./type/primitive";
 import { Unique } from "./utils";
 
-export type AnyFunction =
-  | FunctionEntity
-  | BuiltInFunction;
+export type AnyFunction = FunctionEntity | BuiltInFunction;
 
-export type AnyType =
-  | StructEntity
-  | SchemaEntity
-  | EnumEntity;
+export type AnyType = StructEntity | SchemaEntity | EnumEntity;
 
 export type WriterContextProps = {
-  global_functions: Record<string, AnyFunction>;
+  global_functions: Record<string, AnyFunction[]>;
   global_types: Record<string, AnyType>;
 
   namespace: string;
@@ -49,7 +44,7 @@ export type WriterContextProps = {
 };
 
 export class WriterContext {
-  #global_functions: Record<string, AnyFunction>;
+  #global_functions: Record<string, AnyFunction[]>;
   #global_types: Record<string, AnyType>;
 
   #namespace: string;
@@ -212,37 +207,39 @@ export class WriterContext {
 
       if (area === this.#namespace) return possible;
 
-      if (possible.Exported)
-        return possible;
+      if (possible.Exported) return possible;
     }
 
     return undefined;
   }
 
   FindReference(name: string) {
-    if (this.#locals[name]) return this.#locals[name];
+    const result: Array<Component> = [];
+    if (this.#locals[name]) result.push(this.#locals[name]);
 
-    if (this.#parameters[name]) return this.#parameters[name];
+    if (this.#parameters[name]) result.push(this.#parameters[name]);
 
     if (this.#global_functions[this.#namespace + "." + name])
-      return this.#global_functions[this.#namespace + "." + name];
+      result.push(...this.#global_functions[this.#namespace + "." + name]);
 
     const possible = this.#global_functions[name];
-    if (possible) return possible;
+    if (possible) result.push(...possible);
 
     for (const area of [...this.#using, "___BUILT_IN_CODE___"]) {
       const full = `${area}.${name}`;
       const possible = this.#global_functions[full];
       if (!possible) continue;
-
-      if (possible instanceof BuiltInFunction) return possible;
-
-      if (area === this.#namespace) return possible;
-
-      if (possible.Exported) return possible;
+      result.push(
+        ...possible.filter(
+          (p) =>
+            p instanceof BuiltInFunction ||
+            area === this.#namespace ||
+            p.Exported
+        )
+      );
     }
 
-    return undefined;
+    return result;
   }
 
   get CText() {
@@ -370,7 +367,10 @@ export class WriterContext {
   }
 
   AddGlobalFunction(name: string, func: FunctionEntity) {
-    this.#global_functions[name] = func;
+    this.#global_functions[name] = [
+      ...(this.#global_functions[name] ?? []),
+      func,
+    ];
   }
 
   AddGlobalStruct(name: string, struct: StructEntity) {

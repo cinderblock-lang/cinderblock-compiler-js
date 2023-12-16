@@ -190,6 +190,10 @@ export class LambdaExpression extends Expression {
     return instance;
   }
 
+  compatible(target: Component): boolean {
+    return false;
+  }
+
   resolve_type(ctx: WriterContext): Component {
     const name = ctx.Callstack.join("__");
     const expected = [...this.Parameters.iterator()];

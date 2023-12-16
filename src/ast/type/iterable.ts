@@ -58,6 +58,15 @@ export class IterableType extends Type {
     return this.resolve_type(ctx).c(ctx);
   }
 
+  compatible(target: Component, ctx: WriterContext): boolean {
+    return (
+      (target instanceof IterableType &&
+        target.#type.compatible(this.#type, ctx)) ||
+      (target instanceof FunctionType &&
+        target.compatible(this.resolve_type(ctx), ctx))
+    );
+  }
+
   resolve_type(ctx: WriterContext): Component {
     ctx.AddGlobalStruct(this.Result.Name, this.Result);
     return new FunctionType(

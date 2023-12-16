@@ -33,6 +33,10 @@ export class IsExpression extends Expression {
     return left_type === this.Right.resolve_type(ctx) ? "1" : "0";
   }
 
+  compatible(target: Component): boolean {
+    return false;
+  }
+
   resolve_type(ctx: WriterContext): Component {
     return new PrimitiveType(this.CodeLocation, "bool");
   }

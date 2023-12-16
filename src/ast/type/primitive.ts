@@ -82,6 +82,10 @@ export class PrimitiveType extends Type {
     }
   }
 
+  compatible(target: Component, ctx: WriterContext): boolean {
+    return target instanceof PrimitiveType && target.#name === this.#name;
+  }
+
   resolve_type(ctx: WriterContext): Component {
     return this;
   }

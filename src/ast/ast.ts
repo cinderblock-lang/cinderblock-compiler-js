@@ -28,7 +28,7 @@ export class Ast {
   }
 
   get #globals() {
-    const global_functions: Record<string, AnyFunction> = {};
+    const global_functions: Record<string, AnyFunction[]> = {};
     const global_types: Record<string, AnyType> = {};
 
     for (const namespace of this.iterator()) {
@@ -44,10 +44,16 @@ export class Ast {
           EnumEntity
         )(
           (f) => {
-            global_functions[namespace.Name + "." + f.Name] = f;
+            global_functions[namespace.Name + "." + f.Name] = [
+              ...(global_functions[namespace.Name + "." + f.Name] ?? []),
+              f,
+            ];
           },
           (f) => {
-            global_functions[namespace.Name + "." + f.Name] = f;
+            global_functions[namespace.Name + "." + f.Name] = [
+              ...(global_functions[namespace.Name + "." + f.Name] ?? []),
+              f,
+            ];
           },
           (f) => {
             global_types[namespace.Name + "." + f.Name] = f;

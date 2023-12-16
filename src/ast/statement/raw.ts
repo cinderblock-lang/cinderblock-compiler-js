@@ -37,6 +37,10 @@ export class RawStatement extends Statement {
     return this.#reference;
   }
 
+  compatible(target: Component): boolean {
+    return false;
+  }
+
   resolve_type(ctx: WriterContext): Component {
     return this.Creates.resolve_type(ctx);
   }

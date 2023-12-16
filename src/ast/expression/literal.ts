@@ -68,6 +68,10 @@ export class LiteralExpression extends Expression {
     }
   }
 
+  compatible(target: Component): boolean {
+    return false;
+  }
+
   resolve_type(ctx: WriterContext): Component {
     return new PrimitiveType(
       this.CodeLocation,

@@ -37,6 +37,10 @@ export class FunctionParameter extends Component {
     return `p_${this.Type?.type_name}`;
   }
 
+  compatible(target: Component, ctx: WriterContext): boolean {
+    return this.#type?.compatible(target, ctx) ?? true;
+  }
+
   c(ctx: WriterContext): string {
     if (!this.Type) throw new LinkerError(this.CodeLocation, "Unresolved type");
     return `${this.Type.c(ctx)} ${this.Name}`;

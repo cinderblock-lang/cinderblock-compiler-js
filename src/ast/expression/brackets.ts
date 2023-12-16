@@ -32,6 +32,10 @@ export class BracketsExpression extends Expression {
     return name;
   }
 
+  compatible(target: Component): boolean {
+    return false;
+  }
+
   resolve_type(ctx: WriterContext): Component {
     return this.Expression.resolve_type(ctx);
   }

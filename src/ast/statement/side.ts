@@ -34,6 +34,10 @@ export class SideStatement extends Statement {
     return "NULL";
   }
 
+  compatible(target: Component): boolean {
+    return false;
+  }
+
   resolve_type(ctx: WriterContext): Component {
     return new PrimitiveType(this.CodeLocation, "null");
   }

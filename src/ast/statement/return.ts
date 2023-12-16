@@ -32,6 +32,10 @@ export class ReturnStatement extends Statement {
     return result_name;
   }
 
+  compatible(target: Component): boolean {
+    return false;
+  }
+
   resolve_type(ctx: WriterContext): Component {
     return this.Value.resolve_type(ctx);
   }

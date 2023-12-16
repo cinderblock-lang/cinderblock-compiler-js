@@ -68,6 +68,10 @@ export class PickExpression extends Expression {
     return name;
   }
 
+  compatible(target: Component): boolean {
+    return false;
+  }
+
   resolve_type(ctx: WriterContext): Component {
     const type = ctx.FindType(this.Enum);
     if (!type)

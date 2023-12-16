@@ -25,6 +25,10 @@ export class EmptyExpression extends Expression {
     return "";
   }
 
+  compatible(target: Component): boolean {
+    return false;
+  }
+
   resolve_type(ctx: WriterContext): Component {
     return new IterableType(this.CodeLocation, this.Of);
   }

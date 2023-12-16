@@ -24,6 +24,10 @@ export class UsingEntity extends Entity {
     return ``;
   }
 
+  compatible(target: Component): boolean {
+    return false;
+  }
+
   resolve_type(ctx: WriterContext): Component {
     throw new LinkerError(
       this.CodeLocation,

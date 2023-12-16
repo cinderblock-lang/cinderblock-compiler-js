@@ -76,6 +76,10 @@ export class IfExpression extends Expression {
     return name;
   }
 
+  compatible(target: Component): boolean {
+    return false;
+  }
+
   resolve_type(ctx: WriterContext): Component {
     return this.If.resolve_block_type(ctx, "if");
   }

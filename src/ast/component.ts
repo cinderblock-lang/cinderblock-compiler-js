@@ -17,4 +17,6 @@ export abstract class Component {
   abstract c(ctx: WriterContext): string;
 
   abstract resolve_type(ctx: WriterContext): Component;
+
+  abstract compatible(target: Component, ctx: WriterContext): boolean;
 }

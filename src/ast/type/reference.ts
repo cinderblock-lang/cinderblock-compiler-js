@@ -24,6 +24,10 @@ export class ReferenceType extends Type {
     return this.resolve_type(ctx).c(ctx);
   }
 
+  compatible(target: Component, ctx: WriterContext): boolean {
+    return this.resolve_type(ctx).compatible(target, ctx);
+  }
+
   resolve_type(ctx: WriterContext): Component {
     const result = ctx.FindType(this.Name)?.resolve_type(ctx);
 

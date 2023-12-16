@@ -272,6 +272,10 @@ export class IterateExpression extends Expression {
     return instance;
   }
 
+  compatible(target: Component): boolean {
+    return false;
+  }
+
   resolve_type(ctx: WriterContext): IterableType {
     return new IterableType(
       this.CodeLocation,
