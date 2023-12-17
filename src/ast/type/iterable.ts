@@ -2,6 +2,7 @@ import { CodeLocation } from "../../location/code-location";
 import { Namer } from "../../location/namer";
 import { Component } from "../component";
 import { ComponentGroup } from "../component-group";
+import { SchemaEntity } from "../entity/schema";
 import { StructEntity } from "../entity/struct";
 import { FunctionParameter } from "../function-parameter";
 import { Property } from "../property";
@@ -9,6 +10,7 @@ import { WriterContext } from "../writer";
 import { Type } from "./base";
 import { FunctionType } from "./function";
 import { PrimitiveType } from "./primitive";
+import { SchemaType } from "./schema";
 
 export class IterableType extends Type {
   readonly #type: Type;
@@ -58,12 +60,40 @@ export class IterableType extends Type {
     return this.resolve_type(ctx).c(ctx);
   }
 
+  get #result_schema() {
+    return new SchemaType(
+      this.CodeLocation,
+      new ComponentGroup(
+        new Property(this.CodeLocation, "result", this.Type, true),
+        new Property(
+          this.CodeLocation,
+          "done",
+          new PrimitiveType(this.CodeLocation, "bool"),
+          false
+        ),
+        new Property(
+          this.CodeLocation,
+          "next",
+          new PrimitiveType(this.CodeLocation, "int"),
+          false
+        )
+      )
+    );
+  }
+
   compatible(target: Component, ctx: WriterContext): boolean {
     return (
       (target instanceof IterableType &&
         target.#type.compatible(this.#type, ctx)) ||
       (target instanceof FunctionType &&
-        target.compatible(this.resolve_type(ctx), ctx))
+        new ComponentGroup(
+          ...target.Parameters.map((p) => p.resolve_type(ctx))
+        ).compatible(
+          new ComponentGroup(new PrimitiveType(this.CodeLocation, "int")),
+          ctx,
+          false
+        ) &&
+        this.#result_schema.compatible(target.Returns, ctx))
     );
   }
 

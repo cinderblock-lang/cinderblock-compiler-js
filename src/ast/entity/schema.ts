@@ -60,13 +60,17 @@ export class SchemaEntity extends Entity {
 
   compatible(target: Component, ctx: WriterContext): boolean {
     return (
-      target instanceof SchemaEntity &&
-      target instanceof SchemaType &&
-      target instanceof StructEntity &&
+      (target instanceof SchemaEntity ||
+        target instanceof SchemaType ||
+        target instanceof StructEntity) &&
       ![...this.Properties.iterator()].find((p) => {
         RequireType(Property, p);
         return (
-          !target.HasKey(p.Name) || !target.GetKey(p.Name)?.resolve_type(ctx).compatible(p.Type, ctx)
+          !target.HasKey(p.Name) ||
+          !target
+            .GetKey(p.Name)
+            ?.resolve_type(ctx)
+            .compatible(p.Type.resolve_type(ctx), ctx)
         );
       })
     );

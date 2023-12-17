@@ -37,8 +37,8 @@ export class RawStatement extends Statement {
     return this.#reference;
   }
 
-  compatible(target: Component): boolean {
-    return false;
+  compatible(target: Component, ctx: WriterContext): boolean {
+    return this.Creates.compatible(target, ctx);
   }
 
   resolve_type(ctx: WriterContext): Component {

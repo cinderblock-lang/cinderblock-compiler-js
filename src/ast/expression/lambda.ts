@@ -190,8 +190,8 @@ export class LambdaExpression extends Expression {
     return instance;
   }
 
-  compatible(target: Component): boolean {
-    return false;
+  compatible(target: Component, ctx: WriterContext): boolean {
+    return this.resolve_type(ctx).compatible(target, ctx);
   }
 
   resolve_type(ctx: WriterContext): Component {

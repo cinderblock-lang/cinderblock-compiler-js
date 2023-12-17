@@ -161,7 +161,7 @@ export class FunctionEntity extends Entity {
         input.push(e);
         if (!e.Type)
           throw new LinkerError(
-            e.CodeLocation,
+            invokation?.CodeLocation,
             "Cannot resolve function parameter type in this location"
           );
 
@@ -196,10 +196,14 @@ export class FunctionEntity extends Entity {
       ctx = ctx.WithFunctionParameter(e.Name, param);
     }
 
-    ctx = ctx.WithBody(this.Content, this.Name);
+    const name_check =
+      this.#full_name +
+      input.map((p) => p.resolve_type(ctx).type_name).join("_");
+    ctx = ctx.WithBody(this.Content, name_check);
 
     return {
       input_parameters: input,
+      name_check,
       returns:
         this.Returns?.resolve_type(ctx) ??
         this.Content.resolve_block_type(ctx, this.Name),
@@ -233,7 +237,7 @@ export class FunctionEntity extends Entity {
 
     ctx_old = ctx_old.WithUnsafeState(this.#unsafe);
 
-    const { input_parameters, returns, ctx } =
+    const { input_parameters, returns, ctx, name_check } =
       this.#build_invokation_parameters(ctx_old);
 
     for (const side of this.Content.find_all(SideStatement)) {
@@ -261,9 +265,6 @@ export class FunctionEntity extends Entity {
     }
 
     const write_name = Namer.GetName();
-    const name_check =
-      this.#full_name +
-      input_parameters.map((p) => p.resolve_type(ctx).type_name).join("_");
     if (!FunctionEntity.#already_made[name_check]) {
       FunctionEntity.#already_made[name_check] = write_name;
       const body = this.Content.find(ReturnStatement).c(ctx);
@@ -302,8 +303,20 @@ export class FunctionEntity extends Entity {
     return instance_name;
   }
 
-  compatible(target: Component): boolean {
-    return false;
+  compatible(target: Component, ctx_old: WriterContext): boolean {
+    const { input_parameters, returns, ctx } =
+      this.#build_invokation_parameters(ctx_old);
+
+    const type = new FunctionType(
+      this.CodeLocation,
+      new ComponentGroup(...input_parameters),
+      returns.resolve_type(ctx)
+    );
+
+    return type.compatible(
+      target,
+      ctx_old.WithUseTypes(ctx.UseTypes).WithInvokation(undefined)
+    );
   }
 
   resolve_type(ctx_old: WriterContext): Component {

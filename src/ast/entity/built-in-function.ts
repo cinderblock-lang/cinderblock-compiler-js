@@ -247,8 +247,20 @@ export class BuiltInFunction extends Component {
     return name;
   }
 
-  compatible(target: Component): boolean {
-    return false;
+  compatible(target: Component, ctx_old: WriterContext): boolean {
+    const { input_parameters, returns, ctx } =
+      this.#build_invokation_parameters(ctx_old);
+
+    const type = new FunctionType(
+      this.CodeLocation,
+      new ComponentGroup(...input_parameters),
+      returns.resolve_type(ctx)
+    );
+
+    return type.compatible(
+      target,
+      ctx_old.WithUseTypes(ctx.UseTypes).WithInvokation(undefined)
+    );
   }
 
   resolve_type(ctx_old: WriterContext): Component {

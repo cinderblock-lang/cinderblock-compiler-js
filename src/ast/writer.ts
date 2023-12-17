@@ -159,6 +159,10 @@ export class WriterContext {
     });
   }
 
+  get UseTypes() {
+    return { ...this.#props.use_types };
+  }
+
   WithFunctionParameter(name: string, type: FunctionParameter) {
     return new WriterContext({
       ...this.#props,
@@ -352,7 +356,7 @@ export class WriterContext {
     });
   }
 
-  WithInvokation(invokation: InvokationExpression) {
+  WithInvokation(invokation: InvokationExpression | undefined) {
     return new WriterContext({
       ...this.#props,
       invokation: invokation,

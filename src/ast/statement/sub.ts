@@ -36,7 +36,7 @@ export class SubStatement extends Statement {
       return SubStatement.#written[name];
     }
     const id = Namer.GetName();
-    SubStatement.#written[name] = "*" + id;
+    SubStatement.#written[name] = "(*" + id + ")";
 
     const type = this.Equals.resolve_type(ctx);
 
@@ -54,8 +54,8 @@ export class SubStatement extends Statement {
     return SubStatement.#written[name];
   }
 
-  compatible(target: Component): boolean {
-    return false;
+  compatible(target: Component, ctx: WriterContext): boolean {
+    return this.Equals.compatible(target, ctx);
   }
 
   resolve_type(ctx: WriterContext): Component {

@@ -32,8 +32,8 @@ export class ReturnStatement extends Statement {
     return result_name;
   }
 
-  compatible(target: Component): boolean {
-    return false;
+  compatible(target: Component, ctx: WriterContext): boolean {
+    return this.Value.compatible(target, ctx);
   }
 
   resolve_type(ctx: WriterContext): Component {

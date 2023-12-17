@@ -179,11 +179,26 @@ export class InvokationExpression extends Expression {
 
   c(ctx: WriterContext): string {
     const invokation = this.#build_invokation(ctx);
-    const reference = invokation.Subject.c(ctx.WithInvokation(invokation));
+    const with_invokation = ctx.WithInvokation(invokation);
+    let subject: Component | undefined = undefined;
+    if (invokation.Subject instanceof ReferenceExpression) {
+      const possible = ctx.FindReference(invokation.Subject.Name);
+      for (const item of possible) {
+        if (item.compatible(invokation, with_invokation)) {
+          subject = item;
+          break;
+        }
+      }
 
-    const func = invokation.Subject.resolve_type(
-      ctx.WithInvokation(invokation)
-    );
+      if (!subject)
+        throw new LinkerError(this.CodeLocation, "Could not resolve function");
+    } else {
+      subject = invokation.Subject;
+    }
+
+    const reference = subject.c(with_invokation);
+
+    const func = subject.resolve_type(ctx.WithInvokation(invokation));
     if (!(func instanceof FunctionType))
       throw new LinkerError(this.CodeLocation, "May only invoke functions");
 
@@ -225,8 +240,8 @@ export class InvokationExpression extends Expression {
     ].join(", ")})`;
   }
 
-  compatible(target: Component): boolean {
-    return false;
+  compatible(target: Component, ctx: WriterContext): boolean {
+    return this.resolve_type(ctx).compatible(target, ctx);
   }
 
   resolve_type(ctx: WriterContext): Component {

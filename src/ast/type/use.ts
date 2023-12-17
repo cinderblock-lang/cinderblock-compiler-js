@@ -4,6 +4,7 @@ import { Component } from "../component";
 import { ComponentGroup } from "../component-group";
 import { WriterContext } from "../writer";
 import { Type } from "./base";
+import { PrimitiveType } from "./primitive";
 
 export class UseType extends Type {
   readonly #name: string;
@@ -43,6 +44,6 @@ export class UseType extends Type {
   }
 
   resolve_type(ctx: WriterContext): Component {
-    throw new LinkerError(this.CodeLocation, "This should not be reachable");
+    return new PrimitiveType(this.CodeLocation, "any");
   }
 }

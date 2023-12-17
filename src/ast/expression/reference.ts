@@ -21,6 +21,7 @@ export class ReferenceExpression extends Expression {
   }
 
   c(ctx: WriterContext): string {
+    if (this.Name === "input") debugger;
     const target = ctx.FindReference(this.Name);
     if (!target.length)
       throw new LinkerError(this.CodeLocation, "Could not find reference");
@@ -28,8 +29,8 @@ export class ReferenceExpression extends Expression {
     return `(${target[0].c(ctx)})`;
   }
 
-  compatible(target: Component): boolean {
-    return false;
+  compatible(target: Component, ctx: WriterContext): boolean {
+    return this.resolve_type(ctx).compatible(target, ctx);
   }
 
   resolve_type(ctx: WriterContext): Component {

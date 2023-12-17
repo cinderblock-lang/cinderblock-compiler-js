@@ -78,8 +78,8 @@ export class SystemExpression extends Expression {
     return name;
   }
 
-  compatible(target: Component): boolean {
-    return false;
+  compatible(target: Component, ctx: WriterContext): boolean {
+    return this.OutType.compatible(target, ctx);
   }
 
   resolve_type(ctx: WriterContext): Component {

@@ -68,8 +68,14 @@ export class ComponentGroup {
     throw new LinkerError(this.CodeLocation, "All blocks must return a value");
   }
 
-  compatible(target: ComponentGroup, ctx: WriterContext): boolean {
-    if (this.#components.length !== target.#components.length) return false;
+  compatible(
+    target: ComponentGroup,
+    ctx: WriterContext,
+    allow_less: boolean = false
+  ): boolean {
+    if (this.#components.length > target.#components.length) return false;
+    if (this.#components.length < target.#components.length && !allow_less)
+      return false;
     for (let i = 0; i < this.#components.length; i++) {
       if (!this.#components[i]?.compatible(target.#components[i], ctx))
         return false;

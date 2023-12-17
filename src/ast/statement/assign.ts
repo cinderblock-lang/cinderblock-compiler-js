@@ -38,8 +38,11 @@ export class AssignStatement extends Statement {
     return this.Name;
   }
 
-  compatible(target: Component): boolean {
-    return false;
+  compatible(target: Component, ctx: WriterContext): boolean {
+    return (
+      target instanceof AssignStatement &&
+      this.Equals.compatible(target.Equals, ctx)
+    );
   }
 
   resolve_type(ctx: WriterContext): Component {

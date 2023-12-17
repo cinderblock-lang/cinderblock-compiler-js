@@ -24,7 +24,7 @@ export const Operators = [
   "<<",
   ">>",
   "&",
-  "|"
+  "|",
 ] as const;
 export type Operator = (typeof Operators)[number];
 
@@ -151,8 +151,8 @@ export class OperatorExpression extends Expression {
     return instance_name;
   }
 
-  compatible(target: Component): boolean {
-    return false;
+  compatible(target: Component, ctx: WriterContext): boolean {
+    return this.resolve_type(ctx).compatible(target, ctx);
   }
 
   c(ctx: WriterContext): string {

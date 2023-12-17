@@ -37,8 +37,8 @@ export class AccessExpression extends Expression {
     return `${this.Subject.c(ctx)}.${this.Target}`;
   }
 
-  compatible(target: Component): boolean {
-    return false;
+  compatible(target: Component, ctx: WriterContext): boolean {
+    return this.resolve_type(ctx).compatible(target, ctx);
   }
 
   resolve_type(ctx: WriterContext): Component {
