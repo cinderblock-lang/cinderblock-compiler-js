@@ -37,7 +37,7 @@ jobs:
       - run: ./test.sh
         working-directory: tests
         env:
-          CINDERBLOCK: node ../../compiler/bin/index.js
+          CINDERBLOCK: node ${GITHUB_WORKSPACE}/compiler/bin/index.js
 
       - run: npm run package
         working-directory: compiler
