@@ -30,7 +30,7 @@ export const BuiltInFunctions = new ComponentGroup(
           )
         ),
         new PrimitiveType(EmptyCodeLocation, "char"),
-        `return input[index];`,
+        `char result = input[index];`,
         []
       ),
       new BuiltInFunction(
@@ -52,7 +52,7 @@ export const BuiltInFunctions = new ComponentGroup(
             index = index + 1;
           }
           
-          return index;`,
+          int result = index;`,
         []
       ),
       new BuiltInFunction(
@@ -96,8 +96,7 @@ export const BuiltInFunctions = new ComponentGroup(
             result[first_length + i] = second[i];
           }
 
-          result[first_length + second_length] = 0;
-          return result;`,
+          result[first_length + second_length] = 0;`,
         [],
         true
       ),
@@ -151,8 +150,8 @@ export const BuiltInFunctions = new ComponentGroup(
             false
           )
         ),
-        new PrimitiveType(EmptyCodeLocation, "int"),
-        "return sizeof(input.data);",
+        new PrimitiveType(EmptyCodeLocation, "ulong"),
+        "unsigned long result = sizeof(input.data);",
         []
       ),
     )
