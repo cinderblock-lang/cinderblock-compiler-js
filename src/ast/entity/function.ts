@@ -158,14 +158,7 @@ export class FunctionEntity extends Entity {
       const a = actual[i];
 
       if (!a) {
-        input.push(e);
-        if (!e.Type)
-          throw new LinkerError(
-            invokation?.CodeLocation,
-            "Cannot resolve function parameter type in this location"
-          );
-
-        if (e.Optional)
+        if (e.Optional) {
           ctx = ctx.WithFunctionParameter(
             e.Name,
             new FunctionParameter(
@@ -175,7 +168,15 @@ export class FunctionEntity extends Entity {
               true
             )
           );
-        else ctx = ctx.WithFunctionParameter(e.Name, e);
+        } else {
+          if (!e.Type)
+            throw new LinkerError(
+              invokation?.CodeLocation,
+              "Cannot resolve function parameter type in this location"
+            );
+          input.push(e);
+          ctx = ctx.WithFunctionParameter(e.Name, e);
+        }
         continue;
       }
 
