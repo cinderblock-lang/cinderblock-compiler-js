@@ -92,7 +92,7 @@ export class FunctionType extends Type {
           ...this.#parameters
             .filter((p) => {
               RequireType(FunctionParameter, p);
-              return p.Name !== "ctx" && p.Type?.type_name !== "prim_null";
+              return !(p.Name === "ctx" && p.Type?.type_name === "prim_null");
             })
             .map((p) => p.resolve_type(ctx))
         ),

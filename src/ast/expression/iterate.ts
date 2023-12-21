@@ -29,6 +29,7 @@ export class IterateExpression extends Expression {
   readonly #over: Component;
   readonly #as: string;
   readonly #using: ComponentGroup;
+  readonly #struct_name: string;
 
   constructor(
     ctx: CodeLocation,
@@ -40,6 +41,7 @@ export class IterateExpression extends Expression {
     this.#over = over;
     this.#as = as;
     this.#using = using;
+    this.#struct_name = Namer.GetName();
   }
 
   get Over() {
@@ -58,11 +60,16 @@ export class IterateExpression extends Expression {
     return "iterate_expression";
   }
 
-  #input_type(ctx: WriterContext) {
+  #over_struct(ctx: WriterContext) {
     const over_type = this.Over.resolve_type(ctx);
     RequireType(FunctionType, over_type);
     const returns = over_type.Returns.resolve_type(ctx);
     RequireType(StructEntity, returns);
+    return returns;
+  }
+
+  #input_type(ctx: WriterContext) {
+    const returns = this.#over_struct(ctx);
     const item = returns.GetKey("result");
     if (!item)
       throw new LinkerError(
@@ -83,7 +90,7 @@ export class IterateExpression extends Expression {
       new FunctionParameter(
         this.CodeLocation,
         index_name,
-        new PrimitiveType(this.CodeLocation, "int"),
+        new PrimitiveType(this.CodeLocation, "any"),
         false
       ),
     ];
@@ -108,7 +115,8 @@ export class IterateExpression extends Expression {
 
     const nullptr_name = Namer.GetName();
 
-    const result = this.resolve_type(ctx).Result;
+    const result = this.resolve_type(ctx).Returns;
+    RequireType(StructEntity, result);
     ctx.AddGlobalStruct(result.Name, result);
 
     const item = result.GetKey("result")?.Type;
@@ -276,20 +284,41 @@ export class IterateExpression extends Expression {
     return this.resolve_type(ctx).compatible(target, ctx);
   }
 
-  resolve_type(ctx: WriterContext): IterableType {
-    return new IterableType(
+  resolve_type(ctx: WriterContext): FunctionType {
+    const over_struct = this.#over_struct(ctx);
+
+    const next = over_struct.GetKey("next");
+    if (!next)
+      throw new LinkerError(
+        this.CodeLocation,
+        "Could not properly resolve iterable"
+      );
+    return new FunctionType(
       this.CodeLocation,
-      this.Body.resolve_block_type(
-        ctx.WithFunctionParameter(
-          this.As,
-          new FunctionParameter(
+      new ComponentGroup(
+        new FunctionParameter(this.CodeLocation, "index", next.Type, true)
+      ),
+      new StructEntity(
+        this.CodeLocation,
+        true,
+        this.#struct_name,
+        new ComponentGroup(
+          new Property(
             this.CodeLocation,
-            this.As,
-            this.#input_type(ctx),
+            "result",
+            this.Body.resolve_block_type(ctx, ""),
+            true
+          ),
+          new Property(
+            this.CodeLocation,
+            "done",
+            new PrimitiveType(this.CodeLocation, "bool"),
             false
-          )
+          ),
+          new Property(this.CodeLocation, "next", next.Type, false)
         ),
-        "iterate"
+        over_struct.Namespace,
+        over_struct.Using
       )
     );
   }

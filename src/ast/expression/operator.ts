@@ -2,9 +2,10 @@ import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Component } from "../component";
 import { WriterContext } from "../writer";
-import { IterableType } from "../type/iterable";
 import { LinkerError } from "../../linker/error";
 import { Namer } from "../../location/namer";
+import { FunctionType } from "../type/function";
+import { GetIterableFunctionStruct } from "../../linker/iterable";
 
 export const Operators = [
   "+",
@@ -65,16 +66,20 @@ export class OperatorExpression extends Expression {
     const left_type = this.Left.resolve_type(ctx);
     const right_type = this.Right.resolve_type(ctx);
     if (
-      !(left_type instanceof IterableType) ||
-      !(right_type instanceof IterableType)
+      !(left_type instanceof FunctionType) ||
+      !(right_type instanceof FunctionType)
     )
       throw new LinkerError(
         this.CodeLocation,
         "May only concatinate iterable types"
       );
 
-    const left_type_reference = left_type.Result.resolve_type(ctx).c(ctx);
-    const right_type_reference = right_type.Result.resolve_type(ctx).c(ctx);
+    const left_type_reference = GetIterableFunctionStruct(left_type)
+      .resolve_type(ctx)
+      .c(ctx);
+    const right_type_reference = GetIterableFunctionStruct(right_type)
+      .resolve_type(ctx)
+      .c(ctx);
 
     const name = Namer.GetName();
 

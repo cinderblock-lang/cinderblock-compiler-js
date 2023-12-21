@@ -196,7 +196,10 @@ export class InvokationExpression extends Expression {
       subject = invokation.Subject;
     }
 
-    const reference = subject.c(with_invokation);
+    const reference =
+      subject instanceof FunctionParameter
+        ? subject.Name
+        : subject.c(with_invokation);
 
     const func = subject.resolve_type(ctx.WithInvokation(invokation));
     if (!(func instanceof FunctionType))
@@ -217,25 +220,50 @@ export class InvokationExpression extends Expression {
 
     const returns = func.Returns;
 
+    const render_params = [
+      "void*",
+      ...func.Parameters.filter((p) => {
+        RequireType(FunctionParameter, p);
+        return p.Name !== "ctx";
+      }).map((p) => {
+        const type = p.resolve_type(ctx);
+        return type.c(ctx);
+      }),
+    ];
+
+    const render_input = [
+      `${reference}.data`,
+      ...invokation.Parameters.map((p) => p.c(ctx)),
+      ...Array.apply(null, Array(Math.max(padding, 0))).map(() => "NULL"),
+    ];
+
+    if (render_params.length > render_input.length) {
+      const name = Namer.GetName();
+      ctx.AddPrefix(
+        `${returns.c(ctx)} (*${name})(${render_params
+          .slice(0, render_input.length)
+          .join(", ")}) = ${reference}.handle;`,
+        name,
+        [reference]
+      );
+
+      return `(*${name})(${[
+        ...render_input,
+        ...Array.apply(null, Array(Math.max(padding, 0))).map(() => "NULL"),
+      ].join(", ")})`;
+    }
+
     const name = Namer.GetName();
     ctx.AddPrefix(
-      `${returns.c(ctx)} (*${name})(${[
-        "void*",
-        ...func.Parameters.filter((p) => {
-          RequireType(FunctionParameter, p);
-          return p.Name !== "ctx";
-        }).map((p) => {
-          const type = p.resolve_type(ctx);
-          return type.c(ctx);
-        }),
-      ].join(", ")}) = ${reference}.handle;`,
+      `${returns.c(ctx)} (*${name})(${render_params.join(
+        ", "
+      )}) = ${reference}.handle;`,
       name,
       [reference]
     );
 
     return `(*${name})(${[
-      `${reference}.data`,
-      ...invokation.Parameters.map((p) => p.c(ctx)),
+      ...render_input,
       ...Array.apply(null, Array(Math.max(padding, 0))).map(() => "NULL"),
     ].join(", ")})`;
   }

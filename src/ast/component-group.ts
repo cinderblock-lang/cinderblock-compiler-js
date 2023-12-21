@@ -71,10 +71,10 @@ export class ComponentGroup {
   compatible(
     target: ComponentGroup,
     ctx: WriterContext,
-    allow_less: boolean = false
+    allow_mismatch: boolean = false
   ): boolean {
-    if (this.#components.length > target.#components.length) return false;
-    if (this.#components.length < target.#components.length && !allow_less)
+    if (this.#components.length > target.#components.length && !allow_mismatch) return false;
+    if (this.#components.length < target.#components.length && !allow_mismatch)
       return false;
     for (let i = 0; i < this.#components.length; i++) {
       if (!this.#components[i]?.compatible(target.#components[i], ctx))

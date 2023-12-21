@@ -21,7 +21,6 @@ export class ReferenceExpression extends Expression {
   }
 
   c(ctx: WriterContext): string {
-    if (this.Name === "input") debugger;
     const target = ctx.FindReference(this.Name);
     if (!target.length)
       throw new LinkerError(this.CodeLocation, "Could not find reference");

@@ -1,4 +1,5 @@
 import { LinkerError } from "../../linker/error";
+import { GetIterableFunctionType } from "../../linker/iterable";
 import { CodeLocation } from "../../location/code-location";
 import { Namer } from "../../location/namer";
 import { RequireType, RequireOneOfType } from "../../location/require-type";
@@ -116,10 +117,9 @@ export class FunctionEntity extends Entity {
     }
 
     if (current instanceof IterableType) {
-      RequireType(IterableType, invoking_with);
       const { uses } = this.#process_type(
         current.Type,
-        invoking_with.Type,
+        GetIterableFunctionType(invoking_with),
         ctx
       );
       return { target: invoking_with, uses };

@@ -27,10 +27,14 @@ export class IsExpression extends Expression {
     return "is_expression";
   }
 
-  c(ctx: WriterContext): string {
+  IsMatch(ctx: WriterContext) {
     const left_type = this.Left.resolve_type(ctx);
 
-    return left_type === this.Right.resolve_type(ctx) ? "1" : "0";
+    return left_type === this.Right.resolve_type(ctx);
+  }
+
+  c(ctx: WriterContext): string {
+    return this.IsMatch(ctx) ? "1" : "0";
   }
 
   compatible(target: Component, ctx: WriterContext): boolean {

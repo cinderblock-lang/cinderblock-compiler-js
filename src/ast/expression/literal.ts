@@ -12,7 +12,8 @@ export type LiteralType =
   | "float"
   | "double"
   | "long"
-  | "bool";
+  | "bool"
+  | "null";
 
 export class LiteralExpression extends Expression {
   readonly #type: LiteralType;
@@ -64,7 +65,9 @@ export class LiteralExpression extends Expression {
             .join(",")}};`
         );
 
-        return '&' + name;
+        return "&" + name;
+      case "null":
+        return "NULL";
     }
   }
 
@@ -89,6 +92,8 @@ export class LiteralExpression extends Expression {
         ? "bool"
         : this.Type === "string"
         ? "string"
+        : this.Type === "null"
+        ? "null"
         : "any"
     );
   }

@@ -81,4 +81,12 @@ export class StructEntity extends Entity {
   resolve_type(ctx: WriterContext): Component {
     return this;
   }
+
+  get Namespace() {
+    return this.#namespace;
+  }
+
+  get Using() {
+    return this.#using;
+  }
 }

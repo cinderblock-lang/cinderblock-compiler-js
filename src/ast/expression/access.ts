@@ -38,6 +38,7 @@ export class AccessExpression extends Expression {
   }
 
   compatible(target: Component, ctx: WriterContext): boolean {
+    if (this.Target === 'aggregator') debugger;
     return this.resolve_type(ctx).compatible(target, ctx);
   }
 

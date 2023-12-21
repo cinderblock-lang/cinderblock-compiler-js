@@ -183,6 +183,8 @@ export function ExtractExpression(
       result = new EmptyExpression(current.CodeLocation, of);
     } else if (text === "true" || text === "false") {
       result = new LiteralExpression(current.CodeLocation, "bool", text);
+    } else if (text === "null") {
+      result = new LiteralExpression(current.CodeLocation, "null", text);
     } else if (text === "iterate") {
       const { to, as, block } = ExtractIterate(tokens);
       result = new IterateExpression(current.CodeLocation, to, as, block);
@@ -231,7 +233,11 @@ export function ExtractExpression(
             )
           : tokens.next() && [];
 
-      let length: Expression = new LiteralExpression(EmptyCodeLocation, "int", "0i");
+      let length: Expression = new LiteralExpression(
+        EmptyCodeLocation,
+        "int",
+        "0i"
+      );
 
       if (tokens.peek()?.Text === "[") {
         ExpectNext(tokens, "[");

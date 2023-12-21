@@ -1,3 +1,4 @@
+import { IsAny } from "../../linker/types";
 import { CodeLocation } from "../../location/code-location";
 import { Component } from "../component";
 import { WriterContext } from "../writer";
@@ -83,6 +84,7 @@ export class PrimitiveType extends Type {
   }
 
   compatible(target: Component, ctx: WriterContext): boolean {
+    if (IsAny(target)) return true;
     if (this.#name === "any") return true;
     return target instanceof PrimitiveType && target.#name === this.#name;
   }

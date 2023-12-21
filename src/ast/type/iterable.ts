@@ -2,7 +2,6 @@ import { CodeLocation } from "../../location/code-location";
 import { Namer } from "../../location/namer";
 import { Component } from "../component";
 import { ComponentGroup } from "../component-group";
-import { SchemaEntity } from "../entity/schema";
 import { StructEntity } from "../entity/struct";
 import { FunctionParameter } from "../function-parameter";
 import { Property } from "../property";
@@ -11,6 +10,7 @@ import { Type } from "./base";
 import { FunctionType } from "./function";
 import { PrimitiveType } from "./primitive";
 import { SchemaType } from "./schema";
+import { UseType } from "./use";
 
 export class IterableType extends Type {
   readonly #type: Type;
@@ -35,7 +35,7 @@ export class IterableType extends Type {
         new Property(
           this.CodeLocation,
           "next",
-          new PrimitiveType(this.CodeLocation, "int"),
+          new PrimitiveType(this.CodeLocation, "any"),
           false
         )
       ),
@@ -74,7 +74,7 @@ export class IterableType extends Type {
         new Property(
           this.CodeLocation,
           "next",
-          new PrimitiveType(this.CodeLocation, "int"),
+          new PrimitiveType(this.CodeLocation, "any"),
           false
         )
       )
@@ -89,7 +89,7 @@ export class IterableType extends Type {
         new ComponentGroup(
           ...target.Parameters.map((p) => p.resolve_type(ctx))
         ).compatible(
-          new ComponentGroup(new PrimitiveType(this.CodeLocation, "int")),
+          new ComponentGroup(new PrimitiveType(this.CodeLocation, "any")),
           ctx,
           false
         ) &&
@@ -105,7 +105,11 @@ export class IterableType extends Type {
         new FunctionParameter(
           this.CodeLocation,
           "index",
-          new PrimitiveType(this.CodeLocation, "int"),
+          new UseType(
+            this.CodeLocation,
+            "I",
+            new ComponentGroup(new PrimitiveType(this.CodeLocation, "any"))
+          ),
           false
         )
       ),
