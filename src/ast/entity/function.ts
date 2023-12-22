@@ -148,7 +148,8 @@ export class FunctionEntity extends Entity {
         this.CodeLocation,
         "ctx",
         new PrimitiveType(this.CodeLocation, "null"),
-        false
+        false,
+        "ctx"
       ),
     ];
 
@@ -165,9 +166,11 @@ export class FunctionEntity extends Entity {
               e.CodeLocation,
               e.Name,
               new PrimitiveType(e.CodeLocation, "null"),
-              true
+              true,
+              e.CName
             )
           );
+          input.push(e);
         } else {
           if (!e.Type)
             throw new LinkerError(
@@ -191,7 +194,8 @@ export class FunctionEntity extends Entity {
         e.CodeLocation,
         e.Name,
         target,
-        e.Optional
+        e.Optional,
+        e.CName
       );
       input.push(param);
       ctx = ctx.WithFunctionParameter(e.Name, param);
@@ -256,7 +260,7 @@ export class FunctionEntity extends Entity {
             throw new LinkerError(p.CodeLocation, "Could not resolve type");
 
           RequireOneOfType([Type, StructEntity, EnumEntity], type);
-          return `${type.c(ctx)} ${p.Name}`;
+          return p.c(ctx);
         })
         .join(", ")}) {
         ${ctx.Prefix}
@@ -277,7 +281,7 @@ export class FunctionEntity extends Entity {
             throw new LinkerError(p.CodeLocation, "Could not resolve type");
 
           RequireOneOfType([Type, StructEntity, EnumEntity], type);
-          return `${type.c(ctx)} ${p.Name}`;
+          return p.c(ctx);
         })
         .join(", ")})`;
       ctx.AddGlobalDeclaration(`${top_line};`);

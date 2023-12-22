@@ -167,7 +167,7 @@ export class InvokationExpression extends Expression {
     for (let i = 0; i < existing.length; i++) {
       const k = "a" + i.toString();
       const t = existing[i];
-      const val = t instanceof FunctionParameter ? k : t.c(ctx);
+      const val = t instanceof FunctionParameter ? t.Reference : t.c(ctx);
       ctx.AddPrefix(`${data_name}->${k} = ${val};`, `${data_name}->${k}`, [
         data_name,
         val,
@@ -198,7 +198,7 @@ export class InvokationExpression extends Expression {
 
     const reference =
       subject instanceof FunctionParameter
-        ? subject.Name
+        ? subject.Reference
         : subject.c(with_invokation);
 
     const func = subject.resolve_type(ctx.WithInvokation(invokation));
@@ -216,8 +216,6 @@ export class InvokationExpression extends Expression {
       return this.#build_partial(ctx, func, invokation);
     }
 
-    const padding = func.Parameters.Length - 1 - invokation.Parameters.Length;
-
     const returns = func.Returns;
 
     const render_params = [
@@ -234,24 +232,9 @@ export class InvokationExpression extends Expression {
     const render_input = [
       `${reference}.data`,
       ...invokation.Parameters.map((p) => p.c(ctx)),
-      ...Array.apply(null, Array(Math.max(padding, 0))).map(() => "NULL"),
     ];
 
-    if (render_params.length > render_input.length) {
-      const name = Namer.GetName();
-      ctx.AddPrefix(
-        `${returns.c(ctx)} (*${name})(${render_params
-          .slice(0, render_input.length)
-          .join(", ")}) = ${reference}.handle;`,
-        name,
-        [reference]
-      );
-
-      return `(*${name})(${[
-        ...render_input,
-        ...Array.apply(null, Array(Math.max(padding, 0))).map(() => "NULL"),
-      ].join(", ")})`;
-    }
+    const padding = render_params.length - render_input.length;
 
     const name = Namer.GetName();
     ctx.AddPrefix(
@@ -264,7 +247,7 @@ export class InvokationExpression extends Expression {
 
     return `(*${name})(${[
       ...render_input,
-      ...Array.apply(null, Array(Math.max(padding, 0))).map(() => "NULL"),
+      ...Array.apply(null, Array(Math.max(padding, 0))).map(() => "0"),
     ].join(", ")})`;
   }
 

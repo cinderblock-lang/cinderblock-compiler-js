@@ -91,7 +91,8 @@ export class IterateExpression extends Expression {
         this.CodeLocation,
         index_name,
         new PrimitiveType(this.CodeLocation, "any"),
-        false
+        false,
+        index_name
       ),
     ];
 
@@ -263,7 +264,7 @@ export class IterateExpression extends Expression {
     );
 
     for (const [k, t] of all) {
-      const val = t instanceof FunctionParameter ? k : t.c(ctx);
+      const val = t instanceof FunctionParameter ? t.Reference : t.c(ctx);
       ctx.AddPrefix(`${data_name}->${k} = ${val};`, `${data_name}->${k}`, [
         data_name,
         val,

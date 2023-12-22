@@ -24,7 +24,7 @@ export class ReferenceExpression extends Expression {
     const target = ctx.FindReference(this.Name);
     if (!target.length)
       throw new LinkerError(this.CodeLocation, "Could not find reference");
-    if (target[0] instanceof FunctionParameter) return this.Name;
+    if (target[0] instanceof FunctionParameter) return target[0].Reference;
     return `(${target[0].c(ctx)})`;
   }
 

@@ -20,13 +20,15 @@ export const BuiltInFunctions = new ComponentGroup(
             EmptyCodeLocation,
             "input",
             new PrimitiveType(EmptyCodeLocation, "string"),
-            false
+            false,
+            "input"
           ),
           new FunctionParameter(
             EmptyCodeLocation,
             "index",
             new PrimitiveType(EmptyCodeLocation, "int"),
-            false
+            false,
+            "index"
           )
         ),
         new PrimitiveType(EmptyCodeLocation, "char"),
@@ -42,7 +44,8 @@ export const BuiltInFunctions = new ComponentGroup(
             EmptyCodeLocation,
             "input",
             new PrimitiveType(EmptyCodeLocation, "string"),
-            false
+            false,
+            "input"
           )
         ),
         new PrimitiveType(EmptyCodeLocation, "int"),
@@ -64,13 +67,15 @@ export const BuiltInFunctions = new ComponentGroup(
             EmptyCodeLocation,
             "first",
             new PrimitiveType(EmptyCodeLocation, "string"),
-            false
+            false,
+            "first"
           ),
           new FunctionParameter(
             EmptyCodeLocation,
             "second",
             new PrimitiveType(EmptyCodeLocation, "string"),
-            false
+            false,
+            "second"
           )
         ),
         new PrimitiveType(EmptyCodeLocation, "string"),
@@ -109,13 +114,15 @@ export const BuiltInFunctions = new ComponentGroup(
             EmptyCodeLocation,
             "first",
             new PrimitiveType(EmptyCodeLocation, "string"),
-            false
+            false,
+            "first"
           ),
           new FunctionParameter(
             EmptyCodeLocation,
             "second",
             new PrimitiveType(EmptyCodeLocation, "char"),
-            false
+            false,
+            "second"
           )
         ),
         new PrimitiveType(EmptyCodeLocation, "string"),
@@ -147,13 +154,14 @@ export const BuiltInFunctions = new ComponentGroup(
             EmptyCodeLocation,
             "input",
             new PrimitiveType(EmptyCodeLocation, "string"),
-            false
+            false,
+            "input"
           )
         ),
         new PrimitiveType(EmptyCodeLocation, "ulong"),
         "unsigned long result = sizeof(input.data);",
         []
-      ),
+      )
     )
   )
 );

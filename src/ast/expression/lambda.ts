@@ -74,7 +74,8 @@ export class LambdaExpression extends Expression {
           e.CodeLocation,
           e.Name,
           a.resolve_type(ctx),
-          e.Optional
+          e.Optional,
+          e.CName
         )
       );
     }
@@ -112,7 +113,8 @@ export class LambdaExpression extends Expression {
         this.CodeLocation,
         e.Name,
         a.resolve_type(ctx),
-        false
+        false,
+        e.CName
       );
       ctx = ctx.WithFunctionParameter(e.Name, param);
       func_parameters.push(param);
@@ -180,7 +182,7 @@ export class LambdaExpression extends Expression {
     );
 
     for (const [k, t] of all) {
-      const val = t instanceof FunctionParameter ? k : t.c(ctx);
+      const val = t instanceof FunctionParameter ? t.Reference : t.c(ctx);
       ctx.AddPrefix(`${data_name}->${k} = ${val};`, `${data_name}->${k}`, [
         data_name,
         val,
@@ -215,7 +217,8 @@ export class LambdaExpression extends Expression {
           e.CodeLocation,
           e.Name,
           a.resolve_type(ctx),
-          e.Optional
+          e.Optional,
+          e.CName
         )
       );
     }
