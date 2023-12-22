@@ -1,3 +1,4 @@
+import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { Namer } from "../../location/namer";
 import { Component } from "../component";
@@ -38,5 +39,9 @@ export class ReturnStatement extends Statement {
 
   resolve_type(ctx: WriterContext): Component {
     return this.Value.resolve_type(ctx);
+  }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
   }
 }

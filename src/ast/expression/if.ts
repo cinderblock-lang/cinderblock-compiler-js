@@ -8,6 +8,7 @@ import { Namer } from "../../location/namer";
 import { SideStatement } from "../statement/side";
 import { RequireType } from "../../location/require-type";
 import { IsExpression } from "./is";
+import { LinkerError } from "../../linker/error";
 
 export class IfExpression extends Expression {
   readonly #check: Component;
@@ -135,5 +136,9 @@ export class IfExpression extends Expression {
 
   resolve_type(ctx: WriterContext): Component {
     return this.If.resolve_block_type(ctx, "if");
+  }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
   }
 }

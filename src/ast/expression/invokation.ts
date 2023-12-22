@@ -247,7 +247,11 @@ export class InvokationExpression extends Expression {
 
     return `(*${name})(${[
       ...render_input,
-      ...Array.apply(null, Array(Math.max(padding, 0))).map(() => "0"),
+      ...Array.apply(null, Array(Math.max(padding, 0))).map((_, i) => {
+        const p = func.Parameters.map((p) => p)[i];
+        RequireType(FunctionParameter, p);
+        return p.Type?.default(ctx) ?? "";
+      }),
     ].join(", ")})`;
   }
 
@@ -279,5 +283,9 @@ export class InvokationExpression extends Expression {
     }
 
     return func.Returns.resolve_type(ctx);
+  }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
   }
 }

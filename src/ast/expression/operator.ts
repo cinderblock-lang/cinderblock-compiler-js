@@ -6,6 +6,10 @@ import { LinkerError } from "../../linker/error";
 import { Namer } from "../../location/namer";
 import { FunctionType } from "../type/function";
 import { GetIterableFunctionStruct } from "../../linker/iterable";
+import { StructEntity } from "../entity/struct";
+import { RequireType } from "../../location/require-type";
+import { Property } from "../property";
+import { PrimitiveType } from "../type/primitive";
 
 export const Operators = [
   "+",
@@ -156,6 +160,33 @@ export class OperatorExpression extends Expression {
     return instance_name;
   }
 
+  #struct_compare(ctx_old: WriterContext, subject: StructEntity): string {
+    const name = Namer.GetName();
+    const ctx = ctx_old.StartContext(
+      this.CodeLocation,
+      ctx_old.Namespace,
+      ctx_old.Using
+    );
+
+    ctx.AddGlobal(`_Bool ${name}(${subject.c(ctx)}* left, ${subject.c(
+      ctx
+    )}* right) {
+      return ${subject.Properties.map((p) => {
+        RequireType(Property, p);
+
+        if (p.Type instanceof StructEntity) {
+          return `${this.#struct_compare(ctx, p.Type)}(&left->${
+            p.Name
+          }, &right->${p.Name})`;
+        } else if (p.Type instanceof PrimitiveType) {
+          return `left->${p.Name} == right->${p.Name}`;
+        }
+      }).join(" && ")};
+    }`);
+
+    return name;
+  }
+
   compatible(target: Component, ctx: WriterContext): boolean {
     return this.resolve_type(ctx).compatible(target, ctx);
   }
@@ -165,10 +196,28 @@ export class OperatorExpression extends Expression {
       return this.#build_concat(ctx);
     }
 
+    const type = this.Left.resolve_type(ctx);
+    if (type instanceof StructEntity) {
+      if (this.Operator !== "==" && this.Operator !== "!=")
+        throw new LinkerError(
+          this.CodeLocation,
+          "Only equals or not equals may be used on structs"
+        );
+
+      const prefix = this.Operator === "!=" ? "!" : "";
+      return `${prefix}${this.#struct_compare(ctx, type)}(&${this.Left.c(
+        ctx
+      )}, &${this.Right.c(ctx)})`;
+    }
+
     return `${this.Left.c(ctx)} ${this.Operator} ${this.Right.c(ctx)}`;
   }
 
   resolve_type(ctx: WriterContext): Component {
     return this.Right.resolve_type(ctx);
+  }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
   }
 }

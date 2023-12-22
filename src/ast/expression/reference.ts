@@ -39,4 +39,8 @@ export class ReferenceExpression extends Expression {
 
     return target[0].resolve_type(ctx);
   }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
+  }
 }

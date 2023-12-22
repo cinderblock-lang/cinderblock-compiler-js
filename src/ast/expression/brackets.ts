@@ -3,6 +3,7 @@ import { Component } from "../component";
 import { WriterContext } from "../writer";
 import { CodeLocation } from "../../location/code-location";
 import { Namer } from "../../location/namer";
+import { LinkerError } from "../../linker/error";
 
 export class BracketsExpression extends Expression {
   readonly #expression: Component;
@@ -38,5 +39,9 @@ export class BracketsExpression extends Expression {
 
   resolve_type(ctx: WriterContext): Component {
     return this.Expression.resolve_type(ctx);
+  }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
   }
 }

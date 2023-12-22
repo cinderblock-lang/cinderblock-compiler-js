@@ -116,4 +116,11 @@ export class IterableType extends Type {
       this.Result
     );
   }
+
+  default(ctx: WriterContext): string {
+    const name = Namer.GetName();
+    ctx.AddPrefix(`${this.c(ctx)} ${name} = { 0, 0 };`, name, []);
+
+    return name;
+  }
 }

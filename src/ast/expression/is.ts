@@ -4,6 +4,7 @@ import { Component } from "../component";
 import { Type } from "../type/base";
 import { WriterContext } from "../writer";
 import { PrimitiveType } from "../type/primitive";
+import { LinkerError } from "../../linker/error";
 
 export class IsExpression extends Expression {
   readonly #left: Component;
@@ -30,7 +31,7 @@ export class IsExpression extends Expression {
   IsMatch(ctx: WriterContext) {
     const left_type = this.Left.resolve_type(ctx);
 
-    return left_type === this.Right.resolve_type(ctx);
+    return left_type.compatible(this.Right.resolve_type(ctx), ctx);
   }
 
   c(ctx: WriterContext): string {
@@ -43,5 +44,9 @@ export class IsExpression extends Expression {
 
   resolve_type(ctx: WriterContext): Component {
     return new PrimitiveType(this.CodeLocation, "bool");
+  }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
   }
 }

@@ -79,4 +79,8 @@ export class PickExpression extends Expression {
 
     return type;
   }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
+  }
 }

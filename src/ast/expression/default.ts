@@ -1,29 +1,27 @@
-import { Expression } from "./base";
+import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { Component } from "../component";
-import { Type } from "../type/base";
 import { WriterContext } from "../writer";
-import { IterableType } from "../type/iterable";
-import { LinkerError } from "../../linker/error";
+import { Expression } from "./base";
 
-export class EmptyExpression extends Expression {
-  readonly #of: Component;
+export class DefaultExpression extends Expression {
+  readonly #subject: Component;
 
-  constructor(ctx: CodeLocation, of: Type) {
+  constructor(ctx: CodeLocation, subject: Component) {
     super(ctx);
-    this.#of = of;
+    this.#subject = subject;
   }
 
-  get Of() {
-    return this.#of;
+  get Subject() {
+    return this.#subject;
   }
 
   get type_name() {
-    return "empty_expression";
+    return "default_expression";
   }
 
   c(ctx: WriterContext): string {
-    return "";
+    return this.#subject.default(ctx);
   }
 
   compatible(target: Component, ctx: WriterContext): boolean {
@@ -31,7 +29,7 @@ export class EmptyExpression extends Expression {
   }
 
   resolve_type(ctx: WriterContext): Component {
-    return new IterableType(this.CodeLocation, this.Of);
+    return this.#subject.resolve_type(ctx);
   }
 
   default(ctx: WriterContext): string {

@@ -34,4 +34,8 @@ export class UsingEntity extends Entity {
       "Should not be able to reach here"
     );
   }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
+  }
 }

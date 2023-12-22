@@ -1,4 +1,5 @@
 import { CodeLocation } from "../../location/code-location";
+import { Namer } from "../../location/namer";
 import { RequireType } from "../../location/require-type";
 import { Component } from "../component";
 import { ComponentGroup } from "../component-group";
@@ -105,5 +106,12 @@ export class FunctionType extends Type {
 
   resolve_type(ctx: WriterContext): Component {
     return this;
+  }
+
+  default(ctx: WriterContext): string {
+    const name = Namer.GetName();
+    ctx.AddPrefix(`${this.c(ctx)} ${name} = { 0, 0 };`, name, []);
+
+    return name;
   }
 }

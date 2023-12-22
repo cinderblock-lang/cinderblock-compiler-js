@@ -3,6 +3,7 @@ import { ComponentGroup } from "../../ast/component-group";
 import { AccessExpression } from "../../ast/expression/access";
 import { Expression } from "../../ast/expression/base";
 import { BracketsExpression } from "../../ast/expression/brackets";
+import { DefaultExpression } from "../../ast/expression/default";
 import { EmptyExpression } from "../../ast/expression/empty";
 import { IfExpression } from "../../ast/expression/if";
 import { InvokationExpression } from "../../ast/expression/invokation";
@@ -181,6 +182,11 @@ export function ExtractExpression(
     } else if (text === "empty") {
       const { of } = ExtractEmpty(tokens);
       result = new EmptyExpression(current.CodeLocation, of);
+    } else if (text === "default") {
+      ExpectNext(tokens, "(");
+      const subject = ExtractType(tokens);
+      ExpectNext(tokens, ")");
+      result = new DefaultExpression(current.CodeLocation, subject);
     } else if (text === "true" || text === "false") {
       result = new LiteralExpression(current.CodeLocation, "bool", text);
     } else if (text === "null") {

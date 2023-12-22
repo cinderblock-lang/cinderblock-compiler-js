@@ -4,6 +4,7 @@ import { WriterContext } from "../writer";
 import { Component } from "../component";
 import { PrimitiveType } from "../type/primitive";
 import { Namer } from "../../location/namer";
+import { LinkerError } from "../../linker/error";
 
 export type LiteralType =
   | "string"
@@ -96,5 +97,9 @@ export class LiteralExpression extends Expression {
         ? "null"
         : "any"
     );
+  }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
   }
 }

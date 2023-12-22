@@ -1,5 +1,6 @@
 import { CodeLocation } from "../../location/code-location";
 import { Namer } from "../../location/namer";
+import { RequireType } from "../../location/require-type";
 import { Component } from "../component";
 import { ComponentGroup } from "../component-group";
 import { Property } from "../property";
@@ -90,5 +91,22 @@ export class StructEntity extends Entity {
 
   get Using() {
     return this.#using;
+  }
+
+  default(ctx: WriterContext): string {
+    const name = Namer.GetName();
+    ctx.AddPrefix(
+      `${this.c(ctx)} ${name} = { ${this.#properties
+        .map((p) => {
+          RequireType(Property, p);
+
+          return p.Type.default(ctx);
+        })
+        .join(", ")} };`,
+      name,
+      []
+    );
+
+    return name;
   }
 }

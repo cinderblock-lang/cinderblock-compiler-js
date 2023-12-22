@@ -1,3 +1,4 @@
+import { LinkerError } from "../linker/error";
 import { CodeLocation } from "../location/code-location";
 import { Component } from "./component";
 import { Type } from "./type/base";
@@ -48,5 +49,9 @@ export class Property extends Component {
 
   resolve_type(ctx: WriterContext): Component {
     return this.Type.resolve_type(ctx);
+  }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
   }
 }

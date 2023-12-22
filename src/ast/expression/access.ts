@@ -38,7 +38,6 @@ export class AccessExpression extends Expression {
   }
 
   compatible(target: Component, ctx: WriterContext): boolean {
-    if (this.Target === 'aggregator') debugger;
     return this.resolve_type(ctx).compatible(target, ctx);
   }
 
@@ -74,5 +73,9 @@ export class AccessExpression extends Expression {
         return target.resolve_type(ctx);
       }
     )(subject);
+  }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
   }
 }

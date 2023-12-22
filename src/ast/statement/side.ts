@@ -41,4 +41,8 @@ export class SideStatement extends Statement {
   resolve_type(ctx: WriterContext): Component {
     return new PrimitiveType(this.CodeLocation, "null");
   }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
+  }
 }

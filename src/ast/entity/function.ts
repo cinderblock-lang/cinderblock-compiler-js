@@ -159,27 +159,13 @@ export class FunctionEntity extends Entity {
       const a = actual[i];
 
       if (!a) {
-        if (e.Optional) {
-          ctx = ctx.WithFunctionParameter(
-            e.Name,
-            new FunctionParameter(
-              e.CodeLocation,
-              e.Name,
-              new PrimitiveType(e.CodeLocation, "null"),
-              true,
-              e.CName
-            )
+        if (!e.Optional && !e.Type)
+          throw new LinkerError(
+            invokation?.CodeLocation,
+            "Cannot resolve function parameter type in this location"
           );
-          input.push(e);
-        } else {
-          if (!e.Type)
-            throw new LinkerError(
-              invokation?.CodeLocation,
-              "Cannot resolve function parameter type in this location"
-            );
-          input.push(e);
-          ctx = ctx.WithFunctionParameter(e.Name, e);
-        }
+        ctx = ctx.WithFunctionParameter(e.Name, e);
+        input.push(e);
         continue;
       }
 
@@ -333,5 +319,9 @@ export class FunctionEntity extends Entity {
       new ComponentGroup(...input_parameters),
       returns.resolve_type(ctx)
     );
+  }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
   }
 }

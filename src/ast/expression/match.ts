@@ -109,4 +109,8 @@ export class MatchExpression extends Expression {
 
     return returns;
   }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
+  }
 }

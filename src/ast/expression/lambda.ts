@@ -245,4 +245,8 @@ export class LambdaExpression extends Expression {
         this.Body.resolve_block_type(resolve_ctx, name)
     );
   }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
+  }
 }

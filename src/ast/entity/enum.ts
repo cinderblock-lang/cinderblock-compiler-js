@@ -1,4 +1,5 @@
 import { CodeLocation } from "../../location/code-location";
+import { Namer } from "../../location/namer";
 import { Component } from "../component";
 import { ComponentGroup } from "../component-group";
 import { Property } from "../property";
@@ -84,5 +85,12 @@ export class EnumEntity extends Entity {
 
   resolve_type(ctx: WriterContext): Component {
     return this;
+  }
+
+  default(ctx: WriterContext): string {
+    const name = Namer.GetName();
+    ctx.AddPrefix(`${this.c(ctx)} ${name} = { -1, 0 };`, name, []);
+
+    return name;
   }
 }

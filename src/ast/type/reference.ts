@@ -36,4 +36,8 @@ export class ReferenceType extends Type {
 
     return result;
   }
+
+  default(ctx: WriterContext): string {
+    return this.resolve_type(ctx).default(ctx);
+  }
 }

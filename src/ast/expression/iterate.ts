@@ -323,4 +323,8 @@ export class IterateExpression extends Expression {
       )
     );
   }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
+  }
 }

@@ -46,4 +46,8 @@ export class UseType extends Type {
   resolve_type(ctx: WriterContext): Component {
     return new PrimitiveType(this.CodeLocation, "any");
   }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
+  }
 }

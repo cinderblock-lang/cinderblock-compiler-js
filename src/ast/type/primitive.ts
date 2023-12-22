@@ -1,5 +1,6 @@
 import { IsAny } from "../../linker/types";
 import { CodeLocation } from "../../location/code-location";
+import { Namer } from "../../location/namer";
 import { Component } from "../component";
 import { WriterContext } from "../writer";
 import { Type } from "./base";
@@ -91,5 +92,49 @@ export class PrimitiveType extends Type {
 
   resolve_type(ctx: WriterContext): Component {
     return this;
+  }
+
+  static #defaulted_string: string;
+
+  default(ctx: WriterContext): string {
+    switch (this.Name) {
+      case "any":
+        return "0";
+      case "bool":
+        return "0";
+      case "char":
+        return "0";
+      case "float":
+        return "-1";
+      case "ufloat":
+        return "0f";
+      case "double":
+        return "-1";
+      case "udouble":
+        return "0";
+      case "int":
+        return "-1";
+      case "uint":
+        return "0";
+      case "short":
+        return "-1";
+      case "ushort":
+        return "0";
+      case "long":
+        return "-1";
+      case "ulong":
+        return "0";
+      case "string":
+        if (PrimitiveType.#defaulted_string)
+          return "&" + PrimitiveType.#defaulted_string;
+        const name = Namer.GetName();
+        ctx.AddGlobal(`char ${name}[] = {0};`);
+
+        PrimitiveType.#defaulted_string = name;
+
+        return "&" + name;
+      case "null":
+        return "0";
+    }
   }
 }

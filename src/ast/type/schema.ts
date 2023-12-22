@@ -72,4 +72,8 @@ export class SchemaType extends Type {
   resolve_type(ctx: WriterContext): Component {
     return this;
   }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
+  }
 }

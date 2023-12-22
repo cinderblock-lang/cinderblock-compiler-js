@@ -85,4 +85,8 @@ export class SystemExpression extends Expression {
   resolve_type(ctx: WriterContext): Component {
     return this.OutType.resolve_type(ctx);
   }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
+  }
 }

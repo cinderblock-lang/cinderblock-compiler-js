@@ -1,3 +1,4 @@
+import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { Component } from "../component";
 import { WriterContext } from "../writer";
@@ -43,5 +44,9 @@ export class RawStatement extends Statement {
 
   resolve_type(ctx: WriterContext): Component {
     return this.Creates.resolve_type(ctx);
+  }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
   }
 }

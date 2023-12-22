@@ -68,4 +68,8 @@ export class FunctionParameter extends Component {
 
     return type.resolve_type(ctx);
   }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
+  }
 }

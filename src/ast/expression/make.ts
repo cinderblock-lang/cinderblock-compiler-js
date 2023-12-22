@@ -68,4 +68,8 @@ export class MakeExpression extends Expression {
       throw new LinkerError(this.CodeLocation, "Could not resolve struct");
     return entity;
   }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
+  }
 }

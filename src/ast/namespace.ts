@@ -48,4 +48,8 @@ export class Namespace extends Component {
   resolve_type(ctx: WriterContext): Component {
     throw new LinkerError(this.CodeLocation, "Should not be reachable");
   }
+
+  default(ctx: WriterContext): string {
+    throw new LinkerError(this.CodeLocation, "May not have a default");
+  }
 }
