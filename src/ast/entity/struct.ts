@@ -1,4 +1,5 @@
 import { CodeLocation } from "../../location/code-location";
+import { Namer } from "../../location/namer";
 import { Component } from "../component";
 import { ComponentGroup } from "../component-group";
 import { Property } from "../property";
@@ -57,19 +58,20 @@ export class StructEntity extends Entity {
     return this.#namespace.replace(/\./gm, "__") + "__" + this.Name;
   }
 
-  static #already_made: Array<string> = [];
+  static #already_made: Record<string, string> = {};
 
   c(ctx: WriterContext): string {
-    if (!StructEntity.#already_made.includes(this.#full_name)) {
-      StructEntity.#already_made.push(this.#full_name);
-      ctx.AddGlobalDeclaration(`typedef struct ${this.#full_name} {
+    if (!StructEntity.#already_made[this.#full_name]) {
+      const name = Namer.GetName();
+      StructEntity.#already_made[this.#full_name] = name;
+      ctx.AddGlobalDeclaration(`typedef struct ${name} {
         ${this.Properties.map((p) =>
           p.c(ctx.StartContext(this.CodeLocation, this.#namespace, this.#using))
         ).join("\n")}
-      } ${this.#full_name};`);
+      } ${name};`);
     }
 
-    return this.#full_name;
+    return StructEntity.#already_made[this.#full_name];
   }
 
   compatible(target: Component): boolean {
