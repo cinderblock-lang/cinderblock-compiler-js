@@ -307,7 +307,10 @@ export class IterateExpression extends Expression {
           new Property(
             this.CodeLocation,
             "result",
-            this.Body.resolve_block_type(ctx, ""),
+            this.Body.resolve_block_type(
+              ctx.WithLocal(this.As, this.#input_type(ctx)),
+              ""
+            ),
             true
           ),
           new Property(
