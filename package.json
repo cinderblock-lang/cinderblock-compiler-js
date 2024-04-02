@@ -27,7 +27,8 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "yargs": "^17.7.2"
+    "yargs": "^17.7.2",
+    "zod": "^3.22.4"
   },
   "pkg": {
     "targets": [
