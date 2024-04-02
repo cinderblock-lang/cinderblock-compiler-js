@@ -41,7 +41,7 @@ export class SystemExpression extends Expression {
   c(ctx: WriterContext): string {
     if (!ctx.AllowUnsafe)
       throw new LinkerError(this.CodeLocation, "Attempting in a safe context");
-    ctx.AddInclude(`<sys/syscall.h>`);
+    ctx.AddInclude(`<unistd.h>`);
     if (!this.UnsafeType) {
       return `syscall(${this.#parameters
         .map((p) => {

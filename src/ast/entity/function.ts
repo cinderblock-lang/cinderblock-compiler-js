@@ -239,6 +239,7 @@ export class FunctionEntity extends Entity {
     if (is_main) {
       const body = this.Content.find(ReturnStatement).c(ctx);
       return `${returns.c(ctx)} ${this.Name}(${input_parameters
+        .slice(1)
         .map((p) => {
           RequireType(FunctionParameter, p);
           const type = p.Type;

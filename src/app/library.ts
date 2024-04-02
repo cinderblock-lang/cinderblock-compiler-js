@@ -50,7 +50,7 @@ export default class Library {
     });
   }
 
-  async #clone() {
+  async #config() {
     await this.#ensure_dir(this.#path);
 
     const file = await this.#get_file(
@@ -58,7 +58,14 @@ export default class Library {
       Path.join(this.#path, "cinder.json")
     );
 
-    const data = Dto.Library.parse(file);
+    const result = Dto.Library.safeParse(file);
+    if (!result.success)
+      throw new Error("Could not parsed library " + this.#url);
+    return result.data;
+  }
+
+  async #clone() {
+    const data = await this.#config();
 
     for (const file of data.files) {
       if (typeof file === "string")
@@ -103,12 +110,7 @@ export default class Library {
   }
 
   async GetSource() {
-    const file = await Fs.readFile(
-      Path.join(this.#path, "cinder.json"),
-      "utf-8"
-    );
-
-    const data = Dto.Library.parse(file);
+    const data = await this.#config();
 
     return new Source(data.files, this.#path);
   }

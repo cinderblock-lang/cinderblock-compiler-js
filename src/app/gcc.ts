@@ -19,15 +19,14 @@ export default class Gcc {
   async Compile(c_file: string, output: string, debug: boolean) {
     switch (this.#target) {
       case "linux":
+      case "darwin":
         await this.#exec(
           `gcc ${c_file} ${debug ? "-g" : ""} -o ${output}`,
           this.#dir
         );
         break;
       default:
-        console.warn(
-          "Currently, only linux is supported as a target. Other targets will be ignored."
-        );
+        console.warn("Operating system not supported.");
     }
   }
 }

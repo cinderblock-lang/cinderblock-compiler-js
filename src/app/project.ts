@@ -16,15 +16,19 @@ export default class Project {
   constructor(dir: string) {
     const path = Path.resolve(dir, "cinder.json");
     this.#dir = dir;
-    this.#dto = Dto.Project.parse(
+    const result = Dto.Project.safeParse(
       JSON.parse(FsOld.readFileSync(path, "utf-8"))
     );
+
+    if (!result.success) throw new Error("Could not parse project JSON");
+
+    this.#dto = result.data;
   }
 
-  #exec(command: string, cwd: string) {
-    return new Promise<void>(async (res, rej) => {
-      Child.exec(command, { cwd }, (err) => (err ? rej(err) : res()));
-    });
+  async #ensure_dir(path: string) {
+    try {
+      await Fs.mkdir(path, { recursive: true });
+    } catch {}
   }
 
   get #source(): Source {
@@ -74,6 +78,7 @@ export default class Project {
     const ast = await this.#parse(target, options.no_cache);
 
     const dir = Path.resolve(this.#dir, this.#dto.bin, target);
+    await this.#ensure_dir(dir);
 
     await Fs.writeFile(Path.resolve(dir, "main.c"), ast.c());
 
@@ -85,6 +90,7 @@ export default class Project {
     const ast = await this.#parse(target, true);
 
     const dir = Path.resolve(this.#dir, this.#dto.bin, target);
+    await this.#ensure_dir(dir);
 
     await Fs.writeFile(Path.resolve(dir, "test.c"), ast.c_test());
 
