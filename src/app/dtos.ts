@@ -26,15 +26,10 @@ export namespace Dto {
 
   export type CFunction = z.infer<typeof CFunction>;
 
-  export const CStruct = z.record(z.string());
-
-  export type CStruct = z.infer<typeof CStruct>;
-
   export const CFile = z.object({
     type: z.literal("c"),
     path: z.string(),
     functions: z.record(CFunction),
-    structs: z.optional(z.record(CStruct)),
   });
 
   export type CFile = z.infer<typeof CFile>;
