@@ -1,3 +1,4 @@
+import z from "zod";
 import { IsAny } from "../../linker/types";
 import { CodeLocation } from "../../location/code-location";
 import { Namer } from "../../location/namer";
@@ -5,28 +6,30 @@ import { Component } from "../component";
 import { WriterContext } from "../writer";
 import { Type } from "./base";
 
-export const PrimitiveNames = [
-  "int",
-  "uint",
-  "short",
-  "ushort",
-  "char",
-  "udouble",
-  "double",
-  "ufloat",
-  "float",
-  "bool",
-  "ulong",
-  "long",
-  "any",
-  "string",
-  "null",
-] as const;
+export const PrimitiveName = z.union([
+  z.literal("int"),
+  z.literal("uint"),
+  z.literal("short"),
+  z.literal("ushort"),
+  z.literal("char"),
+  z.literal("udouble"),
+  z.literal("double"),
+  z.literal("ufloat"),
+  z.literal("float"),
+  z.literal("bool"),
+  z.literal("ulong"),
+  z.literal("long"),
+  z.literal("any"),
+  z.literal("string"),
+  z.literal("null"),
+]);
 
-export type PrimitiveName = (typeof PrimitiveNames)[number];
+export type PrimitiveName = z.infer<typeof PrimitiveName>;
 
 export function IsPrimitiveName(input: string): input is PrimitiveName {
-  return PrimitiveNames.includes(input as any);
+  const result = PrimitiveName.safeParse(input);
+
+  return result.success;
 }
 
 export class PrimitiveType extends Type {

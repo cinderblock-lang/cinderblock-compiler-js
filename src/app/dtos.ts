@@ -1,4 +1,5 @@
 import z from "zod";
+import { PrimitiveName } from "../ast/type/primitive";
 
 export namespace Dto {
   export const Target = z.union([
@@ -19,9 +20,8 @@ export namespace Dto {
 
   export const CFunction = z.object({
     c_name: z.string(),
-    namespace: z.string(),
-    args: z.array(z.string()),
-    returns: z.string(),
+    args: z.array(PrimitiveName),
+    returns: PrimitiveName,
   });
 
   export type CFunction = z.infer<typeof CFunction>;
@@ -29,6 +29,7 @@ export namespace Dto {
   export const CFile = z.object({
     type: z.literal("c"),
     path: z.string(),
+    namespace: z.string(),
     functions: z.record(CFunction),
   });
 

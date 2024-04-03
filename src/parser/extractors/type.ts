@@ -4,11 +4,7 @@ import { Property } from "../../ast/property";
 import { Type } from "../../ast/type/base";
 import { FunctionType } from "../../ast/type/function";
 import { IterableType } from "../../ast/type/iterable";
-import {
-  PrimitiveNames,
-  PrimitiveName,
-  PrimitiveType,
-} from "../../ast/type/primitive";
+import { IsPrimitiveName, PrimitiveType } from "../../ast/type/primitive";
 import { ReferenceType } from "../../ast/type/reference";
 import { SchemaType } from "../../ast/type/schema";
 import { UseType } from "../../ast/type/use";
@@ -99,11 +95,8 @@ function ExtractUse(tokens: TokenGroup) {
 export function ExtractType(tokens: TokenGroup): Type {
   const current = NextBlock(tokens);
 
-  if (PrimitiveNames.includes(current.Text as PrimitiveName)) {
-    return new PrimitiveType(
-      current.CodeLocation,
-      current.Text as PrimitiveName
-    );
+  if (IsPrimitiveName(current.Text)) {
+    return new PrimitiveType(current.CodeLocation, current.Text);
   }
 
   switch (current.Text) {
