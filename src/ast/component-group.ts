@@ -1,8 +1,5 @@
-import { LinkerError } from "../linker/error";
 import { CodeLocation } from "../location/code-location";
 import { Component } from "./component";
-import { ReturnStatement } from "./statement/return";
-import { WriterContext } from "./writer";
 
 export class ComponentGroup {
   readonly #components: Array<Component>;
@@ -55,32 +52,5 @@ export class ComponentGroup {
 
   find_all<T>(checker: abstract new (...args: any[]) => T): T[] {
     return this.#components.filter((c) => c instanceof checker) as T[];
-  }
-
-  resolve_block_type(ctx: WriterContext, name: string) {
-    ctx = ctx.WithBody(this, name);
-    for (const statement of this.iterator()) {
-      if (statement instanceof ReturnStatement) {
-        return statement.Value.resolve_type(ctx);
-      }
-    }
-
-    throw new LinkerError(this.CodeLocation, "All blocks must return a value");
-  }
-
-  compatible(
-    target: ComponentGroup,
-    ctx: WriterContext,
-    allow_mismatch: boolean = false
-  ): boolean {
-    if (this.#components.length > target.#components.length && !allow_mismatch) return false;
-    if (this.#components.length < target.#components.length && !allow_mismatch)
-      return false;
-    for (let i = 0; i < this.#components.length; i++) {
-      if (!this.#components[i]?.compatible(target.#components[i], ctx))
-        return false;
-    }
-
-    return true;
   }
 }

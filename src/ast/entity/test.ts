@@ -28,8 +28,4 @@ export class TestEntity extends FunctionEntity {
 
     this.#description = description;
   }
-
-  get Description() {
-    return this.#description;
-  }
 }

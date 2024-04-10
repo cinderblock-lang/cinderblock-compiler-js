@@ -1,24 +1,15 @@
 import { CodeLocation } from "../location/code-location";
-import { WriterContext } from "./writer";
-
+import { Namer } from "../location/namer";
 export abstract class Component {
   readonly #location: CodeLocation;
+  readonly #c_name: string;
 
   constructor(location: CodeLocation) {
     this.#location = location;
+    this.#c_name = Namer.GetName();
   }
 
   get CodeLocation() {
     return this.#location;
   }
-
-  abstract get type_name(): string;
-
-  abstract c(ctx: WriterContext): string;
-
-  abstract resolve_type(ctx: WriterContext): Component;
-
-  abstract compatible(target: Component, ctx: WriterContext): boolean;
-
-  abstract default(ctx: WriterContext): string;
 }

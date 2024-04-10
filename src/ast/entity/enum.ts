@@ -1,9 +1,6 @@
 import { CodeLocation } from "../../location/code-location";
-import { Namer } from "../../location/namer";
-import { Component } from "../component";
 import { ComponentGroup } from "../component-group";
 import { Property } from "../property";
-import { WriterContext } from "../writer";
 import { Entity } from "./base";
 
 export class EnumEntity extends Entity {
@@ -25,14 +22,6 @@ export class EnumEntity extends Entity {
     this.#properties = properties;
     this.#namespace = namespace;
     this.#using = using;
-  }
-
-  get Name() {
-    return this.#name;
-  }
-
-  get Properties() {
-    return this.#properties;
   }
 
   HasKey(key: string) {
@@ -59,38 +48,5 @@ export class EnumEntity extends Entity {
     }
 
     return undefined;
-  }
-
-  get type_name() {
-    return (this.#namespace + "__" + this.Name).replace(/\./gm, "__");
-  }
-
-  static #already_made: boolean = false;
-
-  c(ctx: WriterContext): string {
-    if (!EnumEntity.#already_made) {
-      EnumEntity.#already_made = true;
-      ctx.AddGlobalDeclaration(`typedef struct _ENUM {
-        int type;
-        void* data;
-      } _ENUM;`);
-    }
-
-    return "_ENUM";
-  }
-
-  compatible(target: Component): boolean {
-    return target instanceof EnumEntity && target.type_name === this.type_name;
-  }
-
-  resolve_type(ctx: WriterContext): Component {
-    return this;
-  }
-
-  default(ctx: WriterContext): string {
-    const name = Namer.GetName();
-    ctx.AddPrefix(`${this.c(ctx)} ${name} = { -1, 0 };`, name, []);
-
-    return name;
   }
 }
