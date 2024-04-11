@@ -1,9 +1,11 @@
+import { IClosure } from "../linker/closure";
 import { CodeLocation } from "../location/code-location";
 import { TokenGroup } from "../parser/token";
 import { Component } from "./component";
 import { Entity } from "./entity/base";
+import { FunctionEntity } from "./entity/function";
 
-export class Namespace extends Component {
+export class Namespace extends Component implements IClosure {
   readonly #name: string;
   readonly #contents: Array<Entity>;
 
@@ -11,6 +13,12 @@ export class Namespace extends Component {
     super(ctx);
     this.#name = name;
     this.#contents = content;
+  }
+
+  Resolve(name: string): Component | undefined {
+    for (const entity of this.#contents)
+      if (entity instanceof FunctionEntity && entity.Name === name)
+        return entity;
   }
 
   static Parse(token_group: TokenGroup): [TokenGroup, Namespace] {

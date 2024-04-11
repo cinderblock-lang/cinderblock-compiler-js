@@ -27,6 +27,10 @@ export class FunctionEntity extends Entity implements IClosure {
     this.#returns = returns;
   }
 
+  get Name() {
+    return this.#name;
+  }
+
   Resolve(name: string): Component | undefined {
     return this.#content.Resolve(name) ?? this.#parameters.Resolve(name);
   }
