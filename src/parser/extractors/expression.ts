@@ -88,12 +88,12 @@ function ExtractMake(tokens: TokenGroup) {
 }
 
 function ExtractPick(tokens: TokenGroup) {
-  const enum_name = NextBlock(tokens);
+  const enum_name = ExtractExpression(tokens);
   ExpectNext(tokens, ".");
   const enum_key = NextBlock(tokens);
 
   const block = ExtractStatementBlock(tokens);
-  return { name: enum_name.Text, key: enum_key.Text, block };
+  return { name: enum_name, key: enum_key.Text, block };
 }
 
 function ExtractMatch(tokens: TokenGroup) {

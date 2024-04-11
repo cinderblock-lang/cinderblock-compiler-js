@@ -1,5 +1,5 @@
 import { Component } from "../ast/component";
-import { BuiltInFunction } from "../ast/entity/built-in-function";
+import { ExternalFunctionEntity } from "../ast/entity/external-function";
 import { FunctionEntity } from "../ast/entity/function";
 import { SchemaEntity } from "../ast/entity/schema";
 import { StructEntity } from "../ast/entity/struct";
@@ -21,18 +21,18 @@ export function IsAnyStructLike(target: Component): target is AnyStructLike {
 
 type AnyInvokable =
   | FunctionEntity
-  | BuiltInFunction
   | FunctionParameter
-  | SubStatement;
+  | SubStatement
+  | ExternalFunctionEntity;
 
 export function IsAnyInvokable(
   target: Component | undefined
 ): target is AnyInvokable {
   return (
     target instanceof FunctionEntity ||
-    target instanceof BuiltInFunction ||
     target instanceof SubStatement ||
-    target instanceof FunctionParameter
+    target instanceof FunctionParameter ||
+    target instanceof ExternalFunctionEntity
   );
 }
 

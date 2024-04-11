@@ -1,10 +1,8 @@
-import Child from "child_process";
 import { Dto } from "./dtos";
 import Library from "./library";
 import Fs from "fs/promises";
 import FsOld from "fs";
 import Path from "path";
-import { BuiltInFunctions } from "../linker/built-in-functions";
 import { Ast } from "../ast/ast";
 import Source from "./source";
 import Gcc from "./gcc";
@@ -59,7 +57,7 @@ export default class Project {
   async #parse(target: Dto.Target, no_cache?: boolean) {
     await this.#ensure_libraries(no_cache);
 
-    let parsed = new Ast().with(BuiltInFunctions);
+    let parsed = new Ast();
 
     for (const library of this.#libraries) {
       const source = await library.GetSource();
@@ -80,7 +78,7 @@ export default class Project {
     const dir = Path.resolve(this.#dir, this.#dto.bin, target);
     await this.#ensure_dir(dir);
 
-    await Fs.writeFile(Path.resolve(dir, "main.c"), ast.c());
+    // await Fs.writeFile(Path.resolve(dir, "main.c"), ast.c());
 
     const gcc = new Gcc(dir, target);
     await gcc.Compile("main.c", this.#dto.name, options.debug ?? false);
@@ -92,7 +90,7 @@ export default class Project {
     const dir = Path.resolve(this.#dir, this.#dto.bin, target);
     await this.#ensure_dir(dir);
 
-    await Fs.writeFile(Path.resolve(dir, "test.c"), ast.c_test());
+    // await Fs.writeFile(Path.resolve(dir, "test.c"), ast.c_test());
 
     const gcc = new Gcc(dir, target);
     await gcc.Compile("test.c", this.#dto.name + "_tests", true);
