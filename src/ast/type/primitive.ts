@@ -1,6 +1,7 @@
 import z from "zod";
 import { CodeLocation } from "../../location/code-location";
 import { Type } from "./base";
+import { ParserError } from "../../parser/error";
 
 export const PrimitiveName = z.union([
   z.literal("int"),
@@ -40,3 +41,21 @@ export class PrimitiveType extends Type {
     return this.#name;
   }
 }
+
+Type.Register({
+  Priority: 1,
+  Is(token_group) {
+    return IsPrimitiveName(token_group.Text);
+  },
+  Extract(token_group) {
+    const name = token_group.Text;
+
+    if (!IsPrimitiveName(name))
+      throw new ParserError(token_group.CodeLocation, "Invalid primitive name");
+
+    return [
+      token_group.Next,
+      new PrimitiveType(token_group.CodeLocation, name),
+    ];
+  },
+});

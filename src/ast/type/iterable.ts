@@ -9,3 +9,20 @@ export class IterableType extends Type {
     this.#type = type;
   }
 }
+
+Type.Register({
+  Priority: 1,
+  Is(token_group) {
+    return token_group.Text === "[";
+  },
+  Extract(token_group) {
+    token_group.Expect("[");
+    const [after_returns, returns] = Type.Parse(token_group.Next);
+    after_returns.Expect("]");
+
+    return [
+      after_returns.Next,
+      new IterableType(token_group.CodeLocation, returns),
+    ];
+  },
+});

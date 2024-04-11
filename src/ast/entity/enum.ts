@@ -1,27 +1,21 @@
 import { CodeLocation } from "../../location/code-location";
 import { ComponentGroup } from "../component-group";
 import { Property } from "../property";
-import { Entity } from "./base";
+import { Entity, EntityOptions } from "./base";
 
 export class EnumEntity extends Entity {
   readonly #name: string;
   readonly #properties: ComponentGroup;
-  readonly #namespace: string;
-  readonly #using: Array<string>;
 
   constructor(
     ctx: CodeLocation,
-    exported: boolean,
+    options: EntityOptions,
     name: string,
-    properties: ComponentGroup,
-    namespace: string,
-    using: Array<string>
+    properties: ComponentGroup
   ) {
-    super(ctx, exported);
+    super(ctx, options);
     this.#name = name;
     this.#properties = properties;
-    this.#namespace = namespace;
-    this.#using = using;
   }
 
   HasKey(key: string) {
@@ -50,3 +44,24 @@ export class EnumEntity extends Entity {
     return undefined;
   }
 }
+
+Entity.Register({
+  Is(token_group) {
+    return token_group.Text === "enum";
+  },
+  Extract(token_group, options) {
+    const name = token_group.Next.Text;
+    token_group = token_group.Skip(2);
+    token_group.Expect("{");
+    const [after_properties, properties] = ComponentGroup.ParseWhile(
+      token_group.Next,
+      Property.Parse,
+      ["}"]
+    );
+
+    return [
+      after_properties,
+      new EnumEntity(token_group.CodeLocation, options, name, properties),
+    ];
+  },
+});

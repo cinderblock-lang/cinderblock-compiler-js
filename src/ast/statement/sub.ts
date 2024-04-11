@@ -13,3 +13,20 @@ export class SubStatement extends Statement {
     this.#equals = equals;
   }
 }
+
+Statement.Register({
+  Is(token_group) {
+    return token_group.Next.Text === "->";
+  },
+  Extract(token_group) {
+    const name = token_group.Text;
+    const [after_expression, expression] = Expression.Parse(
+      token_group.Skip(2)
+    );
+
+    return [
+      after_expression,
+      new SubStatement(token_group.CodeLocation, name, expression),
+    ];
+  },
+});

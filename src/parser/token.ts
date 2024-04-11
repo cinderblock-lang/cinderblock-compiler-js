@@ -1,4 +1,5 @@
 import { CodeLocation } from "../location/code-location";
+import { ParserError } from "./error";
 
 export class Token {
   readonly #location: CodeLocation;
@@ -26,22 +27,44 @@ export class Token {
 }
 
 export class TokenGroup {
-  readonly #tokens: Iterator<Token>;
-  #current: IteratorResult<Token>;
+  readonly #tokens: Array<Token>;
+  readonly #index: number;
 
-  constructor(tokens: Iterator<Token>) {
+  constructor(tokens: Array<Token>, index = 0) {
     this.#tokens = tokens;
-    this.#current = this.#tokens.next();
+    this.#index = index;
   }
 
-  next() {
-    const result = this.#current;
-    this.#current = this.#tokens.next();
-    return result;
+  get #value() {
+    return this.#tokens[this.#index];
   }
 
-  peek(): Token | undefined {
-    if (this.#current.done) return undefined;
-    return this.#current.value;
+  get CodeLocation() {
+    return this.#value.CodeLocation;
+  }
+
+  get Text() {
+    return this.#value.Text;
+  }
+
+  get Done() {
+    return this.#index >= this.#tokens.length;
+  }
+
+  get Next() {
+    return new TokenGroup(this.#tokens, this.#index + 1);
+  }
+
+  get Previous() {
+    return new TokenGroup(this.#tokens, this.#index - 1);
+  }
+
+  Expect(...symbols: Array<string>) {
+    if (symbols.includes(this.Text))
+      throw ParserError.UnexpectedSymbol(this, ...symbols);
+  }
+
+  Skip(count: number) {
+    return new TokenGroup(this.#tokens, this.#index + count);
   }
 }

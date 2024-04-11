@@ -9,3 +9,16 @@ export class ReferenceExpression extends Expression {
     this.#name = name;
   }
 }
+
+Expression.Register({
+  Priority: 0,
+  Is(token_group, prefix) {
+    return true;
+  },
+  Extract(token_group, prefix, look_for) {
+    return [
+      token_group.Next,
+      new ReferenceExpression(token_group.CodeLocation, token_group.Text),
+    ];
+  },
+});

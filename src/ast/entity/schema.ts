@@ -1,7 +1,7 @@
 import { CodeLocation } from "../../location/code-location";
 import { ComponentGroup } from "../component-group";
 import { Property } from "../property";
-import { Entity } from "./base";
+import { Entity, EntityOptions } from "./base";
 
 export class SchemaEntity extends Entity {
   readonly #name: string;
@@ -9,11 +9,11 @@ export class SchemaEntity extends Entity {
 
   constructor(
     ctx: CodeLocation,
-    exported: boolean,
+    options: EntityOptions,
     name: string,
     properties: ComponentGroup
   ) {
-    super(ctx, exported);
+    super(ctx, options);
     this.#name = name;
     this.#properties = properties;
   }
@@ -41,3 +41,24 @@ export class SchemaEntity extends Entity {
     return undefined;
   }
 }
+
+Entity.Register({
+  Is(token_group) {
+    return token_group.Text === "schema";
+  },
+  Extract(token_group, options) {
+    const name = token_group.Next.Text;
+    token_group = token_group.Skip(2);
+    token_group.Expect("{");
+    const [after_properties, properties] = ComponentGroup.ParseWhile(
+      token_group.Next,
+      Property.Parse,
+      ["}"]
+    );
+
+    return [
+      after_properties,
+      new SchemaEntity(token_group.CodeLocation, options, name, properties),
+    ];
+  },
+});

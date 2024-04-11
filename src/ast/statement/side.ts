@@ -11,3 +11,17 @@ export class SideStatement extends Statement {
     this.#value = value;
   }
 }
+
+Statement.Register({
+  Is(token_group) {
+    return token_group.Text === "side";
+  },
+  Extract(token_group) {
+    const [after_expression, expression] = Expression.Parse(token_group.Next);
+
+    return [
+      after_expression,
+      new SideStatement(token_group.CodeLocation, expression),
+    ];
+  },
+});

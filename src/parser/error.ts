@@ -1,5 +1,5 @@
 import { CodeLocation } from "../location/code-location";
-import { Token } from "./token";
+import { Token, TokenGroup } from "./token";
 
 export class ParserError extends Error {
   readonly #location: CodeLocation;
@@ -16,7 +16,10 @@ export class ParserError extends Error {
     return new ParserError(undefined, "Unexpected end of file");
   }
 
-  static UnexpectedSymbol(received: Token, ...expected: Array<string>) {
+  static UnexpectedSymbol(
+    received: TokenGroup | Token,
+    ...expected: Array<string>
+  ) {
     return new ParserError(
       received.CodeLocation,
       `Unexpected symbol. Expected one of ${expected

@@ -1,5 +1,9 @@
 import { CodeLocation } from "../location/code-location";
+import { TokenGroup } from "../parser/token";
 import { Component } from "./component";
+import { Expression } from "./expression/base";
+import { Statement } from "./statement/base";
+import { ReturnStatement } from "./statement/return";
 
 export class ComponentGroup {
   readonly #components: Array<Component>;
@@ -52,5 +56,37 @@ export class ComponentGroup {
 
   find_all<T>(checker: abstract new (...args: any[]) => T): T[] {
     return this.#components.filter((c) => c instanceof checker) as T[];
+  }
+
+  static ParseWhile(
+    token_group: TokenGroup,
+    factory: (group: TokenGroup) => [TokenGroup, Component],
+    look_for: Array<string>,
+    finish_factory: (group: TokenGroup) => string = (g) => g.Text
+  ): [TokenGroup, ComponentGroup] {
+    const result: Array<Component> = [];
+
+    while (!look_for.includes(finish_factory(token_group))) {
+      const [t, r] = factory(token_group);
+      token_group = t;
+      result.push(r);
+    }
+
+    return [token_group.Next, new ComponentGroup(...result)];
+  }
+
+  static ParseOptionalExpression(token_group: TokenGroup) {
+    return token_group.Text === "{"
+      ? this.ParseWhile(token_group.Next, Statement.Parse, ["}"])
+      : (() => {
+          const [tokens, expression] = Expression.Parse(token_group, [";"]);
+
+          return [
+            tokens,
+            new ComponentGroup(
+              new ReturnStatement(token_group.CodeLocation, expression)
+            ),
+          ] as const;
+        })();
   }
 }

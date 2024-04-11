@@ -12,3 +12,25 @@ export class UseType extends Type {
     this.#constraints = constraints;
   }
 }
+
+Type.Register({
+  Priority: 1,
+  Is(token_group) {
+    return token_group.Text === "use";
+  },
+  Extract(token_group) {
+    token_group.Expect("use");
+    const [after_options, options] = ComponentGroup.ParseWhile(
+      token_group.Next,
+      Type.Parse,
+      ["="]
+    );
+
+    const name = after_options.Next.Text;
+
+    return [
+      after_options.Skip(2),
+      new UseType(token_group.CodeLocation, name, options),
+    ];
+  },
+});

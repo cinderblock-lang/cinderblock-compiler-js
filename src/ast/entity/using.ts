@@ -1,11 +1,34 @@
 import { CodeLocation } from "../../location/code-location";
-import { Entity } from "./base";
+import { Entity, EntityOptions } from "./base";
 
 export class UsingEntity extends Entity {
   readonly #name: string;
 
-  constructor(ctx: CodeLocation, exported: boolean, name: string) {
-    super(ctx, exported);
+  constructor(ctx: CodeLocation, options: EntityOptions, name: string) {
+    super(ctx, options);
     this.#name = name;
   }
 }
+
+Entity.Register({
+  Is(token_group) {
+    return token_group.Text === "using";
+  },
+  Extract(token_group, options) {
+    token_group = token_group.Next;
+    let name = token_group.Text;
+    token_group = token_group.Next;
+
+    while (token_group.Text !== ";") {
+      name += token_group.Text;
+      token_group = token_group.Next;
+      name += token_group.Text;
+      token_group = token_group.Next;
+    }
+
+    return [
+      token_group,
+      new UsingEntity(token_group.CodeLocation, options, name),
+    ];
+  },
+});
