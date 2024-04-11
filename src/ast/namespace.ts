@@ -1,14 +1,13 @@
 import { CodeLocation } from "../location/code-location";
 import { TokenGroup } from "../parser/token";
 import { Component } from "./component";
-import { ComponentGroup } from "./component-group";
 import { Entity } from "./entity/base";
 
 export class Namespace extends Component {
   readonly #name: string;
-  readonly #contents: ComponentGroup;
+  readonly #contents: Array<Entity>;
 
-  constructor(ctx: CodeLocation, name: string, content: ComponentGroup) {
+  constructor(ctx: CodeLocation, name: string, content: Array<Entity>) {
     super(ctx);
     this.#name = name;
     this.#contents = content;
@@ -30,13 +29,13 @@ export class Namespace extends Component {
       token_group = token_group.Next;
     }
 
-    let content: ComponentGroup;
-    [token_group, content] = ComponentGroup.ParseWhile(
-      token_group,
-      Entity.Parse,
-      ["}"]
-    );
+    let entities: Array<Entity> = [];
+    while (token_group.Text !== "}") {
+      let result: Entity;
+      [token_group, result] = Entity.Parse(token_group);
+      entities = [...entities, result];
+    }
 
-    return [token_group, new Namespace(start, name, content)];
+    return [token_group, new Namespace(start, name, entities)];
   }
 }

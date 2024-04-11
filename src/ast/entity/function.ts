@@ -1,29 +1,34 @@
+import { IClosure } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
 import { Component } from "../component";
-import { ComponentGroup } from "../component-group";
-import { FunctionParameter } from "../function-parameter";
+import { Closure } from "../expression/closure";
+import { ParameterCollection } from "../parameter-collection";
 import { Type } from "../type/base";
 import { Entity, EntityOptions } from "./base";
 
-export class FunctionEntity extends Entity {
+export class FunctionEntity extends Entity implements IClosure {
   readonly #name: string;
-  readonly #parameters: ComponentGroup;
-  readonly #content: ComponentGroup;
-  readonly #returns: Component | undefined;
+  readonly #parameters: ParameterCollection;
+  readonly #content: Closure;
+  readonly #returns: Type | undefined;
 
   constructor(
     ctx: CodeLocation,
     options: EntityOptions,
     name: string,
-    parameters: ComponentGroup,
-    content: ComponentGroup,
-    returns: Component | undefined
+    parameters: ParameterCollection,
+    content: Closure,
+    returns: Type | undefined
   ) {
     super(ctx, options);
     this.#name = name;
     this.#parameters = parameters;
     this.#content = content;
     this.#returns = returns;
+  }
+
+  Resolve(name: string): Component | undefined {
+    return this.#content.Resolve(name) ?? this.#parameters.Resolve(name);
   }
 }
 
@@ -38,20 +43,16 @@ Entity.Register({
     token_group.Expect("(");
     token_group = token_group.Next;
 
-    let parameters: ComponentGroup;
-    [token_group, parameters] = ComponentGroup.ParseWhile(
-      token_group,
-      FunctionParameter.Parse,
-      [")"]
-    );
+    let parameters: ParameterCollection;
+    [token_group, parameters] = ParameterCollection.Parse(token_group);
 
     let returns: undefined | Type = undefined;
     if (token_group.Text === ":") {
       [token_group, returns] = Type.Parse(token_group.Next);
     }
 
-    let body: ComponentGroup;
-    [token_group, body] = ComponentGroup.ParseOptionalExpression(token_group);
+    let body: Closure;
+    [token_group, body] = Closure.Parse(token_group);
 
     return [
       token_group,

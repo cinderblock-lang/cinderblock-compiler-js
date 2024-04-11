@@ -1,6 +1,5 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
-import { Component } from "../component";
 import { ParserError } from "../../parser/error";
 
 export const Operators = [
@@ -30,9 +29,9 @@ function IsOperator(item: string | undefined): item is Operator {
 }
 
 export class OperatorExpression extends Expression {
-  readonly #left: Component;
+  readonly #left: Expression;
   readonly #operator: Operator;
-  readonly #right: Component;
+  readonly #right: Expression;
 
   constructor(
     ctx: CodeLocation,

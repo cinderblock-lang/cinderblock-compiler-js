@@ -1,19 +1,14 @@
 import { Expression } from "./base";
-import { ComponentGroup } from "../component-group";
 import { CodeLocation } from "../../location/code-location";
 import { Type } from "../type/base";
+import { Closure } from "./closure";
 
 export class PickExpression extends Expression {
   readonly #enum: Type;
   readonly #key: string;
-  readonly #using: ComponentGroup;
+  readonly #using: Closure;
 
-  constructor(
-    ctx: CodeLocation,
-    target: Type,
-    key: string,
-    using: ComponentGroup
-  ) {
+  constructor(ctx: CodeLocation, target: Type, key: string, using: Closure) {
     super(ctx);
     this.#enum = target;
     this.#key = key;
@@ -33,9 +28,7 @@ Expression.Register({
 
     const key = after_target.Next.Text;
 
-    const [after_block, block] = ComponentGroup.ParseOptionalExpression(
-      after_target.Skip(2)
-    );
+    const [after_block, block] = Closure.Parse(after_target.Skip(2));
 
     return [
       after_block,

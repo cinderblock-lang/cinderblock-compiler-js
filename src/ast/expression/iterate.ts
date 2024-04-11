@@ -1,27 +1,26 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Component } from "../component";
-import { ComponentGroup } from "../component-group";
 import { Namer } from "../../location/namer";
-import { ParserError } from "../../parser/error";
+import { Closure } from "./closure";
+import { IClosure } from "../../linker/closure";
 
-export class IterateExpression extends Expression {
-  readonly #over: Component;
+export class IterateExpression extends Expression implements IClosure {
+  readonly #over: Expression;
   readonly #as: string;
-  readonly #using: ComponentGroup;
+  readonly #using: Closure;
   readonly #struct_name: string;
 
-  constructor(
-    ctx: CodeLocation,
-    over: Expression,
-    as: string,
-    using: ComponentGroup
-  ) {
+  constructor(ctx: CodeLocation, over: Expression, as: string, using: Closure) {
     super(ctx);
     this.#over = over;
     this.#as = as;
     this.#using = using;
     this.#struct_name = Namer.GetName();
+  }
+
+  Resolve(name: string): Component | undefined {
+    if (name === this.#as) return this.#over;
   }
 }
 
@@ -42,9 +41,7 @@ Expression.Register({
     after_subject.Skip(3).Expect(")");
     after_subject.Skip(4).Expect("->");
 
-    const [after_body, body] = ComponentGroup.ParseOptionalExpression(
-      after_subject.Skip(5)
-    );
+    const [after_body, body] = Closure.Parse(after_subject.Skip(5));
 
     return [
       after_body,

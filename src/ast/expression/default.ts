@@ -1,13 +1,12 @@
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
-import { Component } from "../component";
 import { Type } from "../type/base";
 import { Expression } from "./base";
 
 export class DefaultExpression extends Expression {
-  readonly #subject: Component;
+  readonly #subject: Type;
 
-  constructor(ctx: CodeLocation, subject: Component) {
+  constructor(ctx: CodeLocation, subject: Type) {
     super(ctx);
     this.#subject = subject;
   }

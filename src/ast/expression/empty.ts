@@ -1,11 +1,10 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
-import { Component } from "../component";
 import { Type } from "../type/base";
 import { ParserError } from "../../parser/error";
 
 export class EmptyExpression extends Expression {
-  readonly #of: Component;
+  readonly #of: Type;
 
   constructor(ctx: CodeLocation, of: Type) {
     super(ctx);

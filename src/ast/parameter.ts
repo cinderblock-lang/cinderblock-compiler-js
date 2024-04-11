@@ -3,7 +3,7 @@ import { TokenGroup } from "../parser/token";
 import { Component } from "./component";
 import { Type } from "./type/base";
 
-export class FunctionParameter extends Component {
+export class Parameter extends Component {
   readonly #name: string;
   readonly #type?: Type;
   readonly #optional: boolean;
@@ -20,7 +20,11 @@ export class FunctionParameter extends Component {
     this.#optional = optional;
   }
 
-  static Parse(token_group: TokenGroup): [TokenGroup, FunctionParameter] {
+  get Name() {
+    return this.#name;
+  }
+
+  static Parse(token_group: TokenGroup): [TokenGroup, Parameter] {
     const name = token_group.Text;
 
     let optional = false;
@@ -33,7 +37,7 @@ export class FunctionParameter extends Component {
     if (token_group.Text !== ":") {
       return [
         token_group,
-        new FunctionParameter(
+        new Parameter(
           token_group.CodeLocation,
           name,
           undefined,
@@ -46,7 +50,7 @@ export class FunctionParameter extends Component {
 
     return [
       after_type,
-      new FunctionParameter(token_group.CodeLocation, name, type, optional),
+      new Parameter(token_group.CodeLocation, name, type, optional),
     ];
   }
 }

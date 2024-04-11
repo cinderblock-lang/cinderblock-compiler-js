@@ -1,18 +1,15 @@
 import { CodeLocation } from "../../location/code-location";
-import { Component } from "../component";
-import { ComponentGroup } from "../component-group";
-import { StructEntity } from "../entity/struct";
-import { FunctionParameter } from "../function-parameter";
+import { ParameterCollection } from "../parameter-collection";
 import { Type } from "./base";
 
 export class FunctionType extends Type {
-  readonly #parameters: ComponentGroup;
-  readonly #returns: Component;
+  readonly #parameters: ParameterCollection;
+  readonly #returns: Type;
 
   constructor(
     ctx: CodeLocation,
-    parameters: ComponentGroup,
-    returns: Type | StructEntity
+    parameters: ParameterCollection,
+    returns: Type
   ) {
     super(ctx);
     this.#parameters = parameters;
@@ -27,10 +24,8 @@ Type.Register({
   },
   Extract(token_group) {
     token_group.Expect("(");
-    const [after_parameters, parameters] = ComponentGroup.ParseWhile(
-      token_group.Next,
-      FunctionParameter.Parse,
-      [")"]
+    const [after_parameters, parameters] = ParameterCollection.Parse(
+      token_group.Next
     );
 
     after_parameters.Expect("->");

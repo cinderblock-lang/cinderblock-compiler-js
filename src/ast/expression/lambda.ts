@@ -1,22 +1,24 @@
 import { Expression } from "./base";
-import { ComponentGroup } from "../component-group";
 import { CodeLocation } from "../../location/code-location";
 import { Namer } from "../../location/namer";
 import { Component } from "../component";
 import { Type } from "../type/base";
+import { Closure } from "./closure";
+import { IClosure } from "../../linker/closure";
+import { ParameterCollection } from "../parameter-collection";
 
-export class LambdaExpression extends Expression {
-  readonly #parameters: ComponentGroup;
-  readonly #body: ComponentGroup;
-  readonly #returns: Component | undefined;
+export class LambdaExpression extends Expression implements IClosure {
+  readonly #parameters: ParameterCollection;
+  readonly #body: Closure;
+  readonly #returns: Type | undefined;
 
   readonly #name: string;
 
   constructor(
     ctx: CodeLocation,
-    parameters: ComponentGroup,
-    body: ComponentGroup,
-    returns: Component | undefined
+    parameters: ParameterCollection,
+    body: Closure,
+    returns: Type | undefined
   ) {
     super(ctx);
     this.#parameters = parameters;
@@ -24,6 +26,10 @@ export class LambdaExpression extends Expression {
     this.#returns = returns;
 
     this.#name = Namer.GetName();
+  }
+
+  Resolve(name: string): Component | undefined {
+    return this.#parameters.Resolve(name);
   }
 }
 
@@ -34,10 +40,8 @@ Expression.Register({
   },
   Extract(token_group, prefix) {
     token_group.Next.Expect("(");
-    const [after_parameters, parameters] = ComponentGroup.ParseWhile(
-      token_group.Next,
-      Expression.Parse,
-      [",", ")"]
+    const [after_parameters, parameters] = ParameterCollection.Parse(
+      token_group.Next
     );
 
     const [after_returns, returns] =
@@ -47,9 +51,7 @@ Expression.Register({
 
     after_returns.Expect("->");
 
-    const [after_body, body] = ComponentGroup.ParseOptionalExpression(
-      after_returns.Next
-    );
+    const [after_body, body] = Closure.Parse(after_returns.Next);
 
     return [
       after_body,

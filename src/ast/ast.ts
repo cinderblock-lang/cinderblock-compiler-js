@@ -1,18 +1,13 @@
-import { Component } from "./component";
-import { ComponentGroup } from "./component-group";
+import { Namespace } from "./namespace";
 
 export class Ast {
-  readonly #data: Array<Component>;
+  readonly #data: Array<Namespace>;
 
-  constructor(...data: Array<ComponentGroup>) {
-    this.#data = data.flatMap((d) => [...d.iterator()]);
+  constructor(...data: Array<Namespace>) {
+    this.#data = data;
   }
 
-  *iterator() {
-    for (const item of this.#data) yield item;
-  }
-
-  with(input: ComponentGroup) {
-    return new Ast(new ComponentGroup(...this.#data), input);
+  with(input: Array<Namespace>) {
+    return new Ast(...this.#data.concat(...input));
   }
 }

@@ -1,6 +1,6 @@
 import { ComponentGroup } from "../ast/component-group";
 import { ExternalFunctionEntity } from "../ast/entity/external-function";
-import { FunctionParameter } from "../ast/function-parameter";
+import { Parameter } from "../ast/parameter";
 import { Namespace } from "../ast/namespace";
 import { PrimitiveName, PrimitiveType } from "../ast/type/primitive";
 import { EmptyCodeLocation } from "../location/empty";
@@ -35,7 +35,7 @@ export default class CFile extends File {
                   new ComponentGroup(
                     ...detail.args.map(
                       (a) =>
-                        new FunctionParameter(
+                        new Parameter(
                           EmptyCodeLocation,
                           a,
                           new PrimitiveType(EmptyCodeLocation, a),

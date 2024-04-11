@@ -1,12 +1,11 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
-import { Component } from "../component";
 import { Type } from "../type/base";
 import { ParserError } from "../../parser/error";
 
 export class IsExpression extends Expression {
-  readonly #left: Component;
-  readonly #right: Component;
+  readonly #left: Expression;
+  readonly #right: Type;
 
   constructor(ctx: CodeLocation, left: Expression, right: Type) {
     super(ctx);

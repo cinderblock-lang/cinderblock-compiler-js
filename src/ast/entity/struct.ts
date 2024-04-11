@@ -1,44 +1,29 @@
 import { CodeLocation } from "../../location/code-location";
-import { ComponentGroup } from "../component-group";
 import { Property } from "../property";
+import { PropertyCollection } from "../property-collection";
 import { Entity, EntityOptions } from "./base";
 
 export class StructEntity extends Entity {
   readonly #name: string;
-  readonly #properties: ComponentGroup;
+  readonly #properties: PropertyCollection;
 
   constructor(
     ctx: CodeLocation,
     options: EntityOptions,
     name: string,
-    properties: ComponentGroup
+    properties: PropertyCollection
   ) {
     super(ctx, options);
     this.#name = name;
     this.#properties = properties;
   }
 
-  get Name() {
-    return this.#name;
-  }
-
-  get Properties() {
-    return this.#properties;
-  }
-
   HasKey(key: string) {
-    for (const property of this.#properties.iterator())
-      if (property instanceof Property) if (property.Name === key) return true;
-
-    return false;
+    return !!this.#properties.Resolve(key);
   }
 
   GetKey(key: string) {
-    for (const property of this.#properties.iterator())
-      if (property instanceof Property)
-        if (property.Name === key) return property;
-
-    return undefined;
+    return this.#properties.Resolve(key);
   }
 }
 
@@ -50,10 +35,8 @@ Entity.Register({
     const name = token_group.Next.Text;
     token_group = token_group.Skip(2);
     token_group.Expect("{");
-    const [after_properties, properties] = ComponentGroup.ParseWhile(
-      token_group.Next,
-      Property.Parse,
-      ["}"]
+    const [after_properties, properties] = PropertyCollection.Parse(
+      token_group.Next
     );
 
     return [

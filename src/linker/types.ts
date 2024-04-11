@@ -3,7 +3,7 @@ import { ExternalFunctionEntity } from "../ast/entity/external-function";
 import { FunctionEntity } from "../ast/entity/function";
 import { SchemaEntity } from "../ast/entity/schema";
 import { StructEntity } from "../ast/entity/struct";
-import { FunctionParameter } from "../ast/function-parameter";
+import { Parameter } from "../ast/parameter";
 import { SubStatement } from "../ast/statement/sub";
 import { PrimitiveType } from "../ast/type/primitive";
 import { SchemaType } from "../ast/type/schema";
@@ -21,7 +21,7 @@ export function IsAnyStructLike(target: Component): target is AnyStructLike {
 
 type AnyInvokable =
   | FunctionEntity
-  | FunctionParameter
+  | Parameter
   | SubStatement
   | ExternalFunctionEntity;
 
@@ -31,7 +31,7 @@ export function IsAnyInvokable(
   return (
     target instanceof FunctionEntity ||
     target instanceof SubStatement ||
-    target instanceof FunctionParameter ||
+    target instanceof Parameter ||
     target instanceof ExternalFunctionEntity
   );
 }

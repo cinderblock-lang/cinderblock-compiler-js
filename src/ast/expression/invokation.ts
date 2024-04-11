@@ -1,17 +1,15 @@
 import { Expression } from "./base";
-import { Component } from "../component";
-import { ComponentGroup } from "../component-group";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
 
 export class InvokationExpression extends Expression {
-  readonly #subject: Component;
-  readonly #parameters: ComponentGroup;
+  readonly #subject: Expression;
+  readonly #parameters: Array<Expression>;
 
   constructor(
     ctx: CodeLocation,
     subject: Expression,
-    parameters: ComponentGroup
+    parameters: Array<Expression>
   ) {
     super(ctx);
     this.#subject = subject;
@@ -25,25 +23,24 @@ Expression.Register({
     return token_group.Text === "(" && !!prefix;
   },
   Extract(token_group, prefix) {
+    const start = token_group.CodeLocation;
     if (!prefix)
       throw new ParserError(
         token_group.CodeLocation,
         "Attempting an invokation without a referenced function"
       );
 
-    const [after_parameters, parameters] =
-      token_group.Next.Text === ")"
-        ? ([token_group.Next.Next, new ComponentGroup()] as const)
-        : ComponentGroup.ParseWhile(
-            token_group.Next,
-            (g) => Expression.Parse(g, [",", ")"]),
-            [")"],
-            (g) => g.Previous.Text
-          );
+    let parameters: Array<Expression> = [];
+    while (token_group.Text !== ")") {
+      token_group = token_group.Next;
+      let result: Expression;
+      [token_group, result] = Expression.Parse(token_group, [",", ")"]);
+      parameters = [...parameters, result];
+      token_group = token_group.Previous;
+    }
 
-    return [
-      after_parameters,
-      new InvokationExpression(token_group.CodeLocation, prefix, parameters),
-    ];
+    token_group = token_group.Next;
+
+    return [token_group, new InvokationExpression(start, prefix, parameters)];
   },
 });

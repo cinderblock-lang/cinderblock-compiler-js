@@ -1,16 +1,16 @@
 import { Expression } from "./base";
-import { ComponentGroup } from "../component-group";
 import { CodeLocation } from "../../location/code-location";
+import { Closure } from "./closure";
 export class MatchExpression extends Expression {
   readonly #subject: Expression;
   readonly #as: string;
-  readonly #using: Record<string, ComponentGroup>;
+  readonly #using: Record<string, Closure>;
 
   constructor(
     ctx: CodeLocation,
     subject: Expression,
     as: string,
-    using: Record<string, ComponentGroup>
+    using: Record<string, Closure>
   ) {
     super(ctx);
     this.#subject = subject;
@@ -35,13 +35,11 @@ Expression.Register({
     let after_using = after_subject.Skip(2);
     after_using.Expect("{");
 
-    const using: Record<string, ComponentGroup> = {};
+    const using: Record<string, Closure> = {};
     while (after_using.Text !== "}") {
       const name = after_using.Next.Text;
       after_using.Skip(2).Expect(":");
-      const [after_block, block] = ComponentGroup.ParseOptionalExpression(
-        after_subject.Skip(3)
-      );
+      const [after_block, block] = Closure.Parse(after_subject.Skip(3));
 
       using[name] = block;
       after_using = after_block;

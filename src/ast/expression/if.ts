@@ -1,21 +1,18 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
-import { Component } from "../component";
-import { ComponentGroup } from "../component-group";
 import { ParserError } from "../../parser/error";
-import { Statement } from "../statement/base";
-import { ReturnStatement } from "../statement/return";
+import { Closure } from "./closure";
 
 export class IfExpression extends Expression {
-  readonly #check: Component;
-  readonly #if: ComponentGroup;
-  readonly #else: ComponentGroup;
+  readonly #check: Expression;
+  readonly #if: Closure;
+  readonly #else: Closure;
 
   constructor(
     ctx: CodeLocation,
     check: Expression,
-    on_if: ComponentGroup,
-    on_else: ComponentGroup
+    on_if: Closure,
+    on_else: Closure
   ) {
     super(ctx);
     this.#check = check;
@@ -37,15 +34,12 @@ Expression.Register({
       ")",
     ]);
 
-    const [after_if, if_block] =
-      ComponentGroup.ParseOptionalExpression(after_statement);
+    const [after_if, if_block] = Closure.Parse(after_statement);
 
     if (after_if.Text !== "else")
       throw ParserError.UnexpectedSymbol(after_if, "else");
 
-    const [after_else, else_block] = ComponentGroup.ParseOptionalExpression(
-      after_if.Next
-    );
+    const [after_else, else_block] = Closure.Parse(after_if.Next);
 
     return [
       after_else,

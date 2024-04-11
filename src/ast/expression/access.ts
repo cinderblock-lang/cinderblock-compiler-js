@@ -1,10 +1,9 @@
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
-import { Component } from "../component";
 import { Expression } from "./base";
 
 export class AccessExpression extends Expression {
-  readonly #subject: Component;
+  readonly #subject: Expression;
   readonly #target: string;
 
   constructor(ctx: CodeLocation, subject: Expression, target: string) {

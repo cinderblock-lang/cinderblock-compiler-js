@@ -4,7 +4,7 @@ import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
 
 export class BracketsExpression extends Expression {
-  readonly #expression: Component;
+  readonly #expression: Expression;
 
   constructor(ctx: CodeLocation, expression: Expression) {
     super(ctx);
