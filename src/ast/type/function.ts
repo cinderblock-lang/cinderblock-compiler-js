@@ -1,8 +1,9 @@
+import { IConcreteType } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
 import { ParameterCollection } from "../parameter-collection";
 import { Type } from "./base";
 
-export class FunctionType extends Type {
+export class FunctionType extends Type implements IConcreteType {
   readonly #parameters: ParameterCollection;
   readonly #returns: Type;
 
@@ -14,6 +15,10 @@ export class FunctionType extends Type {
     super(ctx);
     this.#parameters = parameters;
     this.#returns = returns;
+  }
+
+  get TypeName(): string {
+    return "void*";
   }
 }
 

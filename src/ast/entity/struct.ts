@@ -1,9 +1,9 @@
+import { IConcreteType } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
-import { Property } from "../property";
 import { PropertyCollection } from "../property-collection";
 import { Entity, EntityOptions } from "./base";
 
-export class StructEntity extends Entity {
+export class StructEntity extends Entity implements IConcreteType {
   readonly #name: string;
   readonly #properties: PropertyCollection;
 
@@ -16,6 +16,10 @@ export class StructEntity extends Entity {
     super(ctx, options);
     this.#name = name;
     this.#properties = properties;
+  }
+
+  get TypeName(): string {
+    return this.CName;
   }
 
   HasKey(key: string) {

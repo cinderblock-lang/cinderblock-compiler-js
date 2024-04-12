@@ -1,12 +1,17 @@
+import { IConcreteType } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
 import { Type } from "./base";
 
-export class IterableType extends Type {
+export class IterableType extends Type implements IConcreteType {
   readonly #type: Type;
 
   constructor(ctx: CodeLocation, type: Type) {
     super(ctx);
     this.#type = type;
+  }
+
+  get TypeName(): string {
+    return "_ITERABLE";
   }
 }
 

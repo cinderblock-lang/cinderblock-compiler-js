@@ -1,7 +1,5 @@
 import { Expression } from "./base";
-import { Component } from "../component";
 import { CodeLocation } from "../../location/code-location";
-import { ParserError } from "../../parser/error";
 
 export class BracketsExpression extends Expression {
   readonly #expression: Expression;

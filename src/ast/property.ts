@@ -1,9 +1,10 @@
+import { IInstance } from "../linker/closure";
 import { CodeLocation } from "../location/code-location";
 import { TokenGroup } from "../parser/token";
 import { Component } from "./component";
 import { Type } from "./type/base";
 
-export class Property extends Component {
+export class Property extends Component implements IInstance {
   readonly #name: string;
   readonly #type: Type;
   readonly #optional: boolean;
@@ -13,6 +14,10 @@ export class Property extends Component {
     this.#name = name;
     this.#type = type;
     this.#optional = optional;
+  }
+
+  get Reference(): string {
+    throw new Error("Method not implemented.");
   }
 
   get Name() {

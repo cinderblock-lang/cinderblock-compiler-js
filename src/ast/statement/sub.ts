@@ -1,8 +1,9 @@
+import { IInstance } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
 import { Expression } from "../expression/base";
 import { Statement } from "./base";
 
-export class SubStatement extends Statement {
+export class SubStatement extends Statement implements IInstance {
   readonly #name: string;
   readonly #equals: Expression;
 
@@ -10,6 +11,10 @@ export class SubStatement extends Statement {
     super(ctx);
     this.#name = name;
     this.#equals = equals;
+  }
+
+  get Reference(): string {
+    throw new Error("Method not implemented.");
   }
 
   get Name() {

@@ -1,6 +1,7 @@
-import { IClosure } from "../linker/closure";
+import { IClosure, IConcreteType, IInstance } from "../linker/closure";
 import { TokenGroup } from "../parser/token";
 import { Property } from "./property";
+import { Type } from "./type/base";
 
 export class PropertyCollection implements IClosure {
   readonly #components: Array<Property>;
@@ -9,7 +10,11 @@ export class PropertyCollection implements IClosure {
     this.#components = components;
   }
 
-  Resolve(name: string): Property | undefined {
+  ResolveType(type: Type): IConcreteType | undefined {
+    throw new Error("Method not implemented.");
+  }
+
+  Resolve(name: string): IInstance | undefined {
     return this.#components.find((c) => c.Name === name);
   }
 

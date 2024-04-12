@@ -1,9 +1,10 @@
-import { IClosure } from "../linker/closure";
+import { IClosure, IConcreteType, IInstance } from "../linker/closure";
 import { CodeLocation } from "../location/code-location";
 import { TokenGroup } from "../parser/token";
 import { Component } from "./component";
 import { Entity } from "./entity/base";
 import { FunctionEntity } from "./entity/function";
+import { Type } from "./type/base";
 
 export class Namespace extends Component implements IClosure {
   readonly #name: string;
@@ -15,7 +16,11 @@ export class Namespace extends Component implements IClosure {
     this.#contents = content;
   }
 
-  Resolve(name: string): Component | undefined {
+  ResolveType(type: Type): IConcreteType | undefined {
+    throw new Error("Method not implemented.");
+  }
+
+  Resolve(name: string): IInstance | undefined {
     for (const entity of this.#contents)
       if (entity instanceof FunctionEntity && entity.Name === name)
         return entity;

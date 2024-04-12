@@ -1,7 +1,7 @@
-import { IClosure } from "../linker/closure";
+import { IClosure, IConcreteType, IInstance } from "../linker/closure";
 import { TokenGroup } from "../parser/token";
-import { Component } from "./component";
 import { Parameter } from "./parameter";
+import { Type } from "./type/base";
 
 export class ParameterCollection implements IClosure {
   readonly #components: Array<Parameter>;
@@ -10,7 +10,11 @@ export class ParameterCollection implements IClosure {
     this.#components = components;
   }
 
-  Resolve(name: string): Component | undefined {
+  ResolveType(type: Type): IConcreteType | undefined {
+    throw new Error("Method not implemented.");
+  }
+
+  Resolve(name: string): IInstance | undefined {
     return this.#components.find((c) => c.Name === name);
   }
 

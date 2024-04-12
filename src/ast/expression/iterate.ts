@@ -1,9 +1,9 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
-import { Component } from "../component";
 import { Namer } from "../../location/namer";
 import { Closure } from "./closure";
-import { IClosure } from "../../linker/closure";
+import { IClosure, IConcreteType, IInstance } from "../../linker/closure";
+import { Type } from "../type/base";
 
 export class IterateExpression extends Expression implements IClosure {
   readonly #over: Expression;
@@ -19,8 +19,12 @@ export class IterateExpression extends Expression implements IClosure {
     this.#struct_name = Namer.GetName();
   }
 
-  Resolve(name: string): Component | undefined {
-    if (name === this.#as) return this.#over;
+  ResolveType(type: Type): IConcreteType | undefined {
+    throw new Error("Method not implemented.");
+  }
+
+  Resolve(name: string): IInstance | undefined {
+    throw new Error("Method not implemented.");
   }
 }
 

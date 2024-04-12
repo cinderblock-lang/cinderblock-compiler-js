@@ -1,9 +1,10 @@
-import { IClosure } from "../../linker/closure";
+import { IClosure, IConcreteType, IInstance } from "../../linker/closure";
 import { TokenGroup } from "../../parser/token";
 import { Component } from "../component";
 import { Statement } from "../statement/base";
 import { ReturnStatement } from "../statement/return";
 import { SubStatement } from "../statement/sub";
+import { Type } from "../type/base";
 import { Expression } from "./base";
 
 export class Closure implements IClosure {
@@ -13,12 +14,16 @@ export class Closure implements IClosure {
     this.#components = components;
   }
 
-  Resolve(name: string): Component | undefined {
+  ResolveType(type: Type): IConcreteType | undefined {
+    return undefined;
+  }
+
+  Resolve(name: string): IInstance | undefined {
     const variable = this.#components.filter(
       (c) => c instanceof SubStatement && c.Name === name
     );
 
-    if (variable.length > 0) return variable[0];
+    if (variable.length > 0) return variable[0] as SubStatement;
   }
 
   static #ParseWhile(

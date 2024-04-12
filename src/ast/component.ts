@@ -12,4 +12,8 @@ export abstract class Component {
   get CodeLocation() {
     return this.#location;
   }
+
+  get CName() {
+    return this.#c_name;
+  }
 }

@@ -2,6 +2,7 @@ import z from "zod";
 import { CodeLocation } from "../../location/code-location";
 import { Type } from "./base";
 import { ParserError } from "../../parser/error";
+import { IConcreteType } from "../../linker/closure";
 
 export const PrimitiveName = z.union([
   z.literal("int"),
@@ -29,7 +30,7 @@ export function IsPrimitiveName(input: string): input is PrimitiveName {
   return result.success;
 }
 
-export class PrimitiveType extends Type {
+export class PrimitiveType extends Type implements IConcreteType {
   readonly #name: PrimitiveName;
 
   constructor(ctx: CodeLocation, name: PrimitiveName) {
@@ -37,8 +38,39 @@ export class PrimitiveType extends Type {
     this.#name = name;
   }
 
-  get Name() {
-    return this.#name;
+  get TypeName(): string {
+    switch (this.#name) {
+      case "any":
+        return "void*";
+      case "bool":
+        return "_Bool";
+      case "char":
+        return "char";
+      case "float":
+        return "float";
+      case "ufloat":
+        return "unsigned float";
+      case "double":
+        return "double";
+      case "udouble":
+        return "unsigned double";
+      case "int":
+        return "int";
+      case "uint":
+        return "unsigned int";
+      case "short":
+        return "short";
+      case "ushort":
+        return "unsigned short";
+      case "long":
+        return "long";
+      case "ulong":
+        return "unsigned long";
+      case "string":
+        return "char*";
+      case "null":
+        return "void*";
+    }
   }
 }
 

@@ -1,12 +1,11 @@
-import { IClosure } from "../../linker/closure";
+import { IClosure, IConcreteType, IInstance } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
-import { Component } from "../component";
 import { Closure } from "../expression/closure";
 import { ParameterCollection } from "../parameter-collection";
 import { Type } from "../type/base";
 import { Entity, EntityOptions } from "./base";
 
-export class FunctionEntity extends Entity implements IClosure {
+export class FunctionEntity extends Entity implements IClosure, IInstance {
   readonly #name: string;
   readonly #parameters: ParameterCollection;
   readonly #content: Closure;
@@ -27,11 +26,19 @@ export class FunctionEntity extends Entity implements IClosure {
     this.#returns = returns;
   }
 
+  get Reference(): string {
+    throw new Error("Method not implemented.");
+  }
+
+  ResolveType(type: Type): IConcreteType | undefined {
+    throw new Error("Method not implemented.");
+  }
+
   get Name() {
     return this.#name;
   }
 
-  Resolve(name: string): Component | undefined {
+  Resolve(name: string): IInstance | undefined {
     return this.#content.Resolve(name) ?? this.#parameters.Resolve(name);
   }
 }

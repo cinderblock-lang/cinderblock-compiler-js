@@ -1,6 +1,5 @@
-import { ComponentGroup } from "../ast/component-group";
-import { Dto } from "./dtos";
+import { Namespace } from "../ast/namespace";
 
 export default abstract class File {
-  abstract GetAst(): Promise<ComponentGroup>;
+  abstract GetAst(): Promise<Array<Namespace>>;
 }
