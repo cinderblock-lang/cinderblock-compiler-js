@@ -4,6 +4,7 @@ import { TokenGroup } from "../parser/token";
 import { Component } from "./component";
 import { Entity } from "./entity/base";
 import { FunctionEntity } from "./entity/function";
+import { StructEntity } from "./entity/struct";
 import { Type } from "./type/base";
 
 export class Namespace extends Component implements IClosure {
@@ -16,8 +17,9 @@ export class Namespace extends Component implements IClosure {
     this.#contents = content;
   }
 
-  ResolveType(type: Type): IConcreteType | undefined {
-    throw new Error("Method not implemented.");
+  ResolveType(name: string): IConcreteType | undefined {
+    for (const entity of this.#contents)
+      if (entity instanceof StructEntity && entity.Name === name) return entity;
   }
 
   Resolve(name: string): IInstance | undefined {

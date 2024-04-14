@@ -18,6 +18,10 @@ export class StructEntity extends Entity implements IConcreteType {
     this.#properties = properties;
   }
 
+  get Name() {
+    return this.#name;
+  }
+
   get TypeName(): string {
     return this.CName;
   }

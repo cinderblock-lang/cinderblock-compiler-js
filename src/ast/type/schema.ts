@@ -17,6 +17,10 @@ export class SchemaType extends Type {
   GetKey(key: string) {
     return this.#properties.Resolve(key);
   }
+
+  get Properties() {
+    return this.#properties;
+  }
 }
 
 Type.Register({

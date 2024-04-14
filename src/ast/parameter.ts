@@ -29,6 +29,10 @@ export class Parameter extends Component implements IInstance {
     return this.#name;
   }
 
+  get Type() {
+    return this.#type;
+  }
+
   static Parse(token_group: TokenGroup): [TokenGroup, Parameter] {
     const name = token_group.Text;
 
@@ -42,12 +46,7 @@ export class Parameter extends Component implements IInstance {
     if (token_group.Text !== ":") {
       return [
         token_group,
-        new Parameter(
-          token_group.CodeLocation,
-          name,
-          undefined,
-          optional
-        ),
+        new Parameter(token_group.CodeLocation, name, undefined, optional),
       ];
     }
 

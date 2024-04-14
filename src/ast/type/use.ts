@@ -10,6 +10,10 @@ export class UseType extends Type {
     this.#name = name;
     this.#constraints = constraints;
   }
+
+  get Name() {
+    return this.#name;
+  }
 }
 
 Type.Register({

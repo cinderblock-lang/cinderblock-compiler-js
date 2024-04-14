@@ -4,17 +4,16 @@ import { Component } from "../component";
 import { Statement } from "../statement/base";
 import { ReturnStatement } from "../statement/return";
 import { SubStatement } from "../statement/sub";
-import { Type } from "../type/base";
 import { Expression } from "./base";
 
-export class Closure implements IClosure {
+export class Closure {
   readonly #components: Array<Statement>;
 
   constructor(...components: Array<Statement>) {
     this.#components = components;
   }
 
-  ResolveType(type: Type): IConcreteType | undefined {
+  ResolveType(): IConcreteType | undefined {
     return undefined;
   }
 

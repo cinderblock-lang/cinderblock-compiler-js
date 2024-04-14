@@ -4,7 +4,12 @@ import { Namer } from "../../location/namer";
 import { Component } from "../component";
 import { Type } from "../type/base";
 import { Closure } from "./closure";
-import { IClosure, IConcreteType, IInstance } from "../../linker/closure";
+import {
+  ClosureContext,
+  IClosure,
+  IConcreteType,
+  IInstance,
+} from "../../linker/closure";
 import { ParameterCollection } from "../parameter-collection";
 
 export class LambdaExpression extends Expression implements IClosure {
@@ -28,8 +33,8 @@ export class LambdaExpression extends Expression implements IClosure {
     this.#name = Namer.GetName();
   }
 
-  ResolveType(type: Type): IConcreteType | undefined {
-    throw new Error("Method not implemented.");
+  ResolveType(name: string, ctx: ClosureContext): IConcreteType | undefined {
+    return this.#parameters.ResolveType(name, ctx.parameters);
   }
 
   Resolve(name: string): IInstance | undefined {

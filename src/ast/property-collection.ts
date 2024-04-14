@@ -1,16 +1,17 @@
-import { IClosure, IConcreteType, IInstance } from "../linker/closure";
+import { IConcreteType, IInstance } from "../linker/closure";
 import { TokenGroup } from "../parser/token";
+import { StructEntity } from "./entity/struct";
 import { Property } from "./property";
 import { Type } from "./type/base";
 
-export class PropertyCollection implements IClosure {
+export class PropertyCollection {
   readonly #components: Array<Property>;
 
   constructor(...components: Array<Property>) {
     this.#components = components;
   }
 
-  ResolveType(type: Type): IConcreteType | undefined {
+  ResolveType(name: string, real: StructEntity): IConcreteType | undefined {
     throw new Error("Method not implemented.");
   }
 

@@ -20,6 +20,14 @@ export class FunctionType extends Type implements IConcreteType {
   get TypeName(): string {
     return "void*";
   }
+
+  get Parameters() {
+    return this.#parameters;
+  }
+
+  get Returns() {
+    return this.#returns;
+  }
 }
 
 Type.Register({
