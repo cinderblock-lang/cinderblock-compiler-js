@@ -21,6 +21,20 @@ export class WriterFunction extends WriterEntity {
     this.#returns = returns;
     this.#statements = statements;
   }
+
+  WithStatement(statement: WriterStatement) {
+    return new WriterFunction(this.#name, this.#parameters, this.#returns, [
+      ...this.#statements,
+      statement,
+    ]);
+  }
+
+  WithStatements(statements: Array<WriterStatement>) {
+    return new WriterFunction(this.#name, this.#parameters, this.#returns, [
+      ...this.#statements,
+      ...statements,
+    ]);
+  }
 }
 
 export class WriterStruct extends WriterEntity {

@@ -61,16 +61,17 @@ export class FunctionEntity extends Entity implements IClosure, IInstance {
   Declare(file: WriterFile, scope: Scope): WriterFile {
     let parameters: Array<WriterProperty>;
     [file, parameters] = this.#parameters.Build(file, scope);
-    let statements: Array<WriterStatement>;
-    [file, statements] = this.#content.Build(file, scope);
     let returns: WriterType;
     [file, returns] = (this.#returns ?? this.#content.ResolvesTo(scope)).Build(
       file,
       scope
     );
-    return file.WithEntity(
-      new WriterFunction(this.CName, parameters, returns, statements)
-    );
+
+    let result = new WriterFunction(this.CName, parameters, returns, []);
+
+    let statements: Array<WriterStatement>;
+    [file, result, statements] = this.#content.Build(file, result, scope);
+    return file.WithEntity(result.WithStatements(statements));
   }
 
   ResolvesTo(scope: Scope): Type {

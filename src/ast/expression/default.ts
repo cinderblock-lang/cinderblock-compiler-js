@@ -1,6 +1,7 @@
 import { Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
+import { WriterFunction } from "../../writer/entity";
 import { WriterExpression } from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
 import { Type } from "../type/base";
@@ -14,7 +15,11 @@ export class DefaultExpression extends Expression {
     this.#subject = subject;
   }
 
-  Build(file: WriterFile, scope: Scope): [WriterFile, WriterExpression] {
+  Build(
+    file: WriterFile,
+    func: WriterFunction,
+    scope: Scope
+  ): [WriterFile, WriterFunction, WriterExpression] {
     throw new Error("Method not implemented.");
   }
 

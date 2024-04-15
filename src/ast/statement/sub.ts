@@ -1,5 +1,6 @@
 import { IInstance, Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
+import { WriterFunction } from "../../writer/entity";
 import { WriterExpression } from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
 import {
@@ -28,13 +29,21 @@ export class SubStatement extends Statement implements IInstance {
     return this.#name;
   }
 
-  Build(file: WriterFile, scope: Scope): [WriterFile, WriterStatement] {
+  Build(
+    file: WriterFile,
+    func: WriterFunction,
+    scope: Scope
+  ): [WriterFile, WriterFunction, WriterExpression] {
     let assignment: WriterExpression;
-    [file, assignment] = this.#equals.Build(file, scope);
+    [file, func, assignment] = this.#equals.Build(file, func, scope);
     let type: WriterType;
     [file, type] = this.#equals.ResolvesTo(scope).Build(file, scope);
 
-    return [file, new WriterVariableStatement(this.CName, type, assignment)];
+    return [
+      file,
+      func,
+      new WriterVariableStatement(this.CName, type, assignment),
+    ];
   }
 
   Type(scope: Scope) {

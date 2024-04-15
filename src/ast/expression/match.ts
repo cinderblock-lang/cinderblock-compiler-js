@@ -13,6 +13,7 @@ import { WriterFile } from "../../writer/file";
 import { Type } from "../type/base";
 import { SubStatement } from "../statement/sub";
 import { LinkerError } from "../../linker/error";
+import { WriterFunction } from "../../writer/entity";
 
 export class MatchExpression extends Expression implements IClosure {
   readonly #subject: SubStatement;
@@ -37,7 +38,11 @@ export class MatchExpression extends Expression implements IClosure {
     return undefined;
   }
 
-  Build(file: WriterFile, scope: Scope): [WriterFile, WriterExpression] {
+  Build(
+    file: WriterFile,
+    func: WriterFunction,
+    scope: Scope
+  ): [WriterFile, WriterFunction, WriterExpression] {
     throw new Error("Method not implemented.");
   }
 

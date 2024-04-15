@@ -6,6 +6,7 @@ import { WriterExpression } from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
 import { Type } from "../type/base";
 import { PrimitiveType } from "../type/primitive";
+import { WriterFunction } from "../../writer/entity";
 
 export const Operators = [
   "+",
@@ -49,7 +50,11 @@ export class OperatorExpression extends Expression {
     this.#right = right;
   }
 
-  Build(file: WriterFile, scope: Scope): [WriterFile, WriterExpression] {
+  Build(
+    file: WriterFile,
+    func: WriterFunction,
+    scope: Scope
+  ): [WriterFile, WriterFunction, WriterExpression] {
     throw new Error("Method not implemented.");
   }
 

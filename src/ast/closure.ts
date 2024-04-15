@@ -8,6 +8,7 @@ import { WriterFile } from "../writer/file";
 import { WriterStatement } from "../writer/statement";
 import { LinkerError } from "../linker/error";
 import { Type } from "./type/base";
+import { WriterFunction } from "../writer/entity";
 
 export class Closure {
   readonly #components: Array<Statement>;
@@ -24,15 +25,19 @@ export class Closure {
     if (variable.length > 0) return variable[0] as SubStatement;
   }
 
-  Build(file: WriterFile, scope: Scope): [WriterFile, Array<WriterStatement>] {
+  Build(
+    file: WriterFile,
+    func: WriterFunction,
+    scope: Scope
+  ): [WriterFile, WriterFunction, Array<WriterStatement>] {
     let result: Array<WriterStatement> = [];
     for (const component of this.#components) {
       let output: WriterStatement;
-      [file, output] = component.Build(file, scope);
+      [file, func, output] = component.Build(file, func, scope);
       result = [...result, output];
     }
 
-    return [file, result];
+    return [file, func, result];
   }
 
   ResolvesTo(scope: Scope): Type {

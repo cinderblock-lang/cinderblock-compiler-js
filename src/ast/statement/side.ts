@@ -1,5 +1,6 @@
 import { Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
+import { WriterFunction } from "../../writer/entity";
 import { WriterExpression } from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
 import { WriterStatement, WriterSideEffect } from "../../writer/statement";
@@ -14,10 +15,14 @@ export class SideStatement extends Statement {
     this.#value = value;
   }
 
-  Build(file: WriterFile, scope: Scope): [WriterFile, WriterStatement] {
+  Build(
+    file: WriterFile,
+    func: WriterFunction,
+    scope: Scope
+  ): [WriterFile, WriterFunction, WriterExpression] {
     let value: WriterExpression;
-    [file, value] = this.#value.Build(file, scope);
-    return [file, new WriterSideEffect(value)];
+    [file, func, value] = this.#value.Build(file, func, scope);
+    return [file, func, new WriterSideEffect(value)];
   }
 }
 

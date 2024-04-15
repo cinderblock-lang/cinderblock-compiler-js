@@ -6,6 +6,7 @@ import { Scope } from "../../linker/closure";
 import { WriterExpression } from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
 import { PrimitiveType } from "../type/primitive";
+import { WriterFunction } from "../../writer/entity";
 
 export class IsExpression extends Expression {
   readonly #left: Expression;
@@ -17,7 +18,11 @@ export class IsExpression extends Expression {
     this.#right = right;
   }
 
-  Build(file: WriterFile, scope: Scope): [WriterFile, WriterExpression] {
+  Build(
+    file: WriterFile,
+    func: WriterFunction,
+    scope: Scope
+  ): [WriterFile, WriterFunction, WriterExpression] {
     throw new Error("Method not implemented.");
   }
 

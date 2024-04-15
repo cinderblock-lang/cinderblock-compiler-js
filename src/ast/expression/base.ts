@@ -1,6 +1,7 @@
 import { Scope } from "../../linker/closure";
 import { ParserError } from "../../parser/error";
 import { TokenGroup } from "../../parser/token";
+import { WriterFunction } from "../../writer/entity";
 import { WriterExpression } from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
 import { Component } from "../component";
@@ -23,8 +24,9 @@ export interface IBaseable {
 export abstract class Expression extends Component {
   abstract Build(
     file: WriterFile,
+    func: WriterFunction,
     scope: Scope
-  ): [WriterFile, WriterExpression];
+  ): [WriterFile, WriterFunction, WriterExpression];
 
   abstract ResolvesTo(scope: Scope): Type;
 

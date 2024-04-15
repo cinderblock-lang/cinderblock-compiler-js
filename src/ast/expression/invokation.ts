@@ -7,6 +7,7 @@ import { WriterFile } from "../../writer/file";
 import { Type } from "../type/base";
 import { FunctionType } from "../type/function";
 import { LinkerError } from "../../linker/error";
+import { WriterFunction } from "../../writer/entity";
 
 export class InvokationExpression extends Expression {
   readonly #subject: Expression;
@@ -22,7 +23,11 @@ export class InvokationExpression extends Expression {
     this.#parameters = parameters;
   }
 
-  Build(file: WriterFile, scope: Scope): [WriterFile, WriterExpression] {
+  Build(
+    file: WriterFile,
+    func: WriterFunction,
+    scope: Scope
+  ): [WriterFile, WriterFunction, WriterExpression] {
     throw new Error("Method not implemented.");
   }
 

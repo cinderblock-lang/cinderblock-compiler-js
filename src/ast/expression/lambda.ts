@@ -14,6 +14,7 @@ import { ParameterCollection } from "../parameter-collection";
 import { WriterExpression } from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
 import { FunctionType } from "../type/function";
+import { WriterFunction } from "../../writer/entity";
 
 export class LambdaExpression extends Expression implements IClosure {
   readonly #parameters: ParameterCollection;
@@ -44,7 +45,11 @@ export class LambdaExpression extends Expression implements IClosure {
     return this.#parameters.Resolve(name);
   }
 
-  Build(file: WriterFile, scope: Scope): [WriterFile, WriterExpression] {
+  Build(
+    file: WriterFile,
+    func: WriterFunction,
+    scope: Scope
+  ): [WriterFile, WriterFunction, WriterExpression] {
     throw new Error("Method not implemented.");
   }
 

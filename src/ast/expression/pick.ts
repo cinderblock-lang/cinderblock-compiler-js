@@ -5,6 +5,7 @@ import { Closure } from "../closure";
 import { Scope } from "../../linker/closure";
 import { WriterExpression } from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
+import { WriterFunction } from "../../writer/entity";
 
 export class PickExpression extends Expression {
   readonly #enum: Type;
@@ -18,7 +19,11 @@ export class PickExpression extends Expression {
     this.#using = using;
   }
 
-  Build(file: WriterFile, scope: Scope): [WriterFile, WriterExpression] {
+  Build(
+    file: WriterFile,
+    func: WriterFunction,
+    scope: Scope
+  ): [WriterFile, WriterFunction, WriterExpression] {
     throw new Error("Method not implemented.");
   }
 

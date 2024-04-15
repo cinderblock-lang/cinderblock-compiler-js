@@ -1,5 +1,6 @@
 import { Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
+import { WriterFunction } from "../../writer/entity";
 import { WriterExpression } from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
 import { WriterReturnStatement, WriterStatement } from "../../writer/statement";
@@ -19,10 +20,14 @@ export class ReturnStatement extends Statement {
     return this.#value.ResolvesTo(scope);
   }
 
-  Build(file: WriterFile, scope: Scope): [WriterFile, WriterStatement] {
+  Build(
+    file: WriterFile,
+    func: WriterFunction,
+    scope: Scope
+  ): [WriterFile, WriterFunction, WriterExpression] {
     let value: WriterExpression;
-    [file, value] = this.#value.Build(file, scope);
-    return [file, new WriterReturnStatement(value)];
+    [file, func, value] = this.#value.Build(file, func, scope);
+    return [file, func, new WriterReturnStatement(value)];
   }
 }
 

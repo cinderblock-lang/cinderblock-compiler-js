@@ -2,6 +2,7 @@ import { Scope } from "../../linker/closure";
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
+import { WriterFunction } from "../../writer/entity";
 import { WriterExpression } from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
 import { StructEntity } from "../entity/struct";
@@ -18,7 +19,11 @@ export class AccessExpression extends Expression {
     this.#target = target;
   }
 
-  Build(file: WriterFile, scope: Scope): [WriterFile, WriterExpression] {
+  Build(
+    file: WriterFile,
+    func: WriterFunction,
+    scope: Scope
+  ): [WriterFile, WriterFunction, WriterExpression] {
     throw new Error("Method not implemented.");
   }
 

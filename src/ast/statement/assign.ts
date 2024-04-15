@@ -1,5 +1,6 @@
 import { Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
+import { WriterFunction } from "../../writer/entity";
 import { WriterExpression } from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
 import { WriterStatement, WriterAssignStatement } from "../../writer/statement";
@@ -16,10 +17,14 @@ export class AssignStatement extends Statement {
     this.#equals = equals;
   }
 
-  Build(file: WriterFile, scope: Scope): [WriterFile, WriterStatement] {
+  Build(
+    file: WriterFile,
+    func: WriterFunction,
+    scope: Scope
+  ): [WriterFile, WriterFunction, WriterExpression] {
     let value: WriterExpression;
-    [file, value] = this.#equals.Build(file, scope);
-    return [file, new WriterAssignStatement("made", this.#name, value)];
+    [file, func, value] = this.#equals.Build(file, func, scope);
+    return [file, func, new WriterAssignStatement("made", this.#name, value)];
   }
 }
 

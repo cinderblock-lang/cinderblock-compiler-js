@@ -7,6 +7,7 @@ import { Type } from "../type/base";
 import { SubStatement } from "../statement/sub";
 import { FunctionEntity } from "../entity/function";
 import { LinkerError } from "../../linker/error";
+import { WriterFunction } from "../../writer/entity";
 
 export class ReferenceExpression extends Expression {
   readonly #name: string;
@@ -20,7 +21,11 @@ export class ReferenceExpression extends Expression {
     return this.#name;
   }
 
-  Build(file: WriterFile, scope: Scope): [WriterFile, WriterExpression] {
+  Build(
+    file: WriterFile,
+    func: WriterFunction,
+    scope: Scope
+  ): [WriterFile, WriterFunction, WriterExpression] {
     throw new Error("Method not implemented.");
   }
 
@@ -35,7 +40,11 @@ export class ReferenceExpression extends Expression {
       return references.ResolvesTo(scope);
     }
 
-    throw new LinkerError(this.CodeLocation, "error", "Could not resolve reference");
+    throw new LinkerError(
+      this.CodeLocation,
+      "error",
+      "Could not resolve reference"
+    );
   }
 }
 
