@@ -60,7 +60,7 @@ export class TokenGroup {
   }
 
   Expect(...symbols: Array<string>) {
-    if (symbols.includes(this.Text))
+    if (!symbols.includes(this.Text))
       throw ParserError.UnexpectedSymbol(this, ...symbols);
   }
 

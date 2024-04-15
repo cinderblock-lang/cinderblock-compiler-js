@@ -12,6 +12,7 @@ import {
 import {
   WriterAllocateExpression,
   WriterExpression,
+  WriterFunctionReferenceExpression,
   WriterInvokationExpression,
 } from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
@@ -73,7 +74,14 @@ export class MakeExpression extends Expression implements IInstance, IClosure {
     );
     file = file.WithEntity(main_func.WithStatements(main_statements));
 
-    return [file, func, new WriterInvokationExpression(main_func, [])];
+    return [
+      file,
+      func,
+      new WriterInvokationExpression(
+        new WriterFunctionReferenceExpression(main_func),
+        []
+      ),
+    ];
   }
 
   ResolvesTo(scope: Scope): Type {

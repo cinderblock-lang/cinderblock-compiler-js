@@ -1,8 +1,8 @@
-import { ComponentGroup } from "../ast/component-group";
+import { Ast } from "../ast";
 import File from "./file";
 
 export default class EmptyFile extends File {
-  async GetAst(): Promise<ComponentGroup> {
-    return new ComponentGroup();
+  async GetAst(input: Ast): Promise<Ast> {
+    return input;
   }
 }

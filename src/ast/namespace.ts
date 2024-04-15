@@ -9,14 +9,6 @@ import { FunctionEntity } from "./entity/function";
 import { StructEntity } from "./entity/struct";
 import { UsingEntity } from "./entity/using";
 
-/*
-  TODO: We need to work out how to create a new scope for function entities
-  The best bet is to make the With function on scope check if the closure is
-  function. If it is, make it spawn from scratch with the correct using statements.
-
-  Then we need to put a method on the AST to find the main and build from there.
-*/
-
 export class Namespace extends Component {
   readonly #name: string;
   readonly #contents: Array<Entity>;
@@ -81,6 +73,7 @@ export class Namespace extends Component {
       token_group = token_group.Next;
     }
 
+    token_group = token_group.Next;
     let entities: Array<Entity> = [];
     while (token_group.Text !== "}") {
       let result: Entity;

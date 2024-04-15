@@ -12,6 +12,7 @@ import {
 import {
   WriterAllocateExpression,
   WriterExpression,
+  WriterFunctionReferenceExpression,
   WriterInvokationExpression,
   WriterReferenceExpression,
 } from "../../writer/expression";
@@ -92,7 +93,10 @@ export class PickExpression extends Expression implements IClosure, IInstance {
           new WriterAssignStatement(
             this.CName,
             property.CName,
-            new WriterInvokationExpression(main_func, [])
+            new WriterInvokationExpression(
+              new WriterFunctionReferenceExpression(main_func),
+              []
+            )
           )
         ),
       new WriterReferenceExpression(this),

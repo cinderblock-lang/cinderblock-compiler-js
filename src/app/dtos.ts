@@ -1,5 +1,4 @@
 import z from "zod";
-import { PrimitiveName } from "../ast/type/primitive";
 
 export namespace Dto {
   export const Target = z.union([
@@ -18,28 +17,11 @@ export namespace Dto {
 
   export type Target = z.infer<typeof Target>;
 
-  export const CFunction = z.object({
-    c_name: z.string(),
-    args: z.array(PrimitiveName),
-    returns: PrimitiveName,
-  });
-
-  export type CFunction = z.infer<typeof CFunction>;
-
-  export const CFile = z.object({
-    type: z.literal("c"),
-    path: z.string(),
-    namespace: z.string(),
-    functions: z.record(CFunction),
-  });
-
-  export type CFile = z.infer<typeof CFile>;
-
   export const CinderBlockFile = z.string();
 
   export type CinderBlockFile = z.infer<typeof CinderBlockFile>;
 
-  export const File = z.union([CFile, CinderBlockFile]);
+  export const File = CinderBlockFile;
 
   export type File = z.infer<typeof File>;
 

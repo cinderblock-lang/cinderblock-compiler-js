@@ -25,7 +25,7 @@ export abstract class Statement extends Component {
   }
 
   static Parse(token_group: TokenGroup): [TokenGroup, Statement] {
-    for (const possible of this.#possible)
+    for (const possible of Statement.#possible)
       if (possible.Is(token_group)) return possible.Extract(token_group);
 
     throw new ParserError(
