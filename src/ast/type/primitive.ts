@@ -40,6 +40,10 @@ export class PrimitiveType extends Type implements IConcreteType {
     this.#name = name;
   }
 
+  get Name() {
+    return this.#name;
+  }
+
   get TypeName(): string {
     switch (this.#name) {
       case "any":

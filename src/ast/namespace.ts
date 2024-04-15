@@ -3,9 +3,9 @@ import { CodeLocation } from "../location/code-location";
 import { TokenGroup } from "../parser/token";
 import { Component } from "./component";
 import { Entity } from "./entity/base";
+import { EnumEntity } from "./entity/enum";
 import { FunctionEntity } from "./entity/function";
 import { StructEntity } from "./entity/struct";
-import { Type } from "./type/base";
 
 export class Namespace extends Component implements IClosure {
   readonly #name: string;
@@ -19,7 +19,11 @@ export class Namespace extends Component implements IClosure {
 
   ResolveType(name: string): IConcreteType | undefined {
     for (const entity of this.#contents)
-      if (entity instanceof StructEntity && entity.Name === name) return entity;
+      if (
+        (entity instanceof StructEntity || entity instanceof EnumEntity) &&
+        entity.Name === name
+      )
+        return entity;
   }
 
   Resolve(name: string): IInstance | undefined {

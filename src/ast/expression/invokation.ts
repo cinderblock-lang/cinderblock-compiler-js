@@ -2,7 +2,10 @@ import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
 import { Scope } from "../../linker/closure";
-import { WriterExpression } from "../../writer/expression";
+import {
+  WriterExpression,
+  WriterInvokationExpression,
+} from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
 import { Type } from "../type/base";
 import { FunctionType } from "../type/function";
@@ -28,7 +31,24 @@ export class InvokationExpression extends Expression {
     func: WriterFunction,
     scope: Scope
   ): [WriterFile, WriterFunction, WriterExpression] {
-    throw new Error("Method not implemented.");
+    let parameters: Array<WriterExpression>;
+    [file, func, parameters] = this.#parameters.reduce(
+      ([ci, cf, cp], n) => {
+        const [i, f, p] = n.Build(ci, cf, scope);
+
+        return [i, f, [...cp, p]];
+      },
+      [file, func, []] as [WriterFile, WriterFunction, Array<WriterExpression>]
+    );
+
+    scope = scope.WithParametersForNextClosure(
+      this.#parameters.map((p) => p.ResolvesTo(scope).ResolveConcrete(scope))
+    );
+
+    let subject: WriterExpression;
+    [file, func, subject] = this.#subject.Build(file, func, scope);
+
+    return [file, func, new WriterInvokationExpression(subject, parameters)];
   }
 
   ResolvesTo(scope: Scope): Type {

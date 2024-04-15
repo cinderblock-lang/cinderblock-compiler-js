@@ -24,7 +24,7 @@ export class ReturnStatement extends Statement {
     file: WriterFile,
     func: WriterFunction,
     scope: Scope
-  ): [WriterFile, WriterFunction, WriterExpression] {
+  ): [WriterFile, WriterFunction, WriterStatement] {
     let value: WriterExpression;
     [file, func, value] = this.#value.Build(file, func, scope);
     return [file, func, new WriterReturnStatement(value)];

@@ -3,7 +3,10 @@ import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
 import { WriterFunction } from "../../writer/entity";
-import { WriterExpression } from "../../writer/expression";
+import {
+  WriterAccessExpression,
+  WriterExpression,
+} from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
 import { StructEntity } from "../entity/struct";
 import { Type } from "../type/base";
@@ -24,7 +27,22 @@ export class AccessExpression extends Expression {
     func: WriterFunction,
     scope: Scope
   ): [WriterFile, WriterFunction, WriterExpression] {
-    throw new Error("Method not implemented.");
+    const type = this.#subject.ResolvesTo(scope).ResolveConcrete(scope);
+    if (!(type instanceof StructEntity))
+      throw new LinkerError(
+        this.CodeLocation,
+        "error",
+        "May not access anything other than a struct"
+      );
+
+    const property = type.GetKey(this.#target);
+    if (!property)
+      throw new LinkerError(this.CodeLocation, "error", "Could not find key");
+
+    let subject: WriterExpression;
+    [file, func, subject] = this.#subject.Build(file, func, scope);
+
+    return [file, func, new WriterAccessExpression(subject, property.CName)];
   }
 
   ResolvesTo(scope: Scope): Type {

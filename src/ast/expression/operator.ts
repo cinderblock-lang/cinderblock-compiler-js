@@ -2,7 +2,10 @@ import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
 import { Scope } from "../../linker/closure";
-import { WriterExpression } from "../../writer/expression";
+import {
+  WriterExpression,
+  WriterOperatorExpression,
+} from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
 import { Type } from "../type/base";
 import { PrimitiveType } from "../type/primitive";
@@ -55,7 +58,17 @@ export class OperatorExpression extends Expression {
     func: WriterFunction,
     scope: Scope
   ): [WriterFile, WriterFunction, WriterExpression] {
-    throw new Error("Method not implemented.");
+    let left: WriterExpression;
+    let right: WriterExpression;
+
+    [file, func, left] = this.#left.Build(file, func, scope);
+    [file, func, right] = this.#right.Build(file, func, scope);
+
+    return [
+      file,
+      func,
+      new WriterOperatorExpression(left, right, this.#operator),
+    ];
   }
 
   ResolvesTo(scope: Scope): Type {

@@ -11,8 +11,9 @@ export class Parameter extends SubItem implements IInstance {
   }
 
   get Reference(): string {
-    throw new Error("Method not implemented.");
+    return this.CName;
   }
+
   static Parse(token_group: TokenGroup): [TokenGroup, Parameter] {
     const name = token_group.Text;
 

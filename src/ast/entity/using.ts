@@ -1,6 +1,7 @@
 import { Scope } from "../../linker/closure";
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
+import { WriterEntity } from "../../writer/entity";
 import { WriterFile } from "../../writer/file";
 import { Entity, EntityOptions } from "./base";
 
@@ -12,7 +13,7 @@ export class UsingEntity extends Entity {
     this.#name = name;
   }
 
-  Declare(file: WriterFile, scope: Scope): WriterFile {
+  Declare(file: WriterFile, scope: Scope): [WriterFile, WriterEntity] {
     throw new LinkerError(
       this.CodeLocation,
       "error",

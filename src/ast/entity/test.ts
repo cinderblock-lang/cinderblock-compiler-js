@@ -1,6 +1,7 @@
 import { Scope } from "../../linker/closure";
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
+import { WriterFunction } from "../../writer/entity";
 import { WriterFile } from "../../writer/file";
 import { Closure } from "../closure";
 import { ParameterCollection } from "../parameter-collection";
@@ -29,7 +30,7 @@ export class TestEntity extends FunctionEntity {
     this.#description = description;
   }
 
-  Declare(file: WriterFile, scope: Scope): WriterFile {
+  Declare(file: WriterFile, scope: Scope): [WriterFile, WriterFunction] {
     throw new LinkerError(
       this.CodeLocation,
       "error",

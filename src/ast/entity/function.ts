@@ -43,7 +43,7 @@ export class FunctionEntity extends Entity implements IClosure, IInstance {
   }
 
   get Reference(): string {
-    return `(*${this.CName})`;
+    return this.CName;
   }
 
   ResolveType(name: string, ctx: ClosureContext): IConcreteType | undefined {
@@ -58,7 +58,7 @@ export class FunctionEntity extends Entity implements IClosure, IInstance {
     return this.#content.Resolve(name) ?? this.#parameters.Resolve(name);
   }
 
-  Declare(file: WriterFile, scope: Scope): WriterFile {
+  Declare(file: WriterFile, scope: Scope): [WriterFile, WriterFunction] {
     let parameters: Array<WriterProperty>;
     [file, parameters] = this.#parameters.Build(file, scope);
     let returns: WriterType;
@@ -71,7 +71,8 @@ export class FunctionEntity extends Entity implements IClosure, IInstance {
 
     let statements: Array<WriterStatement>;
     [file, result, statements] = this.#content.Build(file, result, scope);
-    return file.WithEntity(result.WithStatements(statements));
+    result = result.WithStatements(statements);
+    return [file.WithEntity(result), result];
   }
 
   ResolvesTo(scope: Scope): Type {

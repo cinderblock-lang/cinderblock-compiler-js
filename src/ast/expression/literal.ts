@@ -2,11 +2,17 @@ import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
 import { Scope } from "../../linker/closure";
-import { WriterExpression } from "../../writer/expression";
+import {
+  WriterExpression,
+  WriterLiteralExpression,
+  WriterReferenceExpression,
+} from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
 import { Type } from "../type/base";
 import { PrimitiveType } from "../type/primitive";
-import { WriterFunction } from "../../writer/entity";
+import { WriterFunction, WriterString } from "../../writer/entity";
+import { WriterType } from "../../writer/type";
+import { Namer } from "../../location/namer";
 
 export type LiteralType =
   | "string"
@@ -33,7 +39,43 @@ export class LiteralExpression extends Expression {
     func: WriterFunction,
     scope: Scope
   ): [WriterFile, WriterFunction, WriterExpression] {
-    throw new Error("Method not implemented.");
+    let type: WriterType;
+    [file, type] = this.ResolvesTo(scope).Build(file, scope);
+
+    switch (this.#type) {
+      case "bool":
+        return [
+          file,
+          func,
+          new WriterLiteralExpression(this.#value === "true" ? "1" : "0"),
+        ];
+      case "char":
+        return [file, func, new WriterLiteralExpression(`'${this.#value}'`)];
+      case "double":
+        return [
+          file,
+          func,
+          new WriterLiteralExpression(this.#value.replace("d", "")),
+        ];
+      case "float":
+        return [file, func, new WriterLiteralExpression(this.#value)];
+      case "int":
+        return [
+          file,
+          func,
+          new WriterLiteralExpression(this.#value.replace("i", "")),
+        ];
+      case "long":
+        return [file, func, new WriterLiteralExpression(this.#value)];
+      case "string":
+        return [
+          file.WithEntity(new WriterString(this.CName, this.#value)),
+          func,
+          new WriterReferenceExpression(this),
+        ];
+      case "null":
+        return [file, func, new WriterLiteralExpression("NULL")];
+    }
   }
 
   ResolvesTo(scope: Scope): Type {

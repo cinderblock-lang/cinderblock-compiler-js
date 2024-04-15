@@ -11,10 +11,15 @@ import {
   Scope,
 } from "../../linker/closure";
 import { ParameterCollection } from "../parameter-collection";
-import { WriterExpression } from "../../writer/expression";
+import {
+  WriterExpression,
+  WriterFunctionReferenceExpression,
+} from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
 import { FunctionType } from "../type/function";
-import { WriterFunction } from "../../writer/entity";
+import { WriterFunction, WriterProperty } from "../../writer/entity";
+import { WriterType } from "../../writer/type";
+import { WriterStatement } from "../../writer/statement";
 
 export class LambdaExpression extends Expression implements IClosure {
   readonly #parameters: ParameterCollection;
@@ -50,10 +55,28 @@ export class LambdaExpression extends Expression implements IClosure {
     func: WriterFunction,
     scope: Scope
   ): [WriterFile, WriterFunction, WriterExpression] {
-    throw new Error("Method not implemented.");
+    let parameters: Array<WriterProperty>;
+    [file, parameters] = this.ResolvesTo(scope.With(this)).Parameters.Build(
+      file,
+      scope
+    );
+
+    let type: WriterType;
+    [file, type] = this.ResolvesTo(scope.With(this)).Returns.Build(file, scope);
+
+    let main_func = new WriterFunction(this.CName, [], type, [], func);
+    let main_statements: Array<WriterStatement>;
+    [file, main_func, main_statements] = this.#body.Build(
+      file,
+      main_func,
+      scope.With(this)
+    );
+    file = file.WithEntity(main_func.WithStatements(main_statements));
+
+    return [file, func, new WriterFunctionReferenceExpression(main_func)];
   }
 
-  ResolvesTo(scope: Scope): Type {
+  ResolvesTo(scope: Scope): FunctionType {
     return new FunctionType(
       this.CodeLocation,
       this.#parameters,

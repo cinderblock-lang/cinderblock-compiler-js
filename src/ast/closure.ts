@@ -1,4 +1,10 @@
-import { IInstance, Scope } from "../linker/closure";
+import {
+  ClosureContext,
+  IClosure,
+  IConcreteType,
+  IInstance,
+  Scope,
+} from "../linker/closure";
 import { TokenGroup } from "../parser/token";
 import { Statement } from "./statement/base";
 import { ReturnStatement } from "./statement/return";
@@ -10,11 +16,15 @@ import { LinkerError } from "../linker/error";
 import { Type } from "./type/base";
 import { WriterFunction } from "../writer/entity";
 
-export class Closure {
+export class Closure implements IClosure {
   readonly #components: Array<Statement>;
 
   constructor(...components: Array<Statement>) {
     this.#components = components;
+  }
+
+  ResolveType(name: string, ctx: ClosureContext): IConcreteType | undefined {
+    return undefined;
   }
 
   Resolve(name: string): IInstance | undefined {
@@ -32,6 +42,7 @@ export class Closure {
   ): [WriterFile, WriterFunction, Array<WriterStatement>] {
     let result: Array<WriterStatement> = [];
     for (const component of this.#components) {
+      if (component instanceof SubStatement) continue;
       let output: WriterStatement;
       [file, func, output] = component.Build(file, func, scope);
       result = [...result, output];

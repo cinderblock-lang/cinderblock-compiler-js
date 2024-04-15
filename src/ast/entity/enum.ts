@@ -1,6 +1,6 @@
 import { IConcreteType, Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
-import { WriterStruct } from "../../writer/entity";
+import { WriterProperty, WriterStruct } from "../../writer/entity";
 import { WriterFile } from "../../writer/file";
 import { PropertyCollection } from "../property-collection";
 import { Entity, EntityOptions } from "./base";
@@ -20,10 +20,16 @@ export class EnumEntity extends Entity implements IConcreteType {
     this.#properties = properties;
   }
 
-  Declare(file: WriterFile, scope: Scope): WriterFile {
-    return file.WithEntity(
-      new WriterStruct(this.CName, this.#properties.Build(scope))
-    );
+  get Name() {
+    return this.#name;
+  }
+
+  Declare(file: WriterFile, scope: Scope): [WriterFile, WriterStruct] {
+    let properties: Array<WriterProperty>;
+    [file, properties] = this.#properties.Build(file, scope);
+    const result = new WriterStruct(this.CName, properties);
+
+    return [file.WithEntity(result), result];
   }
 
   get TypeName(): string {
@@ -36,6 +42,10 @@ export class EnumEntity extends Entity implements IConcreteType {
 
   GetKey(key: string) {
     return this.#properties.Resolve(key);
+  }
+
+  get Keys() {
+    return this.#properties.Keys;
   }
 }
 

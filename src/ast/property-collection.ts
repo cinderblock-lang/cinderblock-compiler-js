@@ -1,6 +1,7 @@
 import { IConcreteType, IInstance, Scope } from "../linker/closure";
 import { TokenGroup } from "../parser/token";
 import { WriterProperty } from "../writer/entity";
+import { WriterFile } from "../writer/file";
 import { StructEntity } from "./entity/struct";
 import { Property } from "./property";
 
@@ -19,8 +20,18 @@ export class PropertyCollection {
     throw new Error("Method not implemented.");
   }
 
-  Build(scope: Scope): Array<WriterProperty> {
-    return this.#components.map((c) => c.Build(scope));
+  Build(file: WriterFile, scope: Scope): [WriterFile, Array<WriterProperty>] {
+    return this.#components.reduce(
+      ([cf, cp], n) => {
+        const [f, p] = n.Build(cf, scope);
+        return [f, [...cp, p]];
+      },
+      [file, []] as [WriterFile, Array<WriterProperty>]
+    );
+  }
+
+  get Keys() {
+    return this.#components.map((c) => c.Name);
   }
 
   static Parse(token_group: TokenGroup): [TokenGroup, PropertyCollection] {

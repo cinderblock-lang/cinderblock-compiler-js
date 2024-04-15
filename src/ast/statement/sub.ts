@@ -33,7 +33,7 @@ export class SubStatement extends Statement implements IInstance {
     file: WriterFile,
     func: WriterFunction,
     scope: Scope
-  ): [WriterFile, WriterFunction, WriterExpression] {
+  ): [WriterFile, WriterFunction, WriterStatement] {
     let assignment: WriterExpression;
     [file, func, assignment] = this.#equals.Build(file, func, scope);
     let type: WriterType;

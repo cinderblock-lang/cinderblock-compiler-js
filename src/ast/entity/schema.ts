@@ -1,6 +1,7 @@
 import { Scope } from "../../linker/closure";
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
+import { WriterEntity } from "../../writer/entity";
 import { WriterFile } from "../../writer/file";
 import { PropertyCollection } from "../property-collection";
 import { Entity, EntityOptions } from "./base";
@@ -20,7 +21,7 @@ export class SchemaEntity extends Entity {
     this.#properties = properties;
   }
 
-  Declare(file: WriterFile, scope: Scope): WriterFile {
+  Declare(file: WriterFile, scope: Scope): [WriterFile, WriterEntity] {
     throw new LinkerError(this.CodeLocation, "error", "Code not serialisable");
   }
 
