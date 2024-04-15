@@ -2,9 +2,14 @@ import { IConcreteType, Scope } from "../../linker/closure";
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { WriterFile } from "../../writer/file";
-import { WriterStringType, WriterType } from "../../writer/type";
+import {
+  WriterPrimitiveType,
+  WriterStructType,
+  WriterType,
+} from "../../writer/type";
 import { Entity } from "../entity/base";
 import { Type } from "./base";
+import { PrimitiveType } from "./primitive";
 
 export class ReferenceType extends Type {
   readonly #name: string;
@@ -23,8 +28,11 @@ export class ReferenceType extends Type {
         "Could not resolve type"
       );
 
-    if (result instanceof Entity) file = result.Declare(file, scope);
-    return [file, new WriterStringType(result.TypeName)];
+    if (result instanceof Entity) [file] = result.Declare(file, scope);
+
+    if (result instanceof PrimitiveType)
+      return [file, new WriterPrimitiveType(result.TypeName)];
+    return [file, new WriterStructType(result.TypeName)];
   }
 
   ResolveConcrete(scope: Scope): IConcreteType {

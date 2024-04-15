@@ -1,7 +1,11 @@
 import { WriterStatement } from "./statement";
-import type { WriterType } from "./type";
+import { WriterFunctionType, type WriterType } from "./type";
 
-export abstract class WriterEntity {}
+export abstract class WriterEntity {
+  abstract get Reference(): string;
+
+  abstract get Declaration(): string;
+}
 
 export class WriterString extends WriterEntity {
   readonly #name: string;
@@ -11,6 +15,19 @@ export class WriterString extends WriterEntity {
     super();
     this.#name = name;
     this.#value = value;
+  }
+
+  get Reference(): string {
+    return `&${this.#name}`;
+  }
+
+  get Declaration(): string {
+    const chars = new TextEncoder()
+      .encode(eval(`"${this.#value}"`))
+      .reduce((c, n) => [...c, n.toString()], [] as Array<string>)
+      .concat(["0"])
+      .join(",");
+    return `char ${this.#name}[] = {${chars}};`;
   }
 }
 
@@ -55,6 +72,21 @@ export class WriterFunction extends WriterEntity {
       this.#parent
     );
   }
+
+  get Reference(): string {
+    return this.#name;
+  }
+
+  get Declaration(): string {
+    const params = this.#parameters.map((p) => p.C).join(",");
+    let top_line = `${this.#returns.TypeName} ${this.#name}(${params})`;
+    if (this.#returns instanceof WriterFunctionType) {
+      top_line = `${this.#returns.ReturnDeclare(this.#name)}(${params})`;
+    }
+
+    const statements = this.#statements.map((s) => s.C).join("\n  ");
+    return `${top_line} {\n  ${statements}\n}`;
+  }
 }
 
 export class WriterStruct extends WriterEntity {
@@ -66,6 +98,15 @@ export class WriterStruct extends WriterEntity {
     this.#name = name;
     this.#properties = properties;
   }
+
+  get Reference(): string {
+    return this.#name;
+  }
+
+  get Declaration(): string {
+    const properties = this.#properties.map((s) => s.C).join("\n  ");
+    return `#typedef ${this.#name} {\n  ${properties}\n} ${this.#name};`;
+  }
 }
 
 export class WriterProperty {
@@ -75,5 +116,9 @@ export class WriterProperty {
   constructor(name: string, type: WriterType) {
     this.#name = name;
     this.#type = type;
+  }
+
+  get C(): string {
+    return this.#type.Declare(this.#name);
   }
 }

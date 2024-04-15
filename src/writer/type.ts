@@ -1,6 +1,10 @@
 import { WriterProperty } from "./entity";
 
-export abstract class WriterType {}
+export abstract class WriterType {
+  abstract Declare(name: string): string;
+
+  abstract get TypeName(): string;
+}
 
 export class WriterFunctionType extends WriterType {
   readonly #parameters: Array<WriterProperty>;
@@ -11,13 +15,53 @@ export class WriterFunctionType extends WriterType {
     this.#parameters = parameters;
     this.#returns = returns;
   }
+
+  Declare(name: string): string {
+    const params = this.#parameters.map((p) => p.C).join(",");
+    return `${this.#returns.TypeName} (*${name})(${params})`;
+  }
+
+  ReturnDeclare(name: string): string {
+    const params = this.#parameters.map((p) => p.C).join(",");
+    return `${this.#returns.TypeName} (*${name}(${params}))`;
+  }
+
+  get TypeName(): string {
+    const params = this.#parameters.map((p) => p.C).join(",");
+    return `${this.#returns.TypeName} (*__name)(${params})`;
+  }
 }
 
-export class WriterStringType extends WriterType {
+export class WriterStructType extends WriterType {
   readonly #name: string;
 
   constructor(name: string) {
     super();
     this.#name = name;
+  }
+
+  Declare(name: string): string {
+    return `${this.TypeName}* ${name}`;
+  }
+
+  get TypeName(): string {
+    return this.#name;
+  }
+}
+
+export class WriterPrimitiveType extends WriterType {
+  readonly #name: string;
+
+  constructor(name: string) {
+    super();
+    this.#name = name;
+  }
+
+  Declare(name: string): string {
+    return `${this.TypeName} ${name}`;
+  }
+
+  get TypeName(): string {
+    return this.#name;
   }
 }

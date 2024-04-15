@@ -17,7 +17,7 @@ export class PropertyCollection {
   }
 
   ResolveType(name: string, real: StructEntity): IConcreteType | undefined {
-    throw new Error("Method not implemented.");
+    return undefined;
   }
 
   Build(file: WriterFile, scope: Scope): [WriterFile, Array<WriterProperty>] {

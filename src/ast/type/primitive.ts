@@ -3,7 +3,7 @@ import { CodeLocation } from "../../location/code-location";
 import { Type } from "./base";
 import { ParserError } from "../../parser/error";
 import { IConcreteType, Scope } from "../../linker/closure";
-import { WriterStringType, WriterType } from "../../writer/type";
+import { WriterPrimitiveType, WriterType } from "../../writer/type";
 import { WriterFile } from "../../writer/file";
 
 export const PrimitiveName = z.union([
@@ -80,7 +80,7 @@ export class PrimitiveType extends Type implements IConcreteType {
   }
 
   Build(file: WriterFile, scope: Scope): [WriterFile, WriterType] {
-    return [file, new WriterStringType(this.TypeName)];
+    return [file, new WriterPrimitiveType(this.TypeName)];
   }
 
   ResolveConcrete(scope: Scope): IConcreteType {
