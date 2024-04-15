@@ -1,5 +1,5 @@
-import { Namespace } from "../ast/namespace";
+import { Ast } from "../ast";
 
 export default abstract class File {
-  abstract GetAst(): Promise<Array<Namespace>>;
+  abstract GetAst(input: Ast): Promise<Ast>;
 }

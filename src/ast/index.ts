@@ -33,6 +33,12 @@ import "./type/use";
 
 import { Namespace } from "./namespace";
 import { TokenGroup } from "../parser/token";
+import { WriterFile } from "../writer/file";
+import { FunctionEntity } from "./entity/function";
+import { LinkerError } from "../linker/error";
+import { EmptyCodeLocation } from "../location/empty";
+import { WriterFunction } from "../writer/entity";
+import { Scope } from "../linker/closure";
 
 export class Ast {
   readonly #data: Array<Namespace>;
@@ -52,7 +58,7 @@ export class Ast {
     }
   }
 
-  with(tokens: TokenGroup) {
+  With(tokens: TokenGroup) {
     let result: Array<Namespace> = [];
     while (!tokens.Done) {
       let namespace: Namespace;
@@ -61,5 +67,52 @@ export class Ast {
     }
 
     return new Ast(...result, ...this.#data);
+  }
+
+  GetNamespaceForFunction(func: FunctionEntity) {
+    const result = this.#data.find((n) => n.Contains(func));
+    if (!result)
+      throw new LinkerError(
+        EmptyCodeLocation,
+        "error",
+        "Could not find namespace for function"
+      );
+
+    return result;
+  }
+
+  GetNamespace(name: string) {
+    const result = this.#data.find((n) => n.Name === name);
+    if (!result)
+      throw new LinkerError(
+        EmptyCodeLocation,
+        "error",
+        "Could not find namespace"
+      );
+
+    return result;
+  }
+
+  get Writer() {
+    let result = new WriterFile([], []);
+
+    for (const namespace of this.#data) {
+      if (namespace.Name !== "App") continue;
+
+      const main = namespace.Resolve("main", this);
+      if (!main || !(main instanceof FunctionEntity))
+        throw new LinkerError(
+          namespace.CodeLocation,
+          "error",
+          "No main function"
+        );
+
+      let func: WriterFunction;
+
+      [result, func] = main.Declare(result, new Scope(this, [], []));
+      return result;
+    }
+
+    throw new LinkerError(EmptyCodeLocation, "error", "No App namespace");
   }
 }

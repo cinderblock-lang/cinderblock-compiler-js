@@ -1,5 +1,5 @@
-import { ComponentGroup } from "../ast/component-group";
-import { ParseCinderblock } from "../parser";
+import { Ast } from "../ast";
+import { Tokenise } from "../parser";
 import { Dto } from "./dtos";
 import File from "./file";
 import Fs from "fs/promises";
@@ -12,8 +12,9 @@ export default class CinderblockFile extends File {
     this.#dto = dto;
   }
 
-  async GetAst(): Promise<ComponentGroup> {
+  async GetAst(input: Ast): Promise<Ast> {
     const code = await Fs.readFile(this.#dto, "utf-8");
-    return ParseCinderblock(code, this.#dto);
+    const tokens = Tokenise(code, this.#dto);
+    return input.With(tokens);
   }
 }

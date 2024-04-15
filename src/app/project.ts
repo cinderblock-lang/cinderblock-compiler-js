@@ -3,7 +3,7 @@ import Library from "./library";
 import Fs from "fs/promises";
 import FsOld from "fs";
 import Path from "path";
-import { Ast } from "../ast/ast";
+import { Ast } from "../ast";
 import Source from "./source";
 import Gcc from "./gcc";
 
@@ -63,11 +63,11 @@ export default class Project {
       const source = await library.GetSource();
 
       for (const file of source.Files(target))
-        parsed = parsed.with(await file.GetAst());
+        parsed = await file.GetAst(parsed);
     }
 
     for (const file of this.#source.Files(target))
-      parsed = parsed.with(await file.GetAst());
+      parsed = await file.GetAst(parsed);
 
     return parsed;
   }
@@ -77,8 +77,7 @@ export default class Project {
 
     const dir = Path.resolve(this.#dir, this.#dto.bin, target);
     await this.#ensure_dir(dir);
-
-    // await Fs.writeFile(Path.resolve(dir, "main.c"), ast.c());
+    await Fs.writeFile(Path.resolve(dir, "main.c"), ast.Writer.C);
 
     const gcc = new Gcc(dir, target);
     await gcc.Compile("main.c", this.#dto.name, options.debug ?? false);

@@ -1,4 +1,8 @@
+import type { Ast } from "../ast";
 import { Component } from "../ast/component";
+import { FunctionEntity } from "../ast/entity/function";
+import { EmptyCodeLocation } from "../location/empty";
+import { LinkerError } from "./error";
 
 export interface IInstance {
   get CName(): string;
@@ -29,15 +33,32 @@ export interface IClosure {
 }
 
 export class Scope {
+  readonly #ast: Ast;
   readonly #prepared_parameters: Array<IConcreteType> = [];
   readonly #closures: Array<[IClosure, Array<IConcreteType>]>;
 
   constructor(
+    ast: Ast,
     closures: Array<[IClosure, Array<IConcreteType>]>,
     prepared_parameters: Array<IConcreteType>
   ) {
+    this.#ast = ast;
     this.#closures = closures;
     this.#prepared_parameters = prepared_parameters;
+  }
+
+  get #func() {
+    const [result] =
+      this.#closures.find((c) => c instanceof FunctionEntity) ?? [];
+
+    if (!(result instanceof FunctionEntity))
+      throw new LinkerError(
+        EmptyCodeLocation,
+        "error",
+        "Scope stack does not contain a function"
+      );
+
+    return result;
   }
 
   get Parameters(): Array<IConcreteType> {
@@ -45,13 +66,14 @@ export class Scope {
   }
 
   WithParametersForNextClosure(parameters: Array<IConcreteType>) {
-    return new Scope(this.#closures, parameters);
+    return new Scope(this.#ast, this.#closures, parameters);
   }
 
   With(closure: IClosure) {
     return new Scope(
+      this.#ast,
       [...this.#closures, [closure, this.#prepared_parameters]],
-      []
+      this.#prepared_parameters
     );
   }
 
@@ -60,6 +82,10 @@ export class Scope {
       const result = closure.Resolve(name, { parameters, scope: this });
       if (result) return result;
     }
+
+    const namespace = this.#ast.GetNamespaceForFunction(this.#func);
+
+    return namespace.Resolve(name, this.#ast);
   }
 
   ResolveType(name: string) {
@@ -67,5 +93,9 @@ export class Scope {
       const result = closure.ResolveType(name, { parameters, scope: this });
       if (result) return result;
     }
+
+    const namespace = this.#ast.GetNamespaceForFunction(this.#func);
+
+    return namespace.ResolveType(name, this.#ast);
   }
 }

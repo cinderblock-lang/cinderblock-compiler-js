@@ -12,4 +12,10 @@ export class WriterFile {
   WithEntity(entity: WriterEntity) {
     return new WriterFile(this.#includes, [...this.#entities, entity]);
   }
+
+  get C(): string {
+    const includes = this.#includes.map((i) => `#include ${i}`).join("\n");
+    const entities = this.#entities.map((e) => e.Declaration).join("\n\n");
+    return `${includes}\n\n${entities}`;
+  }
 }

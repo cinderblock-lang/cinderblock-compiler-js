@@ -20,6 +20,10 @@ export class UsingEntity extends Entity {
       "This should not be reachable"
     );
   }
+
+  get Name() {
+    return this.#name;
+  }
 }
 
 Entity.Register({
