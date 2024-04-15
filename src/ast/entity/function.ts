@@ -3,11 +3,17 @@ import {
   IClosure,
   IConcreteType,
   IInstance,
+  Scope,
 } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
-import { Closure } from "../expression/closure";
+import { ParserError } from "../../parser/error";
+import { WriterFunction } from "../../writer/entity";
+import { WriterFile } from "../../writer/file";
+import { WriterStatement } from "../../writer/statement";
+import { Closure } from "../closure";
 import { ParameterCollection } from "../parameter-collection";
 import { Type } from "../type/base";
+import { FunctionType } from "../type/function";
 import { Entity, EntityOptions } from "./base";
 
 export class FunctionEntity extends Entity implements IClosure, IInstance {
@@ -31,6 +37,10 @@ export class FunctionEntity extends Entity implements IClosure, IInstance {
     this.#returns = returns;
   }
 
+  get Parameters() {
+    return this.#parameters;
+  }
+
   get Reference(): string {
     return `(*${this.CName})`;
   }
@@ -45,6 +55,27 @@ export class FunctionEntity extends Entity implements IClosure, IInstance {
 
   Resolve(name: string): IInstance | undefined {
     return this.#content.Resolve(name) ?? this.#parameters.Resolve(name);
+  }
+
+  Declare(file: WriterFile, scope: Scope): WriterFile {
+    let statements: Array<WriterStatement>;
+    [file, statements] = this.#content.Build(file, scope);
+    return file.WithEntity(
+      new WriterFunction(
+        this.CName,
+        this.#parameters.Build(scope),
+        (this.#returns ?? this.#content.ResolvesTo(scope)).Build(scope),
+        statements
+      )
+    );
+  }
+
+  ResolvesTo(scope: Scope): Type {
+    return new FunctionType(
+      this.CodeLocation,
+      this.#parameters,
+      this.#returns ?? this.#content.ResolvesTo(scope.With(this))
+    );
   }
 }
 

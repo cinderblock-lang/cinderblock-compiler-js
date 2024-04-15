@@ -1,6 +1,8 @@
+import { Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
 import { TokenGroup } from "../../parser/token";
+import { WriterFile } from "../../writer/file";
 import { Component } from "../component";
 
 export type EntityOptions = {
@@ -24,6 +26,8 @@ export abstract class Entity extends Component {
     super(ctx);
     this.#options = options;
   }
+
+  abstract Declare(file: WriterFile, scope: Scope): WriterFile;
 
   get Exported() {
     return this.#options.exported;

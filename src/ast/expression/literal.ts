@@ -1,6 +1,11 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
+import { Scope } from "../../linker/closure";
+import { WriterExpression } from "../../writer/expression";
+import { WriterFile } from "../../writer/file";
+import { Type } from "../type/base";
+import { PrimitiveType } from "../type/primitive";
 
 export type LiteralType =
   | "string"
@@ -20,6 +25,31 @@ export class LiteralExpression extends Expression {
     super(ctx);
     this.#type = type;
     this.#value = value;
+  }
+
+  Build(file: WriterFile, scope: Scope): [WriterFile, WriterExpression] {
+    throw new Error("Method not implemented.");
+  }
+
+  ResolvesTo(scope: Scope): Type {
+    switch (this.#type) {
+      case "string":
+        return new PrimitiveType(this.CodeLocation, "string");
+      case "int":
+        return new PrimitiveType(this.CodeLocation, "int");
+      case "char":
+        return new PrimitiveType(this.CodeLocation, "char");
+      case "float":
+        return new PrimitiveType(this.CodeLocation, "float");
+      case "double":
+        return new PrimitiveType(this.CodeLocation, "double");
+      case "long":
+        return new PrimitiveType(this.CodeLocation, "long");
+      case "bool":
+        return new PrimitiveType(this.CodeLocation, "bool");
+      case "null":
+        return new PrimitiveType(this.CodeLocation, "null");
+    }
   }
 }
 

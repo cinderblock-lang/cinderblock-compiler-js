@@ -1,16 +1,19 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Namer } from "../../location/namer";
-import { Component } from "../component";
 import { Type } from "../type/base";
-import { Closure } from "./closure";
+import { Closure } from "../closure";
 import {
   ClosureContext,
   IClosure,
   IConcreteType,
   IInstance,
+  Scope,
 } from "../../linker/closure";
 import { ParameterCollection } from "../parameter-collection";
+import { WriterExpression } from "../../writer/expression";
+import { WriterFile } from "../../writer/file";
+import { FunctionType } from "../type/function";
 
 export class LambdaExpression extends Expression implements IClosure {
   readonly #parameters: ParameterCollection;
@@ -39,6 +42,18 @@ export class LambdaExpression extends Expression implements IClosure {
 
   Resolve(name: string): IInstance | undefined {
     return this.#parameters.Resolve(name);
+  }
+
+  Build(file: WriterFile, scope: Scope): [WriterFile, WriterExpression] {
+    throw new Error("Method not implemented.");
+  }
+
+  ResolvesTo(scope: Scope): Type {
+    return new FunctionType(
+      this.CodeLocation,
+      this.#parameters,
+      this.#returns ?? this.#body.ResolvesTo(scope.With(this))
+    );
   }
 }
 

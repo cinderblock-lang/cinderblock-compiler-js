@@ -2,7 +2,7 @@ import { CodeLocation } from "../location/code-location";
 
 export type Severity = "error" | "warn";
 
-export class LinkerError {
+export class LinkerError extends Error {
   readonly #location: CodeLocation;
   readonly #severity: Severity;
   readonly #message: string;
@@ -12,6 +12,7 @@ export class LinkerError {
     severity: Severity,
     message: string
   ) {
+    super(`Linker error`);
     this.#location = location ?? new CodeLocation("", -1, -1, -1, -1);
     this.#severity = severity;
     this.#message = message;

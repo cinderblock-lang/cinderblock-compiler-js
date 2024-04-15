@@ -1,5 +1,11 @@
-import { IInstance } from "../../linker/closure";
+import { IInstance, Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
+import { WriterExpression } from "../../writer/expression";
+import { WriterFile } from "../../writer/file";
+import {
+  WriterStatement,
+  WriterVariableStatement,
+} from "../../writer/statement";
 import { Expression } from "../expression/base";
 import { Statement } from "./base";
 
@@ -14,11 +20,29 @@ export class SubStatement extends Statement implements IInstance {
   }
 
   get Reference(): string {
-    throw new Error("Method not implemented.");
+    return this.CName;
   }
 
   get Name() {
     return this.#name;
+  }
+
+  Build(file: WriterFile, scope: Scope): [WriterFile, WriterStatement] {
+    let assignment: WriterExpression;
+    [file, assignment] = this.#equals.Build(file, scope);
+
+    return [
+      file,
+      new WriterVariableStatement(
+        this.CName,
+        this.#equals.ResolvesTo(scope).Build(scope),
+        assignment
+      ),
+    ];
+  }
+
+  Type(scope: Scope) {
+    return this.#equals.ResolvesTo(scope);
   }
 }
 

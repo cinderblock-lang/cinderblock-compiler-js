@@ -1,8 +1,8 @@
-import { IConcreteType, IInstance } from "../linker/closure";
+import { IConcreteType, IInstance, Scope } from "../linker/closure";
 import { TokenGroup } from "../parser/token";
+import { WriterProperty } from "../writer/entity";
 import { StructEntity } from "./entity/struct";
 import { Property } from "./property";
-import { Type } from "./type/base";
 
 export class PropertyCollection {
   readonly #components: Array<Property>;
@@ -11,12 +11,16 @@ export class PropertyCollection {
     this.#components = components;
   }
 
+  Resolve(name: string) {
+    return this.#components.find((c) => c.Name === name);
+  }
+
   ResolveType(name: string, real: StructEntity): IConcreteType | undefined {
     throw new Error("Method not implemented.");
   }
 
-  Resolve(name: string): IInstance | undefined {
-    return this.#components.find((c) => c.Name === name);
+  Build(scope: Scope): Array<WriterProperty> {
+    return this.#components.map((c) => c.Build(scope));
   }
 
   static Parse(token_group: TokenGroup): [TokenGroup, PropertyCollection] {

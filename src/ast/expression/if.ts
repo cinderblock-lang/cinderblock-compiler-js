@@ -1,7 +1,11 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
-import { Closure } from "./closure";
+import { Closure } from "../closure";
+import { Scope } from "../../linker/closure";
+import { WriterExpression } from "../../writer/expression";
+import { WriterFile } from "../../writer/file";
+import { Type } from "../type/base";
 
 export class IfExpression extends Expression {
   readonly #check: Expression;
@@ -18,6 +22,14 @@ export class IfExpression extends Expression {
     this.#check = check;
     this.#if = on_if;
     this.#else = on_else;
+  }
+
+  Build(file: WriterFile, scope: Scope): [WriterFile, WriterExpression] {
+    throw new Error("Method not implemented.");
+  }
+
+  ResolvesTo(scope: Scope): Type {
+    return this.#if.ResolvesTo(scope);
   }
 }
 

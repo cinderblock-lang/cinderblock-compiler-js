@@ -1,5 +1,10 @@
+import { Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
+import { WriterExpression } from "../../writer/expression";
+import { WriterFile } from "../../writer/file";
+import { WriterReturnStatement, WriterStatement } from "../../writer/statement";
 import { Expression } from "../expression/base";
+import { Type } from "../type/base";
 import { Statement } from "./base";
 
 export class ReturnStatement extends Statement {
@@ -8,6 +13,16 @@ export class ReturnStatement extends Statement {
   constructor(ctx: CodeLocation, value: Expression) {
     super(ctx);
     this.#value = value;
+  }
+
+  ResolveType(scope: Scope): Type {
+    return this.#value.ResolvesTo(scope);
+  }
+
+  Build(file: WriterFile, scope: Scope): [WriterFile, WriterStatement] {
+    let value: WriterExpression;
+    [file, value] = this.#value.Build(file, scope);
+    return [file, new WriterReturnStatement(value)];
   }
 }
 

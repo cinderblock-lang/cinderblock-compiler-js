@@ -7,7 +7,7 @@ import "./entity/using";
 
 import "./expression/access";
 import "./expression/brackets";
-import "./expression/closure";
+import "./closure";
 import "./expression/default";
 import "./expression/empty";
 import "./expression/if";
@@ -21,7 +21,6 @@ import "./expression/pick";
 import "./expression/reference";
 
 import "./statement/assign";
-import "./statement/panic";
 import "./statement/return";
 import "./statement/side";
 import "./statement/sub";

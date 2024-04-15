@@ -1,38 +1,18 @@
 import { IInstance } from "../linker/closure";
 import { CodeLocation } from "../location/code-location";
+import { ParserError } from "../parser/error";
 import { TokenGroup } from "../parser/token";
-import { Component } from "./component";
+import { SubItem } from "./sub-item";
 import { Type } from "./type/base";
 
-export class Parameter extends Component implements IInstance {
-  readonly #name: string;
-  readonly #type?: Type;
-  readonly #optional: boolean;
-
-  constructor(
-    ctx: CodeLocation,
-    name: string,
-    type: Type | undefined,
-    optional: boolean
-  ) {
-    super(ctx);
-    this.#name = name;
-    this.#type = type;
-    this.#optional = optional;
+export class Parameter extends SubItem implements IInstance {
+  constructor(ctx: CodeLocation, name: string, type: Type, optional: boolean) {
+    super(ctx, name, type, optional);
   }
 
   get Reference(): string {
     throw new Error("Method not implemented.");
   }
-
-  get Name() {
-    return this.#name;
-  }
-
-  get Type() {
-    return this.#type;
-  }
-
   static Parse(token_group: TokenGroup): [TokenGroup, Parameter] {
     const name = token_group.Text;
 
@@ -44,10 +24,14 @@ export class Parameter extends Component implements IInstance {
     }
 
     if (token_group.Text !== ":") {
-      return [
-        token_group,
-        new Parameter(token_group.CodeLocation, name, undefined, optional),
-      ];
+      throw new ParserError(
+        token_group.CodeLocation,
+        "A parameter type must be supplied"
+      );
+      // return [
+      //   token_group,
+      //   new Parameter(token_group.CodeLocation, name, undefined, optional),
+      // ];
     }
 
     const [after_type, type] = Type.Parse(token_group.Next);

@@ -1,5 +1,7 @@
-import { IConcreteType } from "../../linker/closure";
+import { IConcreteType, Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
+import { WriterStruct } from "../../writer/entity";
+import { WriterFile } from "../../writer/file";
 import { PropertyCollection } from "../property-collection";
 import { Entity, EntityOptions } from "./base";
 
@@ -24,6 +26,12 @@ export class StructEntity extends Entity implements IConcreteType {
 
   get TypeName(): string {
     return this.CName;
+  }
+
+  Declare(file: WriterFile, scope: Scope): WriterFile {
+    return file.WithEntity(
+      new WriterStruct(this.CName, this.#properties.Build(scope))
+    );
   }
 
   HasKey(key: string) {

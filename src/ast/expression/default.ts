@@ -1,5 +1,8 @@
+import { Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
+import { WriterExpression } from "../../writer/expression";
+import { WriterFile } from "../../writer/file";
 import { Type } from "../type/base";
 import { Expression } from "./base";
 
@@ -9,6 +12,14 @@ export class DefaultExpression extends Expression {
   constructor(ctx: CodeLocation, subject: Type) {
     super(ctx);
     this.#subject = subject;
+  }
+
+  Build(file: WriterFile, scope: Scope): [WriterFile, WriterExpression] {
+    throw new Error("Method not implemented.");
+  }
+
+  ResolvesTo(scope: Scope): Type {
+    return this.#subject;
   }
 }
 

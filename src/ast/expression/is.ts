@@ -2,6 +2,10 @@ import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Type } from "../type/base";
 import { ParserError } from "../../parser/error";
+import { Scope } from "../../linker/closure";
+import { WriterExpression } from "../../writer/expression";
+import { WriterFile } from "../../writer/file";
+import { PrimitiveType } from "../type/primitive";
 
 export class IsExpression extends Expression {
   readonly #left: Expression;
@@ -11,6 +15,14 @@ export class IsExpression extends Expression {
     super(ctx);
     this.#left = left;
     this.#right = right;
+  }
+
+  Build(file: WriterFile, scope: Scope): [WriterFile, WriterExpression] {
+    throw new Error("Method not implemented.");
+  }
+
+  ResolvesTo(scope: Scope): Type {
+    return new PrimitiveType(this.CodeLocation, "bool");
   }
 }
 

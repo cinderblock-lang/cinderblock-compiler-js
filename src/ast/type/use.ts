@@ -1,4 +1,7 @@
+import { IConcreteType, Scope } from "../../linker/closure";
+import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
+import { WriterType } from "../../writer/type";
 import { Type } from "./base";
 
 export class UseType extends Type {
@@ -13,6 +16,22 @@ export class UseType extends Type {
 
   get Name() {
     return this.#name;
+  }
+
+  Build(scope: Scope): WriterType {
+    throw new LinkerError(
+      this.CodeLocation,
+      "error",
+      "Cannot resolve type of use statement"
+    );
+  }
+
+  ResolveConcrete(scope: Scope): IConcreteType {
+    throw new LinkerError(
+      this.CodeLocation,
+      "error",
+      "Cannot resolve type of use statement"
+    );
   }
 }
 

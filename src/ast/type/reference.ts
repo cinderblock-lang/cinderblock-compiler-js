@@ -1,4 +1,7 @@
+import { IConcreteType, Scope } from "../../linker/closure";
+import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
+import { WriterStringType, WriterType } from "../../writer/type";
 import { Type } from "./base";
 
 export class ReferenceType extends Type {
@@ -7,6 +10,30 @@ export class ReferenceType extends Type {
   constructor(ctx: CodeLocation, name: string) {
     super(ctx);
     this.#name = name;
+  }
+
+  Build(scope: Scope): WriterType {
+    const result = scope.ResolveType(this.#name);
+    if (!result)
+      throw new LinkerError(
+        this.CodeLocation,
+        "error",
+        "Could not resolve type"
+      );
+
+    return new WriterStringType(result.TypeName);
+  }
+
+  ResolveConcrete(scope: Scope): IConcreteType {
+    const result = scope.ResolveType(this.#name);
+    if (!result)
+      throw new LinkerError(
+        this.CodeLocation,
+        "error",
+        "Unresolved type reference"
+      );
+
+    return result;
   }
 }
 

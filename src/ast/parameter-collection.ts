@@ -1,5 +1,11 @@
-import { IConcreteType, IInstance, IsConcreteType } from "../linker/closure";
+import {
+  IConcreteType,
+  IInstance,
+  IsConcreteType,
+  Scope,
+} from "../linker/closure";
 import { TokenGroup } from "../parser/token";
+import { WriterProperty } from "../writer/entity";
 import { StructEntity } from "./entity/struct";
 import { Parameter } from "./parameter";
 import { Type } from "./type/base";
@@ -12,6 +18,10 @@ export class ParameterCollection {
 
   constructor(...components: Array<Parameter>) {
     this.#components = components;
+  }
+
+  Build(scope: Scope): Array<WriterProperty> {
+    return this.#components.map((c) => c.Build(scope));
   }
 
   ResolveType(

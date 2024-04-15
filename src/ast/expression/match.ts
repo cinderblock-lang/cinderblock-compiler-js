@@ -1,9 +1,21 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
-import { Closure } from "./closure";
-export class MatchExpression extends Expression {
-  readonly #subject: Expression;
-  readonly #as: string;
+import { Closure } from "../closure";
+import {
+  ClosureContext,
+  IClosure,
+  IConcreteType,
+  IInstance,
+  Scope,
+} from "../../linker/closure";
+import { WriterExpression } from "../../writer/expression";
+import { WriterFile } from "../../writer/file";
+import { Type } from "../type/base";
+import { SubStatement } from "../statement/sub";
+import { LinkerError } from "../../linker/error";
+
+export class MatchExpression extends Expression implements IClosure {
+  readonly #subject: SubStatement;
   readonly #using: Record<string, Closure>;
 
   constructor(
@@ -13,9 +25,35 @@ export class MatchExpression extends Expression {
     using: Record<string, Closure>
   ) {
     super(ctx);
-    this.#subject = subject;
-    this.#as = as;
+    this.#subject = new SubStatement(this.CodeLocation, as, subject);
     this.#using = using;
+  }
+
+  Resolve(name: string, ctx: ClosureContext): IInstance | undefined {
+    if (name === this.#subject.Name) return this.#subject;
+  }
+
+  ResolveType(name: string, ctx: ClosureContext): IConcreteType | undefined {
+    return undefined;
+  }
+
+  Build(file: WriterFile, scope: Scope): [WriterFile, WriterExpression] {
+    throw new Error("Method not implemented.");
+  }
+
+  ResolvesTo(scope: Scope): Type {
+    const result = Object.keys(this.#using)
+      .map((k) => this.#using[k].ResolvesTo(scope.With(this)))
+      .find((c) => !!c);
+
+    if (!result)
+      throw new LinkerError(
+        this.CodeLocation,
+        "error",
+        "Could not resolve match expression"
+      );
+
+    return result;
   }
 }
 

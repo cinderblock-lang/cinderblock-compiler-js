@@ -1,35 +1,11 @@
-import { IInstance } from "../linker/closure";
 import { CodeLocation } from "../location/code-location";
 import { TokenGroup } from "../parser/token";
-import { Component } from "./component";
+import { SubItem } from "./sub-item";
 import { Type } from "./type/base";
 
-export class Property extends Component implements IInstance {
-  readonly #name: string;
-  readonly #type: Type;
-  readonly #optional: boolean;
-
+export class Property extends SubItem {
   constructor(ctx: CodeLocation, name: string, type: Type, optional: boolean) {
-    super(ctx);
-    this.#name = name;
-    this.#type = type;
-    this.#optional = optional;
-  }
-
-  get Reference(): string {
-    throw new Error("Method not implemented.");
-  }
-
-  get Name() {
-    return this.#name;
-  }
-
-  get Type() {
-    return this.#type;
-  }
-
-  get Optional() {
-    return this.#optional;
+    super(ctx, name, type, optional);
   }
 
   static Parse(token_group: TokenGroup): [TokenGroup, Property] {

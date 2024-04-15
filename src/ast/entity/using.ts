@@ -1,4 +1,7 @@
+import { Scope } from "../../linker/closure";
+import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
+import { WriterFile } from "../../writer/file";
 import { Entity, EntityOptions } from "./base";
 
 export class UsingEntity extends Entity {
@@ -7,6 +10,14 @@ export class UsingEntity extends Entity {
   constructor(ctx: CodeLocation, options: EntityOptions, name: string) {
     super(ctx, options);
     this.#name = name;
+  }
+
+  Declare(file: WriterFile, scope: Scope): WriterFile {
+    throw new LinkerError(
+      this.CodeLocation,
+      "error",
+      "This should not be reachable"
+    );
   }
 }
 

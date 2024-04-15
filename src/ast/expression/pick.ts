@@ -1,7 +1,10 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Type } from "../type/base";
-import { Closure } from "./closure";
+import { Closure } from "../closure";
+import { Scope } from "../../linker/closure";
+import { WriterExpression } from "../../writer/expression";
+import { WriterFile } from "../../writer/file";
 
 export class PickExpression extends Expression {
   readonly #enum: Type;
@@ -13,6 +16,14 @@ export class PickExpression extends Expression {
     this.#enum = target;
     this.#key = key;
     this.#using = using;
+  }
+
+  Build(file: WriterFile, scope: Scope): [WriterFile, WriterExpression] {
+    throw new Error("Method not implemented.");
+  }
+
+  ResolvesTo(scope: Scope): Type {
+    return this.#enum;
   }
 }
 

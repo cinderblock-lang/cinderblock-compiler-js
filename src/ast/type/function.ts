@@ -1,5 +1,6 @@
-import { IConcreteType } from "../../linker/closure";
+import { IConcreteType, Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
+import { WriterFunctionType, WriterType } from "../../writer/type";
 import { ParameterCollection } from "../parameter-collection";
 import { Type } from "./base";
 
@@ -27,6 +28,17 @@ export class FunctionType extends Type implements IConcreteType {
 
   get Returns() {
     return this.#returns;
+  }
+
+  Build(scope: Scope): WriterType {
+    return new WriterFunctionType(
+      this.#parameters.Build(scope),
+      this.#returns.Build(scope)
+    );
+  }
+
+  ResolveConcrete(scope: Scope): IConcreteType {
+    return this;
   }
 }
 

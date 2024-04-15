@@ -1,5 +1,8 @@
+import { Scope } from "../../linker/closure";
+import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
-import { Closure } from "../expression/closure";
+import { WriterFile } from "../../writer/file";
+import { Closure } from "../closure";
 import { ParameterCollection } from "../parameter-collection";
 import { PrimitiveType } from "../type/primitive";
 import { Entity, EntityOptions } from "./base";
@@ -24,6 +27,14 @@ export class TestEntity extends FunctionEntity {
     );
 
     this.#description = description;
+  }
+
+  Declare(file: WriterFile, scope: Scope): WriterFile {
+    throw new LinkerError(
+      this.CodeLocation,
+      "error",
+      "Tests not yet implemented"
+    );
   }
 }
 

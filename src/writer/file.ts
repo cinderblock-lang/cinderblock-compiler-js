@@ -8,4 +8,8 @@ export class WriterFile {
     this.#includes = includes;
     this.#entities = entities;
   }
+
+  WithEntity(entity: WriterEntity) {
+    return new WriterFile(this.#includes, [...this.#entities, entity]);
+  }
 }

@@ -1,6 +1,12 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
+import { Scope } from "../../linker/closure";
+import { WriterExpression } from "../../writer/expression";
+import { WriterFile } from "../../writer/file";
+import { Type } from "../type/base";
+import { FunctionType } from "../type/function";
+import { LinkerError } from "../../linker/error";
 
 export class InvokationExpression extends Expression {
   readonly #subject: Expression;
@@ -14,6 +20,28 @@ export class InvokationExpression extends Expression {
     super(ctx);
     this.#subject = subject;
     this.#parameters = parameters;
+  }
+
+  Build(file: WriterFile, scope: Scope): [WriterFile, WriterExpression] {
+    throw new Error("Method not implemented.");
+  }
+
+  ResolvesTo(scope: Scope): Type {
+    const parameters = this.#parameters.map((p) =>
+      p.ResolvesTo(scope).ResolveConcrete(scope)
+    );
+
+    const func = this.#subject.ResolvesTo(
+      scope.WithParametersForNextClosure(parameters)
+    );
+    if (!(func instanceof FunctionType))
+      throw new LinkerError(
+        this.CodeLocation,
+        "error",
+        "May only invoke functions"
+      );
+
+    return func.Returns;
   }
 }
 

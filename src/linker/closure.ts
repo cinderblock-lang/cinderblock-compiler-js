@@ -29,14 +29,30 @@ export interface IClosure {
 }
 
 export class Scope {
+  readonly #prepared_parameters: Array<IConcreteType> = [];
   readonly #closures: Array<[IClosure, Array<IConcreteType>]>;
 
-  constructor(...closures: Array<[IClosure, Array<IConcreteType>]>) {
+  constructor(
+    closures: Array<[IClosure, Array<IConcreteType>]>,
+    prepared_parameters: Array<IConcreteType>
+  ) {
     this.#closures = closures;
+    this.#prepared_parameters = prepared_parameters;
   }
 
-  With(closure: IClosure, parameters: Array<IConcreteType>) {
-    return new Scope(...this.#closures, [closure, parameters]);
+  get Parameters(): Array<IConcreteType> {
+    return (this.#closures.find((c) => !!c[1].length) ?? [[], []])[1];
+  }
+
+  WithParametersForNextClosure(parameters: Array<IConcreteType>) {
+    return new Scope(this.#closures, parameters);
+  }
+
+  With(closure: IClosure) {
+    return new Scope(
+      [...this.#closures, [closure, this.#prepared_parameters]],
+      []
+    );
   }
 
   Resolve(name: string) {

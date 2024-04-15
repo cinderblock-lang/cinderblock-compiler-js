@@ -2,7 +2,8 @@ import z from "zod";
 import { CodeLocation } from "../../location/code-location";
 import { Type } from "./base";
 import { ParserError } from "../../parser/error";
-import { IConcreteType } from "../../linker/closure";
+import { IConcreteType, Scope } from "../../linker/closure";
+import { WriterStringType, WriterType } from "../../writer/type";
 
 export const PrimitiveName = z.union([
   z.literal("int"),
@@ -71,6 +72,14 @@ export class PrimitiveType extends Type implements IConcreteType {
       case "null":
         return "void*";
     }
+  }
+
+  Build(scope: Scope): WriterType {
+    return new WriterStringType(this.TypeName);
+  }
+
+  ResolveConcrete(scope: Scope): IConcreteType {
+    return this;
   }
 }
 
