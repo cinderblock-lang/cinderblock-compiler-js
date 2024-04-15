@@ -6,6 +6,7 @@ import {
 } from "../linker/closure";
 import { TokenGroup } from "../parser/token";
 import { WriterProperty } from "../writer/entity";
+import { WriterFile } from "../writer/file";
 import { StructEntity } from "./entity/struct";
 import { Parameter } from "./parameter";
 import { Type } from "./type/base";
@@ -20,8 +21,14 @@ export class ParameterCollection {
     this.#components = components;
   }
 
-  Build(scope: Scope): Array<WriterProperty> {
-    return this.#components.map((c) => c.Build(scope));
+  Build(file: WriterFile, scope: Scope): [WriterFile, Array<WriterProperty>] {
+    return this.#components.reduce(
+      ([cf, cr], n) => {
+        const [f, r] = n.Build(cf, scope);
+        return [f, [...cr, r]];
+      },
+      [file, []] as [WriterFile, Array<WriterProperty>]
+    );
   }
 
   ResolveType(

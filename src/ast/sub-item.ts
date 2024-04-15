@@ -1,6 +1,8 @@
 import { Scope } from "../linker/closure";
 import { CodeLocation } from "../location/code-location";
 import { WriterProperty } from "../writer/entity";
+import { WriterFile } from "../writer/file";
+import { WriterType } from "../writer/type";
 import { Component } from "./component";
 import { Type } from "./type/base";
 
@@ -28,7 +30,9 @@ export class SubItem extends Component {
     return this.#optional;
   }
 
-  Build(scope: Scope): WriterProperty {
-    return new WriterProperty(this.CName, this.#type.Build(scope));
+  Build(file: WriterFile, scope: Scope): [WriterFile, WriterProperty] {
+    let type: WriterType;
+    [file, type] = this.#type.Build(file, scope);
+    return [file, new WriterProperty(this.CName, type)];
   }
 }

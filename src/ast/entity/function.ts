@@ -7,9 +7,10 @@ import {
 } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
-import { WriterFunction } from "../../writer/entity";
+import { WriterFunction, WriterProperty } from "../../writer/entity";
 import { WriterFile } from "../../writer/file";
 import { WriterStatement } from "../../writer/statement";
+import { WriterType } from "../../writer/type";
 import { Closure } from "../closure";
 import { ParameterCollection } from "../parameter-collection";
 import { Type } from "../type/base";
@@ -58,15 +59,17 @@ export class FunctionEntity extends Entity implements IClosure, IInstance {
   }
 
   Declare(file: WriterFile, scope: Scope): WriterFile {
+    let parameters: Array<WriterProperty>;
+    [file, parameters] = this.#parameters.Build(file, scope);
     let statements: Array<WriterStatement>;
     [file, statements] = this.#content.Build(file, scope);
+    let returns: WriterType;
+    [file, returns] = (this.#returns ?? this.#content.ResolvesTo(scope)).Build(
+      file,
+      scope
+    );
     return file.WithEntity(
-      new WriterFunction(
-        this.CName,
-        this.#parameters.Build(scope),
-        (this.#returns ?? this.#content.ResolvesTo(scope)).Build(scope),
-        statements
-      )
+      new WriterFunction(this.CName, parameters, returns, statements)
     );
   }
 

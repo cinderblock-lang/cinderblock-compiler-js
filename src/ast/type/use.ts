@@ -1,6 +1,7 @@
 import { IConcreteType, Scope } from "../../linker/closure";
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
+import { WriterFile } from "../../writer/file";
 import { WriterType } from "../../writer/type";
 import { Type } from "./base";
 
@@ -18,7 +19,7 @@ export class UseType extends Type {
     return this.#name;
   }
 
-  Build(scope: Scope): WriterType {
+  Build(file: WriterFile, scope: Scope): [WriterFile, WriterType] {
     throw new LinkerError(
       this.CodeLocation,
       "error",

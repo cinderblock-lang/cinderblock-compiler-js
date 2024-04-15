@@ -1,6 +1,7 @@
 import { IConcreteType, Scope } from "../../linker/closure";
 import { ParserError } from "../../parser/error";
 import { TokenGroup } from "../../parser/token";
+import { WriterFile } from "../../writer/file";
 import { WriterType } from "../../writer/type";
 import { Component } from "../component";
 
@@ -11,7 +12,7 @@ export interface IBaseable {
 }
 
 export abstract class Type extends Component {
-  abstract Build(scope: Scope): WriterType;
+  abstract Build(file: WriterFile, scope: Scope): [WriterFile, WriterType];
   abstract ResolveConcrete(scope: Scope): IConcreteType;
 
   static #possible: Array<IBaseable> = [];

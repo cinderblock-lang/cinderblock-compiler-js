@@ -1,6 +1,7 @@
 import { IConcreteType, Scope } from "../../linker/closure";
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
+import { WriterFile } from "../../writer/file";
 import { WriterType } from "../../writer/type";
 import { PropertyCollection } from "../property-collection";
 import { Type } from "./base";
@@ -25,7 +26,7 @@ export class SchemaType extends Type {
     return this.#properties;
   }
 
-  Build(scope: Scope): WriterType {
+  Build(file: WriterFile, scope: Scope): [WriterFile, WriterType] {
     throw new LinkerError(
       this.CodeLocation,
       "error",

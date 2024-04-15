@@ -1,7 +1,9 @@
 import { IConcreteType, Scope } from "../../linker/closure";
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
+import { WriterFile } from "../../writer/file";
 import { WriterStringType, WriterType } from "../../writer/type";
+import { Entity } from "../entity/base";
 import { Type } from "./base";
 
 export class ReferenceType extends Type {
@@ -12,7 +14,7 @@ export class ReferenceType extends Type {
     this.#name = name;
   }
 
-  Build(scope: Scope): WriterType {
+  Build(file: WriterFile, scope: Scope): [WriterFile, WriterType] {
     const result = scope.ResolveType(this.#name);
     if (!result)
       throw new LinkerError(
@@ -21,7 +23,8 @@ export class ReferenceType extends Type {
         "Could not resolve type"
       );
 
-    return new WriterStringType(result.TypeName);
+    if (result instanceof Entity) file = result.Declare(file, scope);
+    return [file, new WriterStringType(result.TypeName)];
   }
 
   ResolveConcrete(scope: Scope): IConcreteType {

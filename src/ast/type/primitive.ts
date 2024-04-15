@@ -4,6 +4,7 @@ import { Type } from "./base";
 import { ParserError } from "../../parser/error";
 import { IConcreteType, Scope } from "../../linker/closure";
 import { WriterStringType, WriterType } from "../../writer/type";
+import { WriterFile } from "../../writer/file";
 
 export const PrimitiveName = z.union([
   z.literal("int"),
@@ -74,8 +75,8 @@ export class PrimitiveType extends Type implements IConcreteType {
     }
   }
 
-  Build(scope: Scope): WriterType {
-    return new WriterStringType(this.TypeName);
+  Build(file: WriterFile, scope: Scope): [WriterFile, WriterType] {
+    return [file, new WriterStringType(this.TypeName)];
   }
 
   ResolveConcrete(scope: Scope): IConcreteType {

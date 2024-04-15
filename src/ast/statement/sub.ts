@@ -6,6 +6,7 @@ import {
   WriterStatement,
   WriterVariableStatement,
 } from "../../writer/statement";
+import { WriterType } from "../../writer/type";
 import { Expression } from "../expression/base";
 import { Statement } from "./base";
 
@@ -30,15 +31,10 @@ export class SubStatement extends Statement implements IInstance {
   Build(file: WriterFile, scope: Scope): [WriterFile, WriterStatement] {
     let assignment: WriterExpression;
     [file, assignment] = this.#equals.Build(file, scope);
+    let type: WriterType;
+    [file, type] = this.#equals.ResolvesTo(scope).Build(file, scope);
 
-    return [
-      file,
-      new WriterVariableStatement(
-        this.CName,
-        this.#equals.ResolvesTo(scope).Build(scope),
-        assignment
-      ),
-    ];
+    return [file, new WriterVariableStatement(this.CName, type, assignment)];
   }
 
   Type(scope: Scope) {

@@ -1,5 +1,7 @@
 import { IConcreteType, Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
+import { WriterProperty } from "../../writer/entity";
+import { WriterFile } from "../../writer/file";
 import { WriterFunctionType, WriterType } from "../../writer/type";
 import { ParameterCollection } from "../parameter-collection";
 import { Type } from "./base";
@@ -30,11 +32,12 @@ export class FunctionType extends Type implements IConcreteType {
     return this.#returns;
   }
 
-  Build(scope: Scope): WriterType {
-    return new WriterFunctionType(
-      this.#parameters.Build(scope),
-      this.#returns.Build(scope)
-    );
+  Build(file: WriterFile, scope: Scope): [WriterFile, WriterType] {
+    let parameters: Array<WriterProperty>;
+    let returns: WriterType;
+    [file, parameters] = this.#parameters.Build(file, scope);
+    [file, returns] = this.#returns.Build(file, scope);
+    return [file, new WriterFunctionType(parameters, returns)];
   }
 
   ResolveConcrete(scope: Scope): IConcreteType {
