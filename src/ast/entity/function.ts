@@ -38,6 +38,10 @@ export class FunctionEntity extends Entity implements IClosure, IInstance {
     this.#returns = returns;
   }
 
+  #is_main(scope: Scope) {
+    return this.#name === "main" && scope.Namespace.Name === "App";
+  }
+
   get Parameters() {
     return this.#parameters;
   }
@@ -67,7 +71,12 @@ export class FunctionEntity extends Entity implements IClosure, IInstance {
       scope
     );
 
-    let result = new WriterFunction(this.CName, parameters, returns, []);
+    let result = new WriterFunction(
+      this.#is_main(scope) ? "main" : this.CName,
+      parameters,
+      returns,
+      []
+    );
 
     let statements: Array<WriterStatement>;
     [file, result, statements] = this.#content.Build(file, result, scope);

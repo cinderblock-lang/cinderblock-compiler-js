@@ -61,6 +61,10 @@ export class Scope {
     return result;
   }
 
+  get Namespace() {
+    return this.#ast.GetNamespaceForFunction(this.#func);
+  }
+
   get Parameters(): Array<IConcreteType> {
     return (this.#closures.find((c) => !!c[1].length) ?? [[], []])[1];
   }
