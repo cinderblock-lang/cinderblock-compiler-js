@@ -23,7 +23,7 @@ export class WriterString extends WriterEntity {
 
   get Declaration(): string {
     const chars = new TextEncoder()
-      .encode(eval(`"${this.#value}"`))
+      .encode(eval(this.#value))
       .reduce((c, n) => [...c, n.toString()], [] as Array<string>)
       .concat(["0"])
       .join(",");
@@ -71,6 +71,10 @@ export class WriterFunction extends WriterEntity {
       [...this.#statements, ...statements],
       this.#parent
     );
+  }
+
+  get Statements() {
+    return this.#statements;
   }
 
   get Reference(): string {

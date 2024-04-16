@@ -46,7 +46,11 @@ export class ReferenceExpression extends Expression {
     if (subject instanceof SubStatement) {
       let statement: WriterStatement;
       [file, func, statement] = subject.Build(file, func, scope);
-      return [file, func, new WriterReferenceExpression(subject)];
+      return [
+        file,
+        func.WithStatement(statement),
+        new WriterReferenceExpression(subject),
+      ];
     }
 
     if (subject instanceof FunctionEntity) {

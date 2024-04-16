@@ -4,6 +4,7 @@ import { WriterFunction } from "../../writer/entity";
 import { WriterExpression } from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
 import {
+  WriterEmptyStatement,
   WriterStatement,
   WriterVariableStatement,
 } from "../../writer/statement";
@@ -14,6 +15,8 @@ import { Statement } from "./base";
 export class SubStatement extends Statement implements IInstance {
   readonly #name: string;
   readonly #equals: Expression;
+
+  #inserted = false;
 
   constructor(ctx: CodeLocation, name: string, equals: Expression) {
     super(ctx);
@@ -34,6 +37,9 @@ export class SubStatement extends Statement implements IInstance {
     func: WriterFunction,
     scope: Scope
   ): [WriterFile, WriterFunction, WriterStatement] {
+    if (this.#inserted) return [file, func, new WriterEmptyStatement()];
+
+    this.#inserted = true;
     let assignment: WriterExpression;
     [file, func, assignment] = this.#equals.Build(file, func, scope);
     let type: WriterType;

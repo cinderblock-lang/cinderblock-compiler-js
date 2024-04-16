@@ -113,10 +113,11 @@ Expression.Register({
     if (!IsOperator(operator))
       throw new ParserError(token_group.CodeLocation, "Not a valid operator");
 
-    const [after_right, right] = Expression.Parse(token_group, look_for);
+    let right: Expression;
+    [token_group, right] = Expression.Parse(token_group.Next, look_for);
 
     return [
-      after_right,
+      token_group,
       new OperatorExpression(token_group.CodeLocation, prefix, operator, right),
     ];
   },

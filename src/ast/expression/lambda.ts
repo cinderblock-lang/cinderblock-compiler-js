@@ -92,21 +92,24 @@ Expression.Register({
   },
   Extract(token_group, prefix) {
     token_group.Next.Expect("(");
-    const [after_parameters, parameters] = ParameterCollection.Parse(
-      token_group.Next
+    let parameters: ParameterCollection;
+    [token_group, parameters] = ParameterCollection.Parse(
+      token_group.Next.Next
     );
 
-    const [after_returns, returns] =
-      after_parameters.Text === ":"
-        ? Type.Parse(after_parameters.Next)
-        : ([after_parameters, undefined] as const);
+    let returns: Type | undefined;
+    [token_group, returns] =
+      token_group.Text === ":"
+        ? Type.Parse(token_group.Next)
+        : ([token_group, undefined] as const);
 
-    after_returns.Expect("->");
+    token_group.Expect("->");
 
-    const [after_body, body] = Closure.Parse(after_returns.Next);
+    let body: Closure;
+    [token_group, body] = Closure.Parse(token_group.Next);
 
     return [
-      after_body,
+      token_group,
       new LambdaExpression(token_group.CodeLocation, parameters, body, returns),
     ];
   },

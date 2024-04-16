@@ -35,10 +35,11 @@ export class Parameter extends SubItem implements IInstance {
       // ];
     }
 
-    const [after_type, type] = Type.Parse(token_group.Next);
+    let type: Type;
+    [token_group, type] = Type.Parse(token_group.Next);
 
     return [
-      after_type,
+      token_group.Next,
       new Parameter(token_group.CodeLocation, name, type, optional),
     ];
   }

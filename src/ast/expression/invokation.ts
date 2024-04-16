@@ -11,6 +11,7 @@ import { Type } from "../type/base";
 import { FunctionType } from "../type/function";
 import { LinkerError } from "../../linker/error";
 import { WriterFunction } from "../../writer/entity";
+import { AccessExpression } from "./access";
 
 export class InvokationExpression extends Expression {
   readonly #subject: Expression;
@@ -46,6 +47,12 @@ export class InvokationExpression extends Expression {
     );
 
     let subject: WriterExpression;
+    if (this.#subject instanceof AccessExpression) {
+      let parameter: WriterExpression;
+      [file, func, parameter] = this.#subject.Subject.Build(file, func, scope);
+      parameters = [parameter, ...parameters];
+    }
+
     [file, func, subject] = this.#subject.Build(file, func, scope);
 
     return [file, func, new WriterInvokationExpression(subject, parameters)];
@@ -83,13 +90,12 @@ Expression.Register({
         "Attempting an invokation without a referenced function"
       );
 
+    token_group = token_group.Next;
     let parameters: Array<Expression> = [];
     while (token_group.Text !== ")") {
-      token_group = token_group.Next;
       let result: Expression;
       [token_group, result] = Expression.Parse(token_group, [",", ")"]);
       parameters = [...parameters, result];
-      token_group = token_group.Previous;
     }
 
     token_group = token_group.Next;

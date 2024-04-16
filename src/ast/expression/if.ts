@@ -98,19 +98,21 @@ Expression.Register({
     if (token_group.Next.Text !== "(")
       throw ParserError.UnexpectedSymbol(token_group.Next, "(");
 
-    const [after_statement, check] = Expression.Parse(token_group.Next.Next, [
-      ")",
-    ]);
+    let check: Expression;
+    [token_group, check] = Expression.Parse(token_group.Next.Next, [")"]);
 
-    const [after_if, if_block] = Closure.Parse(after_statement);
+    let if_block: Closure;
+    [token_group, if_block] = Closure.Parse(token_group);
 
-    if (after_if.Text !== "else")
-      throw ParserError.UnexpectedSymbol(after_if, "else");
+    token_group = token_group.Next;
+    if (token_group.Text !== "else")
+      throw ParserError.UnexpectedSymbol(token_group, "else");
 
-    const [after_else, else_block] = Closure.Parse(after_if.Next);
+    let else_block: Closure;
+    [token_group, else_block] = Closure.Parse(token_group.Next);
 
     return [
-      after_else,
+      token_group,
       new IfExpression(token_group.CodeLocation, check, if_block, else_block),
     ];
   },

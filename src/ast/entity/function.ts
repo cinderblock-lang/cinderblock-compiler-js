@@ -6,7 +6,6 @@ import {
   Scope,
 } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
-import { ParserError } from "../../parser/error";
 import { WriterFunction, WriterProperty } from "../../writer/entity";
 import { WriterFile } from "../../writer/file";
 import { WriterStatement } from "../../writer/statement";

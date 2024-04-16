@@ -44,7 +44,7 @@ export class Closure implements IClosure {
     for (const component of this.#components) {
       if (component instanceof SubStatement) continue;
       let output: WriterStatement;
-      [file, func, output] = component.Build(file, func, scope);
+      [file, func, output] = component.Build(file, func, scope.With(this));
       result = [...result, output];
     }
 
@@ -54,7 +54,7 @@ export class Closure implements IClosure {
   ResolvesTo(scope: Scope): Type {
     for (const component of this.#components)
       if (component instanceof ReturnStatement)
-        return component.ResolveType(scope);
+        return component.ResolveType(scope.With(this));
 
     throw new LinkerError(
       this.#components[0].CodeLocation,

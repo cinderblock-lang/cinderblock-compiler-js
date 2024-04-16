@@ -30,9 +30,16 @@ export class SubItem extends Component {
     return this.#optional;
   }
 
-  Build(file: WriterFile, scope: Scope): [WriterFile, WriterProperty] {
+  Build(
+    file: WriterFile,
+    scope: Scope,
+    use_cinderblock_name = false
+  ): [WriterFile, WriterProperty] {
     let type: WriterType;
     [file, type] = this.#type.Build(file, scope);
-    return [file, new WriterProperty(this.CName, type)];
+    return [
+      file,
+      new WriterProperty(use_cinderblock_name ? this.Name : this.CName, type),
+    ];
   }
 }

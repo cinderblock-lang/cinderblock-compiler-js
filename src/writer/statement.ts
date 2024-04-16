@@ -17,6 +17,10 @@ export class WriterVariableStatement extends WriterStatement {
     this.#assignment = assignment;
   }
 
+  get Name() {
+    return this.#name;
+  }
+
   get C(): string {
     return `${this.#type.Declare(this.#name)} = ${this.#assignment.C};`;
   }
@@ -62,5 +66,28 @@ export class WriterReturnStatement extends WriterStatement {
 
   get C(): string {
     return `return ${this.#assignment.C};`;
+  }
+}
+
+export class WriterEmptyStatement extends WriterStatement {
+  constructor() {
+    super();
+  }
+
+  get C(): string {
+    return "";
+  }
+}
+
+export class WriterRawStatement extends WriterStatement {
+  readonly #statement: string;
+
+  constructor(statement: string) {
+    super();
+    this.#statement = statement;
+  }
+
+  get C(): string {
+    return this.#statement;
   }
 }

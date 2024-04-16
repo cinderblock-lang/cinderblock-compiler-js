@@ -21,10 +21,14 @@ export class ParameterCollection {
     this.#components = components;
   }
 
-  Build(file: WriterFile, scope: Scope): [WriterFile, Array<WriterProperty>] {
+  Build(
+    file: WriterFile,
+    scope: Scope,
+    use_cinderblock_name = false
+  ): [WriterFile, Array<WriterProperty>] {
     return this.#components.reduce(
-      ([cf, cr], n) => {
-        const [f, r] = n.Build(cf, scope);
+      ([cf, cr], n): [WriterFile, Array<WriterProperty>] => {
+        const [f, r] = n.Build(cf, scope, use_cinderblock_name);
         return [f, [...cr, r]];
       },
       [file, []] as [WriterFile, Array<WriterProperty>]
@@ -77,13 +81,15 @@ export class ParameterCollection {
 
   static Parse(token_group: TokenGroup): [TokenGroup, ParameterCollection] {
     const result: Array<Parameter> = [];
+    if (token_group.Text === ")")
+      return [token_group.Next, new ParameterCollection()];
 
-    while (token_group.Text !== ")") {
+    while (token_group.Previous.Text !== ")") {
       const [t, r] = Parameter.Parse(token_group);
       token_group = t;
       result.push(r);
     }
 
-    return [token_group.Next, new ParameterCollection(...result)];
+    return [token_group, new ParameterCollection(...result)];
   }
 }
