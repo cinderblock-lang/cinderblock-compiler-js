@@ -6,6 +6,8 @@ import Path from "path";
 import { Ast } from "../ast";
 import Source from "./source";
 import Gcc from "./gcc";
+import { ParserError } from "../parser/error";
+import { LinkerError } from "../linker/error";
 
 export default class Project {
   readonly #dir: string;
@@ -73,14 +75,30 @@ export default class Project {
   }
 
   async Compile(target: Dto.Target, options: Dto.Options) {
-    const ast = await this.#parse(target, options.no_cache);
+    try {
+      const ast = await this.#parse(target, options.no_cache);
 
-    const dir = Path.resolve(this.#dir, this.#dto.bin, target);
-    await this.#ensure_dir(dir);
-    await Fs.writeFile(Path.resolve(dir, "main.c"), ast.Writer.C);
+      const dir = Path.resolve(this.#dir, this.#dto.bin, target);
+      await this.#ensure_dir(dir);
+      await Fs.writeFile(Path.resolve(dir, "main.c"), ast.Writer.C);
 
-    const gcc = new Gcc(dir, target);
-    await gcc.Compile("main.c", this.#dto.name, options.debug ?? false);
+      const gcc = new Gcc(dir, target);
+      await gcc.Compile("main.c", this.#dto.name, options.debug ?? false);
+    } catch (err: unknown) {
+      if (err instanceof ParserError) {
+        console.log(`Parser Error:\n${err.Location}\n\n${err.Message}`);
+        process.exit(1);
+      }
+
+      if (err instanceof LinkerError) {
+        console.log(
+          `Linker Error:\n${err.Location}\nSeverity: ${err.Severity}\n\n${err.Message}`
+        );
+        process.exit(1);
+      }
+
+      throw err;
+    }
   }
 
   async Test(target: Dto.Target) {

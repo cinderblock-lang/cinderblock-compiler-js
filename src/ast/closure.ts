@@ -63,35 +63,27 @@ export class Closure implements IClosure {
     );
   }
 
-  static #ParseWhile(
-    token_group: TokenGroup,
-    factory: (group: TokenGroup) => [TokenGroup, Statement],
-    look_for: Array<string>,
-    finish_factory: (group: TokenGroup) => string = (g) => g.Text
-  ): [TokenGroup, Closure] {
-    const result: Array<Statement> = [];
+  static Parse(token_group: TokenGroup): [TokenGroup, Closure] {
+    if (token_group.Text !== "{") {
+      let expression: Expression;
+      [token_group, expression] = Expression.Parse(token_group, [";"]);
 
-    while (!look_for.includes(finish_factory(token_group))) {
-      const [t, r] = factory(token_group);
-      token_group = t;
+      return [
+        token_group,
+        new Closure(new ReturnStatement(token_group.CodeLocation, expression)),
+      ];
+    }
+
+    const result: Array<Statement> = [];
+    token_group = token_group.Next;
+
+    while (token_group.Text !== "}") {
+      let r: Statement;
+      [token_group, r] = Statement.Parse(token_group);
+      token_group = token_group.Next;
       result.push(r);
     }
 
     return [token_group.Next, new Closure(...result)];
-  }
-
-  static Parse(token_group: TokenGroup) {
-    return token_group.Text === "{"
-      ? this.#ParseWhile(token_group.Next, Statement.Parse, ["}"])
-      : (() => {
-          const [tokens, expression] = Expression.Parse(token_group, [";"]);
-
-          return [
-            tokens,
-            new Closure(
-              new ReturnStatement(token_group.CodeLocation, expression)
-            ),
-          ] as const;
-        })();
   }
 }

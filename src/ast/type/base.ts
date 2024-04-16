@@ -19,7 +19,7 @@ export abstract class Type extends Component {
 
   static Register(instance: IBaseable): void {
     this.#possible = [...this.#possible, instance].sort(
-      (a, b) => a.Priority - b.Priority
+      (a, b) => b.Priority - a.Priority
     );
   }
 

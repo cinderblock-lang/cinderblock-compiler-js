@@ -4,7 +4,7 @@
   "description": "A new programming language",
   "scripts": {
     "build": "tsc",
-    "test": "npm run build && cd ../tests/none-int-loops && cinderblock compile",
+    "test": "npm run build && cd ../cinderblock-tests/hello-world && cinderblock compile",
     "package": "pkg ."
   },
   "private": true,

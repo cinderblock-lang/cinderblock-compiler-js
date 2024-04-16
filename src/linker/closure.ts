@@ -49,7 +49,7 @@ export class Scope {
 
   get #func() {
     const [result] =
-      this.#closures.find((c) => c instanceof FunctionEntity) ?? [];
+      this.#closures.find(([c]) => c instanceof FunctionEntity) ?? [];
 
     if (!(result instanceof FunctionEntity))
       throw new LinkerError(

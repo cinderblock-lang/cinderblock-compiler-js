@@ -1,15 +1,21 @@
 import { CodeLocation } from "../location/code-location";
 import { Token, TokenGroup } from "./token";
 
-export class ParserError extends Error {
+export class ParserError {
   readonly #location: CodeLocation;
   readonly #message: string;
 
   constructor(location: CodeLocation | undefined, message: string) {
-    super(`${message}${location}`);
-
     this.#location = location ?? new CodeLocation("", -1, -1, -1, -1);
     this.#message = message;
+  }
+
+  get Location() {
+    return this.#location;
+  }
+
+  get Message() {
+    return this.#message;
   }
 
   static get EndOfFile() {

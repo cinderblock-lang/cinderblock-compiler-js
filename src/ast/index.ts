@@ -64,6 +64,7 @@ export class Ast {
       let namespace: Namespace;
       [tokens, namespace] = Namespace.Parse(tokens);
       result = [...result, namespace];
+      tokens = tokens.Next;
     }
 
     return new Ast(...result, ...this.#data);
@@ -109,7 +110,7 @@ export class Ast {
 
       let func: WriterFunction;
 
-      [result, func] = main.Declare(result, new Scope(this, [], []));
+      [result, func] = main.Declare(result, new Scope(this, [[main, []]], []));
       return result;
     }
 
