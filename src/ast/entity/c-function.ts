@@ -7,13 +7,12 @@ import { WriterRawStatement } from "../../writer/statement";
 import { WriterType } from "../../writer/type";
 import { Closure } from "../closure";
 import { ParameterCollection } from "../parameter-collection";
-import { Type } from "../type/base";
 import { PrimitiveName, PrimitiveType } from "../type/primitive";
 import { Entity, EntityOptions } from "./base";
 import { FunctionEntity } from "./function";
 
 export class CFunction extends FunctionEntity implements IInstance {
-  readonly #name: string;
+  readonly #includes: Array<string>;
   readonly #parameters: ParameterCollection;
   readonly #content: string;
   readonly #returns: PrimitiveType;
@@ -21,6 +20,7 @@ export class CFunction extends FunctionEntity implements IInstance {
   constructor(
     ctx: CodeLocation,
     options: EntityOptions,
+    includes: Array<string>,
     name: string,
     parameters: ParameterCollection,
     content: string,
@@ -35,13 +35,15 @@ export class CFunction extends FunctionEntity implements IInstance {
       returns
     );
 
-    this.#name = name;
+    this.#includes = includes;
     this.#parameters = parameters;
     this.#content = content;
     this.#returns = returns;
   }
 
   Declare(file: WriterFile, scope: Scope): [WriterFile, WriterFunction] {
+    for (const include of this.#includes) file = file.WithInclude(include);
+
     let parameters: Array<WriterProperty>;
     [file, parameters] = this.#parameters.Build(file, scope, true);
     let returns: WriterType;
@@ -59,8 +61,25 @@ Entity.Register({
     return token_group.Text === "cfn";
   },
   Extract(token_group, options) {
-    const name = token_group.Next.Text;
-    token_group = token_group.Skip(2);
+    token_group = token_group.Next;
+    token_group.Expect("[");
+
+    let includes: Array<string> = [];
+    if (token_group.Next.Text !== "]") {
+      while (token_group.Text !== "]") {
+        token_group = token_group.Next;
+        const candidate = token_group.Text;
+        if (candidate.startsWith("<")) includes = [...includes, candidate];
+        else includes = [...includes, `"${candidate}"`];
+        token_group = token_group.Next;
+      }
+    } else {
+      token_group = token_group.Next;
+    }
+
+    token_group = token_group.Next;
+    const name = token_group.Text;
+    token_group = token_group.Next;
 
     token_group.Expect("(");
     token_group = token_group.Next;
@@ -92,6 +111,7 @@ Entity.Register({
       new CFunction(
         token_group.CodeLocation,
         options,
+        includes,
         name,
         parameters,
         body.substring(1, body.length - 1),

@@ -1,5 +1,7 @@
 import { Component } from "../ast/component";
-import { WriterFunction } from "./entity";
+import { __ALLOCATE, __SCOPE } from "./constants";
+import type { WriterFunction } from "./entity";
+import { WriterVariableStatement } from "./statement";
 import { WriterType } from "./type";
 
 export abstract class WriterExpression {
@@ -105,7 +107,7 @@ export class WriterAllocateExpression extends WriterExpression {
   }
 
   get C(): string {
-    return `__ALLOCATE(__SCOPE, sizeof(${this.#item.TypeName}))`;
+    return `${__ALLOCATE}(${__SCOPE}, sizeof(${this.#item.TypeName}))`;
   }
 }
 
