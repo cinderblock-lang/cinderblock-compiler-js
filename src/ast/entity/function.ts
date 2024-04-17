@@ -62,6 +62,7 @@ export class FunctionEntity extends Entity implements IClosure, IInstance {
   }
 
   Declare(file: WriterFile, scope: Scope): [WriterFile, WriterFunction] {
+    scope = scope.ResetTo(this);
     let parameters: Array<WriterProperty>;
     [file, parameters] = this.#parameters.Build(file, scope);
     let returns: WriterType;
@@ -87,7 +88,7 @@ export class FunctionEntity extends Entity implements IClosure, IInstance {
     return new FunctionType(
       this.CodeLocation,
       this.#parameters,
-      this.#returns ?? this.#content.ResolvesTo(scope.With(this))
+      this.#returns ?? this.#content.ResolvesTo(scope)
     );
   }
 }

@@ -17,18 +17,21 @@ export class WriterFunctionType extends WriterType {
   }
 
   Declare(name: string): string {
-    const params = this.#parameters.map((p) => p.C).join(",");
-    return `${this.#returns.TypeName} (*${name})(${params})`;
+    const joiner = this.#parameters.length === 0 ? "" : ", ";
+    const params = this.#parameters.map((p) => p.C).join(", ");
+    return `${this.#returns.TypeName} (*${name})(void*${joiner}${params})`;
   }
 
   ReturnDeclare(name: string): string {
-    const params = this.#parameters.map((p) => p.C).join(",");
-    return `${this.#returns.TypeName} (*${name}(${params}))`;
+    const joiner = this.#parameters.length === 0 ? "" : ", ";
+    const params = this.#parameters.map((p) => p.C).join(", ");
+    return `${this.#returns.TypeName} (*${name}(void*${joiner}${params}))`;
   }
 
   get TypeName(): string {
-    const params = this.#parameters.map((p) => p.C).join(",");
-    return `${this.#returns.TypeName} (*__name)(${params})`;
+    const joiner = this.#parameters.length === 0 ? "" : ", ";
+    const params = this.#parameters.map((p) => p.C).join(", ");
+    return `${this.#returns.TypeName} (*__name)(void*${joiner}${params})`;
   }
 }
 

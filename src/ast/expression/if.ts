@@ -5,7 +5,7 @@ import { Closure } from "../closure";
 import { Scope } from "../../linker/closure";
 import {
   WriterExpression,
-  WriterFunctionReferenceExpression,
+  WriterGlobalReferenceExpression,
   WriterInvokationExpression,
   WriterTernayExpression,
 } from "../../writer/expression";
@@ -73,11 +73,11 @@ export class IfExpression extends Expression {
       new WriterTernayExpression(
         check_expression,
         new WriterInvokationExpression(
-          new WriterFunctionReferenceExpression(if_func),
+          new WriterGlobalReferenceExpression(if_func),
           []
         ),
         new WriterInvokationExpression(
-          new WriterFunctionReferenceExpression(else_func),
+          new WriterGlobalReferenceExpression(else_func),
           []
         )
       ),
@@ -85,7 +85,7 @@ export class IfExpression extends Expression {
   }
 
   ResolvesTo(scope: Scope): Type {
-    return this.#if.ResolvesTo(scope);
+    return this.#if.ResolvesTo(scope.With(this.#if));
   }
 }
 

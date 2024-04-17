@@ -1,4 +1,5 @@
-import { WriterStatement } from "./statement";
+import { __SCOPE, __SCOPE_ARG } from "./constants";
+import { WriterStatement, WriterVariableStatement } from "./statement";
 import { WriterFunctionType, type WriterType } from "./type";
 
 export abstract class WriterEntity {
@@ -32,11 +33,13 @@ export class WriterString extends WriterEntity {
 }
 
 export class WriterFunction extends WriterEntity {
+  static #functions: Record<string, WriterFunction> = {};
+
   readonly #name: string;
   readonly #parameters: Array<WriterProperty>;
   readonly #returns: WriterType;
   readonly #statements: Array<WriterStatement>;
-  readonly #parent: WriterFunction | undefined;
+  readonly #parent_name: string | undefined;
 
   constructor(
     name: string,
@@ -50,7 +53,18 @@ export class WriterFunction extends WriterEntity {
     this.#parameters = parameters;
     this.#returns = returns;
     this.#statements = statements;
-    this.#parent = parent;
+    this.#parent_name = parent?.Name;
+
+    WriterFunction.#functions[name] = this;
+  }
+
+  get Name() {
+    return this.#name;
+  }
+
+  get #parent(): WriterFunction | undefined {
+    if (!this.#parent_name) return undefined;
+    return WriterFunction.#functions[this.#parent_name];
   }
 
   WithStatement(statement: WriterStatement) {
@@ -73,6 +87,10 @@ export class WriterFunction extends WriterEntity {
     );
   }
 
+  IsParameter(name: string) {
+    return !!this.#parameters.find((p) => p.Name === name);
+  }
+
   get Statements() {
     return this.#statements;
   }
@@ -82,14 +100,59 @@ export class WriterFunction extends WriterEntity {
   }
 
   get Declaration(): string {
-    const params = this.#parameters.map((p) => p.C).join(",");
+    let params = this.#parameters.map((p) => p.C).join(", ");
+
+    if (this.#parent) {
+      const joiner = this.#parameters.length > 0 ? ", " : "";
+      params = `void* ${__SCOPE_ARG}${joiner}${params}`;
+    }
+
     let top_line = `${this.#returns.TypeName} ${this.#name}(${params})`;
     if (this.#returns instanceof WriterFunctionType) {
       top_line = `${this.#returns.ReturnDeclare(this.#name)}(${params})`;
     }
 
-    const statements = this.#statements.map((s) => s.C).join("\n  ");
-    return `${top_line} {\n  ${statements}\n}`;
+    let statements = this.#parent
+      ? `${this.Scope.Reference} ${__SCOPE} = *(${this.Scope.Reference}*)${__SCOPE_ARG};\n  `
+      : `${this.Scope.Reference} ${__SCOPE};\n  `;
+
+    statements += this.#statements.map((s) => s.C(this)).join("\n  ");
+    return `${this.Scope.Declaration}\n${top_line} {\n  ${statements}\n}`;
+  }
+
+  get #deep_statements() {
+    let result: Array<WriterStatement> = this.#statements;
+
+    if (this.#parent) result = [...result, ...this.#parent.#deep_statements];
+
+    return result;
+  }
+
+  get #parent_parameters(): Array<WriterProperty> {
+    let result: Array<WriterProperty> = [];
+
+    if (this.#parent) {
+      result = [...result, ...this.#parent.#parameters];
+      result = [...result, ...this.#parent.#parent_parameters];
+    }
+
+    return result;
+  }
+
+  get Variables(): Array<WriterVariableStatement> {
+    let result: Array<WriterVariableStatement> = [];
+    for (const statement of this.#deep_statements)
+      if (statement instanceof WriterVariableStatement)
+        result = [...result, statement];
+
+    return result;
+  }
+
+  get Scope(): WriterStruct {
+    return new WriterStruct(this.#name + "_scope", [
+      ...this.Variables.map((v) => new WriterProperty(v.Name, v.Type)),
+      ...this.#parent_parameters,
+    ]);
   }
 }
 
@@ -108,8 +171,8 @@ export class WriterStruct extends WriterEntity {
   }
 
   get Declaration(): string {
-    const properties = this.#properties.map((s) => s.C).join("\n  ");
-    return `#typedef ${this.#name} {\n  ${properties}\n} ${this.#name};`;
+    const properties = this.#properties.map((s) => s.C + ";").join("\n  ");
+    return `typedef struct ${this.#name} {\n  ${properties}\n} ${this.#name};`;
   }
 }
 
@@ -124,5 +187,9 @@ export class WriterProperty {
 
   get C(): string {
     return this.#type.Declare(this.#name);
+  }
+
+  get Name() {
+    return this.#name;
   }
 }

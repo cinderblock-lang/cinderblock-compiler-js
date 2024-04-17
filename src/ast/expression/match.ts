@@ -11,7 +11,7 @@ import {
 import {
   WriterAccessExpression,
   WriterExpression,
-  WriterFunctionReferenceExpression,
+  WriterGlobalReferenceExpression,
   WriterInvokationExpression,
   WriterLiteralExpression,
   WriterOperatorExpression,
@@ -134,7 +134,7 @@ export class MatchExpression extends Expression implements IClosure {
                 "!="
               ),
               new WriterInvokationExpression(
-                new WriterFunctionReferenceExpression(n_func),
+                new WriterGlobalReferenceExpression(n_func),
                 [
                   new WriterAccessExpression(
                     new WriterReferenceExpression(this.#subject),
@@ -150,7 +150,7 @@ export class MatchExpression extends Expression implements IClosure {
           file,
           func,
           new WriterInvokationExpression(
-            new WriterFunctionReferenceExpression(first_func),
+            new WriterGlobalReferenceExpression(first_func),
             [
               new WriterAccessExpression(
                 new WriterReferenceExpression(this.#subject),

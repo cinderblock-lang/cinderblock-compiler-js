@@ -12,7 +12,7 @@ import {
 import {
   WriterAllocateExpression,
   WriterExpression,
-  WriterFunctionReferenceExpression,
+  WriterGlobalReferenceExpression,
   WriterInvokationExpression,
 } from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
@@ -78,7 +78,7 @@ export class MakeExpression extends Expression implements IInstance, IClosure {
       file,
       func,
       new WriterInvokationExpression(
-        new WriterFunctionReferenceExpression(main_func),
+        new WriterGlobalReferenceExpression(main_func),
         []
       ),
     ];

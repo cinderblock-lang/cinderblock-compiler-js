@@ -3,7 +3,7 @@ import { CodeLocation } from "../../location/code-location";
 import { Scope } from "../../linker/closure";
 import {
   WriterExpression,
-  WriterFunctionReferenceExpression,
+  WriterGlobalReferenceExpression,
   WriterReferenceExpression,
 } from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
@@ -36,7 +36,13 @@ export class ReferenceExpression extends Expression {
     const subject = scope.Resolve(this.#name);
 
     if (subject instanceof Parameter) {
-      return [file, func, new WriterReferenceExpression(subject)];
+      if (scope.IsCurrentLevel(this.#name))
+        return [
+          file,
+          func,
+          new WriterReferenceExpression(subject.CName),
+        ];
+      else return [file, func, new WriterReferenceExpression(subject)];
     }
 
     if (subject instanceof MakeExpression) {
@@ -56,7 +62,7 @@ export class ReferenceExpression extends Expression {
     if (subject instanceof FunctionEntity) {
       let sub_func: WriterFunction;
       [file, sub_func] = subject.Declare(file, scope);
-      return [file, func, new WriterFunctionReferenceExpression(sub_func)];
+      return [file, func, new WriterGlobalReferenceExpression(sub_func)];
     }
 
     throw new LinkerError(
@@ -75,6 +81,10 @@ export class ReferenceExpression extends Expression {
 
     if (references instanceof FunctionEntity) {
       return references.ResolvesTo(scope);
+    }
+
+    if (references instanceof Parameter) {
+      return references.Type;
     }
 
     throw new LinkerError(

@@ -1,6 +1,7 @@
 import type { Ast } from "../ast";
 import { Component } from "../ast/component";
 import { FunctionEntity } from "../ast/entity/function";
+import { LambdaExpression } from "../ast/expression/lambda";
 import { EmptyCodeLocation } from "../location/empty";
 import { LinkerError } from "./error";
 
@@ -81,6 +82,14 @@ export class Scope {
     );
   }
 
+  ResetTo(closure: IClosure) {
+    return new Scope(
+      this.#ast,
+      [[closure, this.#prepared_parameters]],
+      this.#prepared_parameters
+    );
+  }
+
   Resolve(name: string) {
     for (const [closure, parameters] of this.#closures) {
       const result = closure.Resolve(name, { parameters, scope: this });
@@ -93,7 +102,7 @@ export class Scope {
   }
 
   ResolveType(name: string) {
-    for (const [closure, parameters] of this.#closures) {
+    for (const [closure, parameters] of this.#closures.reverse()) {
       const result = closure.ResolveType(name, { parameters, scope: this });
       if (result) return result;
     }
@@ -101,5 +110,24 @@ export class Scope {
     const namespace = this.#ast.GetNamespaceForFunction(this.#func);
 
     return namespace.ResolveType(name, this.#ast);
+  }
+
+  get #current_func() {
+    const allowed = [FunctionEntity, LambdaExpression] as const;
+    const result = [...this.#closures]
+      .reverse()
+      .find(([c]) => !!allowed.find((a) => c instanceof a));
+
+    if (!result)
+      throw new LinkerError(EmptyCodeLocation, "error", "Not in function");
+
+    return result;
+  }
+
+  IsCurrentLevel(name: string) {
+    const [closure, parameters] = this.#current_func;
+    const result = closure.Resolve(name, { parameters, scope: this });
+    if (result) return true;
+    return false;
   }
 }

@@ -4,6 +4,7 @@ import { ParserError } from "../../parser/error";
 import { Scope } from "../../linker/closure";
 import {
   WriterExpression,
+  WriterGlobalReferenceExpression,
   WriterLiteralExpression,
   WriterReferenceExpression,
 } from "../../writer/expression";
@@ -68,10 +69,11 @@ export class LiteralExpression extends Expression {
       case "long":
         return [file, func, new WriterLiteralExpression(this.#value)];
       case "string":
+        const entity = new WriterString(this.CName, this.#value);
         return [
-          file.WithEntity(new WriterString(this.CName, this.#value)),
+          file.WithEntity(entity),
           func,
-          new WriterReferenceExpression(this),
+          new WriterGlobalReferenceExpression(entity),
         ];
       case "null":
         return [file, func, new WriterLiteralExpression("NULL")];

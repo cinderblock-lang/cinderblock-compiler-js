@@ -1,11 +1,10 @@
 import { Component } from "../ast/component";
 import { __ALLOCATE, __SCOPE } from "./constants";
-import type { WriterFunction } from "./entity";
-import { WriterVariableStatement } from "./statement";
+import type { WriterEntity, WriterFunction } from "./entity";
 import { WriterType } from "./type";
 
 export abstract class WriterExpression {
-  abstract get C(): string;
+  abstract C(func: WriterFunction): string;
 }
 
 export class WriterAccessExpression extends WriterExpression {
@@ -18,8 +17,8 @@ export class WriterAccessExpression extends WriterExpression {
     this.#name = name;
   }
 
-  get C(): string {
-    return `${this.#target.C}->${this.#name}`;
+  C(func: WriterFunction): string {
+    return `${this.#target.C(func)}->${this.#name}`;
   }
 }
 
@@ -39,8 +38,10 @@ export class WriterTernayExpression extends WriterExpression {
     this.#on_else = on_else;
   }
 
-  get C(): string {
-    return `${this.#check.C} ? ${this.#on_if.C} : ${this.#on_else.C}`;
+  C(func: WriterFunction): string {
+    return `${this.#check.C(func)} ? ${this.#on_if.C(func)} : ${this.#on_else.C(
+      func
+    )}`;
   }
 }
 
@@ -60,8 +61,8 @@ export class WriterOperatorExpression extends WriterExpression {
     this.#operator = operator;
   }
 
-  get C(): string {
-    return `${this.#left.C} ${this.#operator} ${this.#right.C}`;
+  C(func: WriterFunction): string {
+    return `${this.#left.C(func)} ${this.#operator} ${this.#right.C(func)}`;
   }
 }
 
@@ -75,26 +76,33 @@ export class WriterInvokationExpression extends WriterExpression {
     this.#parameters = parameters;
   }
 
-  get C(): string {
-    const params = this.#parameters.map((p) => p.C).join(",");
-    if (this.#subject instanceof WriterFunctionReferenceExpression) {
-      return `${this.#subject.C}(${params})`;
+  C(func: WriterFunction): string {
+    const params = this.#parameters.map((p) => p.C(func)).join(", ");
+    if (this.#subject instanceof WriterGlobalReferenceExpression) {
+      return `${this.#subject.C()}(${params})`;
     }
 
-    return `(*${this.#subject.C})(${params})`;
+    return `(*${this.#subject.C(func)})(${params})`;
   }
 }
 
 export class WriterReferenceExpression extends WriterExpression {
-  readonly #item: Component;
+  readonly #item: string;
 
-  constructor(item: Component) {
+  constructor(item: Component);
+  constructor(item: string);
+  constructor(item: Component | string) {
     super();
-    this.#item = item;
+    if (typeof item === "string") {
+      this.#item = item;
+    } else {
+      this.#item = item.CName;
+    }
   }
 
-  get C(): string {
-    return this.#item.CName;
+  C(func: WriterFunction): string {
+    if (func.IsParameter(this.#item)) return this.#item;
+    return __SCOPE + "." + this.#item;
   }
 }
 
@@ -106,7 +114,7 @@ export class WriterAllocateExpression extends WriterExpression {
     this.#item = item;
   }
 
-  get C(): string {
+  C(): string {
     return `${__ALLOCATE}(${__SCOPE}, sizeof(${this.#item.TypeName}))`;
   }
 }
@@ -119,20 +127,20 @@ export class WriterLiteralExpression extends WriterExpression {
     this.#value = value;
   }
 
-  get C(): string {
+  C(): string {
     return this.#value;
   }
 }
 
-export class WriterFunctionReferenceExpression extends WriterExpression {
-  readonly #entity: WriterFunction;
+export class WriterGlobalReferenceExpression extends WriterExpression {
+  readonly #entity: WriterEntity;
 
-  constructor(entity: WriterFunction) {
+  constructor(entity: WriterEntity) {
     super();
     this.#entity = entity;
   }
 
-  get C() {
+  C() {
     return this.#entity.Reference;
   }
 }

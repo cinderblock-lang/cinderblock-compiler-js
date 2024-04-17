@@ -1,8 +1,10 @@
+import { __SCOPE } from "./constants";
+import { WriterFunction } from "./entity";
 import { WriterExpression } from "./expression";
 import { WriterType } from "./type";
 
 export abstract class WriterStatement {
-  abstract get C(): string;
+  abstract C(func: WriterFunction): string;
 }
 
 export class WriterVariableStatement extends WriterStatement {
@@ -21,8 +23,12 @@ export class WriterVariableStatement extends WriterStatement {
     return this.#name;
   }
 
-  get C(): string {
-    return `${this.#type.Declare(this.#name)} = ${this.#assignment.C};`;
+  get Type() {
+    return this.#type;
+  }
+
+  C(func: WriterFunction): string {
+    return `${__SCOPE}.${this.#name} = ${this.#assignment.C(func)};`;
   }
 }
 
@@ -38,8 +44,9 @@ export class WriterAssignStatement extends WriterStatement {
     this.#assignment = assignment;
   }
 
-  get C(): string {
-    return `${this.#subject}->${this.#name} = ${this.#assignment.C};`;
+  C(func: WriterFunction): string {
+    const access = `${this.#subject}->${this.#name}`;
+    return `${__SCOPE}.${access} = ${this.#assignment.C(func)};`;
   }
 }
 
@@ -51,8 +58,8 @@ export class WriterSideEffect extends WriterStatement {
     this.#assignment = assignment;
   }
 
-  get C(): string {
-    return `${this.#assignment.C};`;
+  C(func: WriterFunction): string {
+    return `${this.#assignment.C(func)};`;
   }
 }
 
@@ -64,8 +71,8 @@ export class WriterReturnStatement extends WriterStatement {
     this.#assignment = assignment;
   }
 
-  get C(): string {
-    return `return ${this.#assignment.C};`;
+  C(func: WriterFunction): string {
+    return `return ${this.#assignment.C(func)};`;
   }
 }
 
@@ -74,7 +81,7 @@ export class WriterEmptyStatement extends WriterStatement {
     super();
   }
 
-  get C(): string {
+  C(): string {
     return "";
   }
 }
@@ -87,7 +94,7 @@ export class WriterRawStatement extends WriterStatement {
     this.#statement = statement;
   }
 
-  get C(): string {
+  C(): string {
     return this.#statement;
   }
 }

@@ -13,7 +13,7 @@ import {
 import { ParameterCollection } from "../parameter-collection";
 import {
   WriterExpression,
-  WriterFunctionReferenceExpression,
+  WriterGlobalReferenceExpression,
 } from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
 import { FunctionType } from "../type/function";
@@ -55,32 +55,31 @@ export class LambdaExpression extends Expression implements IClosure {
     func: WriterFunction,
     scope: Scope
   ): [WriterFile, WriterFunction, WriterExpression] {
+    scope = scope.With(this);
     let parameters: Array<WriterProperty>;
-    [file, parameters] = this.ResolvesTo(scope.With(this)).Parameters.Build(
-      file,
-      scope
-    );
+    [file, parameters] = this.ResolvesTo(scope).Parameters.Build(file, scope);
 
     let type: WriterType;
-    [file, type] = this.ResolvesTo(scope.With(this)).Returns.Build(file, scope);
+    [file, type] = this.ResolvesTo(scope).Returns.Build(file, scope);
 
-    let main_func = new WriterFunction(this.CName, [], type, [], func);
+    let main_func = new WriterFunction(this.CName, parameters, type, [], func);
     let main_statements: Array<WriterStatement>;
     [file, main_func, main_statements] = this.#body.Build(
       file,
       main_func,
-      scope.With(this)
+      scope
     );
     file = file.WithEntity(main_func.WithStatements(main_statements));
 
-    return [file, func, new WriterFunctionReferenceExpression(main_func)];
+    return [file, func, new WriterGlobalReferenceExpression(main_func)];
   }
 
   ResolvesTo(scope: Scope): FunctionType {
+    scope = scope.With(this);
     return new FunctionType(
       this.CodeLocation,
       this.#parameters,
-      this.#returns ?? this.#body.ResolvesTo(scope.With(this))
+      this.#returns ?? this.#body.ResolvesTo(scope)
     );
   }
 }
