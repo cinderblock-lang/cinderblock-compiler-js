@@ -45,11 +45,8 @@ export class SubStatement extends Statement implements IInstance {
     let type: WriterType;
     [file, type] = this.#equals.ResolvesTo(scope).Build(file, scope);
 
-    return [
-      file,
-      func,
-      new WriterVariableStatement(this.CName, type, assignment),
-    ];
+    const result = new WriterVariableStatement(this.CName, type, assignment);
+    return [file, func, result];
   }
 
   Type(scope: Scope) {

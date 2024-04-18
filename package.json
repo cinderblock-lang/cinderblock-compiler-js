@@ -4,8 +4,9 @@
   "description": "A new programming language",
   "scripts": {
     "build": "tsc",
-    "test": "npm run build && cd ../cinderblock-tests/chained-operators && cinderblock compile",
-    "package": "pkg ."
+    "package": "pkg .",
+    "test:chained-operators": "npm run build && cd ../cinderblock-tests/chained-operators && cinderblock compile",
+    "test:if-expressions": "npm run build && cd ../cinderblock-tests/if-expressions && cinderblock compile"
   },
   "private": true,
   "bin": {

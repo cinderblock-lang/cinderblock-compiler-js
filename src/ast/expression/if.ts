@@ -40,6 +40,9 @@ export class IfExpression extends Expression {
     let type: WriterType;
     [file, type] = this.ResolvesTo(scope).Build(file, scope);
 
+    let check_expression: WriterExpression;
+    [file, func, check_expression] = this.#check.Build(file, func, scope);
+
     let if_func = new WriterFunction(this.CName + "_true", [], type, [], func);
     let if_statements: Array<WriterStatement>;
     [file, if_func, if_statements] = this.#if.Build(
@@ -65,9 +68,6 @@ export class IfExpression extends Expression {
     );
     else_func = else_func.WithStatements(else_statements);
     file = file.WithEntity(else_func);
-
-    let check_expression: WriterExpression;
-    [file, func, check_expression] = this.#check.Build(file, func, scope);
 
     return [
       file,
@@ -97,21 +97,19 @@ Expression.Register({
     return token_group.Text === "if";
   },
   Extract(token_group, prefix) {
-    if (token_group.Next.Text !== "(")
-      throw ParserError.UnexpectedSymbol(token_group.Next, "(");
+    token_group = token_group.Next;
+    token_group.Expect("(");
 
     let check: Expression;
-    [token_group, check] = Expression.Parse(token_group.Next.Next, [")"]);
+    [token_group, check] = Expression.Parse(token_group.Next, [")"]);
 
     let if_block: Closure;
-    [token_group, if_block] = Closure.Parse(token_group);
+    [token_group, if_block] = Closure.Parse(token_group.Next);
 
-    token_group = token_group.Next;
-    if (token_group.Text !== "else")
-      throw ParserError.UnexpectedSymbol(token_group, "else");
+    token_group.Expect("else");
 
     let else_block: Closure;
-    [token_group, else_block] = Closure.Parse(token_group.Next);
+    [token_group, else_block] = Closure.Parse(token_group.Next, false);
 
     return [
       token_group,

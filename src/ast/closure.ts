@@ -63,13 +63,16 @@ export class Closure implements IClosure {
     );
   }
 
-  static Parse(token_group: TokenGroup): [TokenGroup, Closure] {
+  static Parse(
+    token_group: TokenGroup,
+    progress_single_line = true
+  ): [TokenGroup, Closure] {
     if (token_group.Text !== "{") {
       let expression: Expression;
       [token_group, expression] = Expression.Parse(token_group, [";"]);
 
       return [
-        token_group,
+        progress_single_line ? token_group.Next : token_group,
         new Closure(new ReturnStatement(token_group.CodeLocation, expression)),
       ];
     }
