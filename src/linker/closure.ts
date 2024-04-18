@@ -29,8 +29,8 @@ export type ClosureContext = {
 };
 
 export interface IClosure {
-  Resolve(name: string, ctx: ClosureContext): IInstance | undefined;
-  ResolveType(name: string, ctx: ClosureContext): IConcreteType | undefined;
+  Resolve(name: string, ctx: ClosureContext): Array<IInstance>;
+  ResolveType(name: string, ctx: ClosureContext): Array<IConcreteType>;
 }
 
 export class Scope {
@@ -91,14 +91,17 @@ export class Scope {
   }
 
   Resolve(name: string) {
+    let result: Array<IInstance> = [];
     for (const [closure, parameters] of this.#closures) {
-      const result = closure.Resolve(name, { parameters, scope: this });
-      if (result) return result;
+      result = [
+        ...result,
+        ...closure.Resolve(name, { parameters, scope: this }),
+      ];
     }
 
     const namespace = this.#ast.GetNamespaceForFunction(this.#func);
 
-    return namespace.Resolve(name, this.#ast);
+    return [...result, ...namespace.Resolve(name, this.#ast)];
   }
 
   ResolveType(name: string) {

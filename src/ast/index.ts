@@ -101,7 +101,7 @@ export class Ast {
     for (const namespace of this.#data) {
       if (namespace.Name !== "App") continue;
 
-      const main = namespace.Resolve("main", this);
+      const [main] = namespace.Resolve("main", this);
       if (!main || !(main instanceof FunctionEntity))
         throw new LinkerError(
           namespace.CodeLocation,

@@ -23,16 +23,18 @@ export class Closure implements IClosure {
     this.#components = components;
   }
 
-  ResolveType(name: string, ctx: ClosureContext): IConcreteType | undefined {
-    return undefined;
+  ResolveType(name: string, ctx: ClosureContext): Array<IConcreteType> {
+    return [];
   }
 
-  Resolve(name: string): IInstance | undefined {
+  Resolve(name: string): Array<IInstance> {
     const variable = this.#components.filter(
       (c) => c instanceof SubStatement && c.Name === name
     );
 
-    if (variable.length > 0) return variable[0] as SubStatement;
+    if (variable.length > 0) return variable as Array<SubStatement>;
+
+    return [];
   }
 
   Build(

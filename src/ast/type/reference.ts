@@ -20,7 +20,7 @@ export class ReferenceType extends Type {
   }
 
   Build(file: WriterFile, scope: Scope): [WriterFile, WriterType] {
-    const result = scope.ResolveType(this.#name);
+    const [result] = scope.ResolveType(this.#name);
     if (!result)
       throw new LinkerError(
         this.CodeLocation,
@@ -36,7 +36,7 @@ export class ReferenceType extends Type {
   }
 
   ResolveConcrete(scope: Scope): IConcreteType {
-    const result = scope.ResolveType(this.#name);
+    const [result] = scope.ResolveType(this.#name);
     if (!result)
       throw new LinkerError(
         this.CodeLocation,

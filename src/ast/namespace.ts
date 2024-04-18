@@ -32,29 +32,30 @@ export class Namespace extends Component {
     return !!this.#contents.find((c) => c === func);
   }
 
-  ResolveType(name: string, ast: Ast): IConcreteType | undefined {
-    for (const entity of this.#contents)
-      if (
-        (entity instanceof StructEntity || entity instanceof EnumEntity) &&
-        entity.Name === name
-      )
-        return entity;
-
-    for (const namespace_name of this.#using()) {
-      const result = ast.GetNamespace(namespace_name).ResolveType(name, ast);
-      if (result && result instanceof Entity && result.Exported) return result;
-    }
+  ResolveType(name: string, ast: Ast): Array<IConcreteType> {
+    return [
+      ...this.#contents.filter(
+        (entity) =>
+          (entity instanceof StructEntity || entity instanceof EnumEntity) &&
+          entity.Name === name
+      ),
+      ...[...this.#using()].flatMap((namespace_name) => {
+        const result = ast.GetNamespace(namespace_name).ResolveType(name, ast);
+        return result.filter((r) => r instanceof Entity && r.Exported);
+      }),
+    ] as any as Array<IConcreteType>;
   }
 
-  Resolve(name: string, ast: Ast): IInstance | undefined {
-    for (const entity of this.#contents)
-      if (entity instanceof FunctionEntity && entity.Name === name)
-        return entity;
-
-    for (const namespace_name of this.#using()) {
-      const result = ast.GetNamespace(namespace_name).Resolve(name, ast);
-      if (result && result instanceof Entity && result.Exported) return result;
-    }
+  Resolve(name: string, ast: Ast): Array<IInstance> {
+    return [
+      ...this.#contents.filter(
+        (entity) => entity instanceof FunctionEntity && entity.Name === name
+      ),
+      ...[...this.#using()].flatMap((namespace_name) => {
+        const result = ast.GetNamespace(namespace_name).Resolve(name, ast);
+        return result.filter((r) => r instanceof Entity && r.Exported);
+      }),
+    ] as any as Array<IInstance>;
   }
 
   static Parse(token_group: TokenGroup): [TokenGroup, Namespace] {

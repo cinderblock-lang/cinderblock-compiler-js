@@ -33,7 +33,7 @@ export class ReferenceExpression extends Expression {
     func: WriterFunction,
     scope: Scope
   ): [WriterFile, WriterFunction, WriterExpression] {
-    const subject = scope.Resolve(this.#name);
+    const [subject] = scope.Resolve(this.#name);
 
     if (subject instanceof Parameter) {
       return [file, func, new WriterReferenceExpression(subject)];
@@ -67,7 +67,7 @@ export class ReferenceExpression extends Expression {
   }
 
   ResolvesTo(scope: Scope): Type {
-    const references = scope.Resolve(this.#name);
+    const [references] = scope.Resolve(this.#name);
 
     if (references instanceof SubStatement) {
       return references.Type(scope);

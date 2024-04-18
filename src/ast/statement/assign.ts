@@ -23,7 +23,7 @@ export class AssignStatement extends Statement {
     func: WriterFunction,
     scope: Scope
   ): [WriterFile, WriterFunction, WriterStatement] {
-    const make = scope.Resolve("__make_target__");
+    const [make] = scope.Resolve("__make_target__");
     if (!make)
       throw new LinkerError(
         this.CodeLocation,

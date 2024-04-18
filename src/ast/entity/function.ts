@@ -49,16 +49,21 @@ export class FunctionEntity extends Entity implements IClosure, IInstance {
     return this.CName;
   }
 
-  ResolveType(name: string, ctx: ClosureContext): IConcreteType | undefined {
-    return this.#parameters.ResolveType(name, ctx.parameters);
+  ResolveType(name: string, ctx: ClosureContext): Array<IConcreteType> {
+    return [this.#parameters.ResolveType(name, ctx.parameters)].filter(
+      (c) => !!c
+    ) as any;
   }
 
   get Name() {
     return this.#name;
   }
 
-  Resolve(name: string): IInstance | undefined {
-    return this.#content.Resolve(name) ?? this.#parameters.Resolve(name);
+  Resolve(name: string): Array<IInstance> {
+    return [
+      ...this.#content.Resolve(name),
+      this.#parameters.Resolve(name),
+    ].filter((c) => !!c) as any;
   }
 
   Declare(file: WriterFile, scope: Scope): [WriterFile, WriterFunction] {

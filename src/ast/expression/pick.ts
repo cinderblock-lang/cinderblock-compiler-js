@@ -43,12 +43,13 @@ export class PickExpression extends Expression implements IClosure, IInstance {
     return this.CName;
   }
 
-  Resolve(name: string, ctx: ClosureContext): IInstance | undefined {
-    if (name === "__pick_target__") return this;
+  Resolve(name: string, ctx: ClosureContext): Array<IInstance> {
+    if (name === "__pick_target__") return [this];
+    return [];
   }
 
-  ResolveType(name: string, ctx: ClosureContext): IConcreteType | undefined {
-    return undefined;
+  ResolveType(name: string, ctx: ClosureContext): Array<IConcreteType> {
+    return [];
   }
 
   Build(

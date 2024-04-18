@@ -39,12 +39,13 @@ export class MakeExpression extends Expression implements IInstance, IClosure {
     return this.CName;
   }
 
-  Resolve(name: string, ctx: ClosureContext): IInstance | undefined {
-    if (name === "__make_target__") return this;
+  Resolve(name: string, ctx: ClosureContext): Array<IInstance> {
+    if (name === "__make_target__") return [this];
+    return [];
   }
 
-  ResolveType(name: string, ctx: ClosureContext): IConcreteType | undefined {
-    return undefined;
+  ResolveType(name: string, ctx: ClosureContext): Array<IConcreteType> {
+    return [];
   }
 
   Build(

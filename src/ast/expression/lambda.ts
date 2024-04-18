@@ -42,12 +42,14 @@ export class LambdaExpression extends Expression implements IClosure {
     this.#name = Namer.GetName();
   }
 
-  ResolveType(name: string, ctx: ClosureContext): IConcreteType | undefined {
-    return this.#parameters.ResolveType(name, ctx.parameters);
+  ResolveType(name: string, ctx: ClosureContext): Array<IConcreteType> {
+    return [this.#parameters.ResolveType(name, ctx.parameters)].filter(
+      (c) => !!c
+    ) as any;
   }
 
-  Resolve(name: string): IInstance | undefined {
-    return this.#parameters.Resolve(name);
+  Resolve(name: string): Array<IInstance> {
+    return [this.#parameters.Resolve(name)].filter((c) => !!c) as any;
   }
 
   Build(

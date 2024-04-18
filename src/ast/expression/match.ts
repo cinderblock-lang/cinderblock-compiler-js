@@ -42,12 +42,13 @@ export class MatchExpression extends Expression implements IClosure {
     this.#using = using;
   }
 
-  Resolve(name: string, ctx: ClosureContext): IInstance | undefined {
-    if (name === this.#subject.Name) return this.#subject;
+  Resolve(name: string, ctx: ClosureContext): Array<IInstance> {
+    if (name === this.#subject.Name) return [this.#subject];
+    return [];
   }
 
-  ResolveType(name: string, ctx: ClosureContext): IConcreteType | undefined {
-    return undefined;
+  ResolveType(name: string, ctx: ClosureContext): Array<IConcreteType> {
+    return [];
   }
 
   Build(
