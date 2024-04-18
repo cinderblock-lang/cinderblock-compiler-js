@@ -103,40 +103,53 @@ export class WriterFunction extends WriterEntity {
   }
 
   get Declaration(): string {
-    const params = this.#parameters.map((p) => p.C).join(", ");
+    if (this.HasParent) return "";
+    let params = this.#parameters.map((p) => p.C).join(", ");
 
     const top_line = `${this.#returns.TypeName} ${this.#name}(${params})`;
 
-    let statements = this.#statements.map((s) => s.C(this)).join("\n  ");
+    const statements = this.#statements.map((s) => s.C(this)).join("\n  ");
     return `${top_line} {\n  ${statements}\n}`;
   }
 
-  get #deep_statements() {
-    let result: Array<WriterStatement> = this.#statements;
+  BlockDeclaration(depth: number): string {
+    const line_start = " ".repeat((depth - 1) * 2);
+    let params = this.#parameters.map((p) => p.C).join(", ");
 
-    if (this.#parent) result = [...result, ...this.#parent.#deep_statements];
-
-    return result;
+    return [
+      `Block_copy(^ ${this.#returns.TypeName} (${params}) {`,
+      ...this.#statements.map((s) => "  " + s.C(this)),
+      "})",
+    ].join("\n" + line_start);
   }
 
-  get #parent_parameters(): Array<WriterProperty> {
+  get #deep_parameters(): Array<WriterProperty> {
     let result: Array<WriterProperty> = [];
 
     if (this.#parent) {
-      result = [...result, ...this.#parent.#parameters];
-      result = [...result, ...this.#parent.#parent_parameters];
+      result = [
+        ...result,
+        ...this.#parent.#variables.map(
+          (v) => new WriterProperty(v.Name, v.Type)
+        ),
+      ];
+      result = [...result, ...this.#parent.#deep_parameters];
     }
 
     return result;
   }
 
-  get Variables(): Array<WriterVariableStatement> {
+  get #variables(): Array<WriterVariableStatement> {
     let result: Array<WriterVariableStatement> = [];
-    for (const statement of this.#deep_statements)
+    for (const statement of this.#statements)
       if (statement instanceof WriterVariableStatement)
         result = [...result, statement];
 
     return result;
+  }
+
+  get CurriedParameters() {
+    return this.#deep_parameters.map((d) => d.Name).join(", ");
   }
 
   get Type() {

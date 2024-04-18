@@ -77,11 +77,7 @@ export class WriterInvokationExpression extends WriterExpression {
 
   C(func: WriterFunction): string {
     const params = this.#parameters.map((p) => p.C(func)).join(", ");
-    if (this.#subject instanceof WriterGlobalReferenceExpression) {
-      return `${this.#subject.C()}(${params})`;
-    }
-
-    return `(*${this.#subject.C(func)})(${params})`;
+    return `${this.#subject.C(func)}(${params})`;
   }
 }
 
@@ -133,7 +129,11 @@ export class WriterGlobalReferenceExpression extends WriterExpression {
     this.#entity = entity;
   }
 
-  C() {
+  C(func: WriterFunction) {
+    if (this.#entity instanceof WriterFunction && this.#entity.HasParent) {
+      return this.#entity.BlockDeclaration(2);
+    }
+
     return this.#entity.Reference;
   }
 }

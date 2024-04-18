@@ -69,7 +69,9 @@ export class LambdaExpression extends Expression implements IClosure {
       main_func,
       scope
     );
-    file = file.WithEntity(main_func.WithStatements(main_statements));
+
+    main_func = main_func.WithStatements(main_statements);
+    file = file.WithEntity(main_func);
 
     return [file, func, new WriterGlobalReferenceExpression(main_func)];
   }

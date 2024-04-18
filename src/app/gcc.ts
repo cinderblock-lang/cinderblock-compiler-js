@@ -21,7 +21,7 @@ export default class Gcc {
       case "linux":
       case "darwin":
         await this.#exec(
-          `gcc ${c_file} ${debug ? "-g" : ""} -o ${output}`,
+          `gcc ${c_file} ${debug ? "-g" : ""} -fblocks -o ${output}`,
           this.#dir
         );
         break;

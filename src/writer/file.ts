@@ -5,7 +5,7 @@ export class WriterFile {
   readonly #entities: Array<WriterEntity>;
 
   constructor(includes: Array<string>, entities: Array<WriterEntity>) {
-    this.#includes = includes;
+    this.#includes = includes.length ? [...includes] : ["<Block.h>"];
     this.#entities = entities;
   }
 

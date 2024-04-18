@@ -47,7 +47,8 @@ export class IfExpression extends Expression {
       if_func,
       scope.With(this.#if)
     );
-    file = file.WithEntity(if_func.WithStatements(if_statements));
+    if_func = if_func.WithStatements(if_statements);
+    file = file.WithEntity(if_func);
 
     let else_func = new WriterFunction(
       this.CName + "_false",
@@ -62,7 +63,8 @@ export class IfExpression extends Expression {
       else_func,
       scope.With(this.#else)
     );
-    file = file.WithEntity(else_func.WithStatements(else_statements));
+    else_func = else_func.WithStatements(else_statements);
+    file = file.WithEntity(else_func);
 
     let check_expression: WriterExpression;
     [file, func, check_expression] = this.#check.Build(file, func, scope);
