@@ -39,7 +39,7 @@ export class PropertyCollection {
 
     while (token_group.Text !== "}") {
       const [t, r] = Property.Parse(token_group);
-      token_group = t;
+      token_group = t.Next;
       result.push(r);
     }
 

@@ -43,7 +43,7 @@ Entity.Register({
     }
 
     return [
-      token_group,
+      token_group.Next,
       new UsingEntity(token_group.CodeLocation, options, name),
     ];
   },

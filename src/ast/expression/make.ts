@@ -14,11 +14,13 @@ import {
   WriterExpression,
   WriterGlobalReferenceExpression,
   WriterInvokationExpression,
+  WriterReferenceExpression,
 } from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
 import { WriterFunction } from "../../writer/entity";
 import { WriterType } from "../../writer/type";
 import {
+  WriterReturnStatement,
   WriterStatement,
   WriterVariableStatement,
 } from "../../writer/statement";
@@ -72,7 +74,13 @@ export class MakeExpression extends Expression implements IInstance, IClosure {
       main_func,
       scope.With(this)
     );
-    file = file.WithEntity(main_func.WithStatements(main_statements));
+
+    main_statements = [
+      ...main_statements,
+      new WriterReturnStatement(new WriterReferenceExpression(this)),
+    ];
+    main_func = main_func.WithStatements(main_statements);
+    file = file.WithEntity(main_func);
 
     return [
       file,

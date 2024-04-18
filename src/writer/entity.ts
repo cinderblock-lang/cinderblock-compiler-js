@@ -40,6 +40,8 @@ export class WriterFunction extends WriterEntity {
   readonly #statements: Array<WriterStatement>;
   readonly #parent_name: string | undefined;
 
+  static #declared: Array<string> = [];
+
   constructor(
     name: string,
     parameters: Array<WriterProperty>,
@@ -104,6 +106,9 @@ export class WriterFunction extends WriterEntity {
 
   get Declaration(): string {
     if (this.HasParent) return "";
+    if (WriterFunction.#declared.includes(this.#name)) return "";
+    WriterFunction.#declared = [...WriterFunction.#declared, this.#name];
+
     let params = this.#parameters.map((p) => p.C).join(", ");
 
     const top_line = `${this.#returns.TypeName} ${this.#name}(${params})`;
@@ -161,6 +166,8 @@ export class WriterStruct extends WriterEntity {
   readonly #name: string;
   readonly #properties: Array<WriterProperty>;
 
+  static #declared: Array<string> = [];
+
   constructor(name: string, properties: Array<WriterProperty>) {
     super();
     this.#name = name;
@@ -172,6 +179,9 @@ export class WriterStruct extends WriterEntity {
   }
 
   get Declaration(): string {
+    if (WriterStruct.#declared.includes(this.#name)) return "";
+    WriterStruct.#declared = [...WriterStruct.#declared, this.#name];
+
     const properties = this.#properties.map((s) => s.C + ";").join("\n  ");
     return `typedef struct ${this.#name} {\n  ${properties}\n} ${this.#name};`;
   }

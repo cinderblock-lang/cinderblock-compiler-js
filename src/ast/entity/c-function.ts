@@ -69,8 +69,12 @@ Entity.Register({
       while (token_group.Text !== "]") {
         token_group = token_group.Next;
         const candidate = token_group.Text;
-        if (candidate.startsWith("<")) includes = [...includes, candidate];
-        else includes = [...includes, `"${candidate}"`];
+        if (candidate.startsWith('"<'))
+          includes = [
+            ...includes,
+            candidate.substring(1, candidate.length - 1),
+          ];
+        else includes = [...includes, candidate];
         token_group = token_group.Next;
       }
     } else {

@@ -40,9 +40,9 @@ export class Namespace extends Component {
       )
         return entity;
 
-    for (const name of this.#using()) {
-      const result = ast.GetNamespace(name).ResolveType(name, ast);
-      if (result) return result;
+    for (const namespace_name of this.#using()) {
+      const result = ast.GetNamespace(namespace_name).ResolveType(name, ast);
+      if (result && result instanceof Entity && result.Exported) return result;
     }
   }
 
@@ -51,9 +51,9 @@ export class Namespace extends Component {
       if (entity instanceof FunctionEntity && entity.Name === name)
         return entity;
 
-    for (const name of this.#using()) {
-      const result = ast.GetNamespace(name).Resolve(name, ast);
-      if (result) return result;
+    for (const namespace_name of this.#using()) {
+      const result = ast.GetNamespace(namespace_name).Resolve(name, ast);
+      if (result && result instanceof Entity && result.Exported) return result;
     }
   }
 

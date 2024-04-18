@@ -47,8 +47,13 @@ export class AccessExpression extends Expression {
     }
 
     const property = type.GetKey(this.#target);
-    if (!property)
-      throw new LinkerError(this.CodeLocation, "error", "Could not find key");
+    if (!property) {
+      return new ReferenceExpression(this.CodeLocation, this.#target).Build(
+        file,
+        func,
+        scope
+      );
+    }
 
     let subject: WriterExpression;
     [file, func, subject] = this.#subject.Build(file, func, scope);

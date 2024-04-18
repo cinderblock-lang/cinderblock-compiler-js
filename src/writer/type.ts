@@ -22,8 +22,7 @@ export class WriterFunctionType extends WriterType {
   }
 
   get TypeName(): string {
-    const params = this.#parameters.map((p) => p.C).join(", ");
-    return `${this.#returns.TypeName} (^__name)(${params})`;
+    return this.Declare("__name");
   }
 }
 
@@ -36,11 +35,11 @@ export class WriterStructType extends WriterType {
   }
 
   Declare(name: string): string {
-    return `${this.TypeName}* ${name}`;
+    return `${this.TypeName} ${name}`;
   }
 
   get TypeName(): string {
-    return this.#name;
+    return this.#name + "*";
   }
 }
 
