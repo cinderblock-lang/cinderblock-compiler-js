@@ -36,13 +36,7 @@ export class ReferenceExpression extends Expression {
     const subject = scope.Resolve(this.#name);
 
     if (subject instanceof Parameter) {
-      if (scope.IsCurrentLevel(this.#name))
-        return [
-          file,
-          func,
-          new WriterReferenceExpression(subject.CName),
-        ];
-      else return [file, func, new WriterReferenceExpression(subject)];
+      return [file, func, new WriterReferenceExpression(subject)];
     }
 
     if (subject instanceof MakeExpression) {

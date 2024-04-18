@@ -1,4 +1,3 @@
-import { __SCOPE } from "./constants";
 import { WriterFunction } from "./entity";
 import { WriterExpression } from "./expression";
 import { WriterType } from "./type";
@@ -28,7 +27,7 @@ export class WriterVariableStatement extends WriterStatement {
   }
 
   C(func: WriterFunction): string {
-    return `${__SCOPE}.${this.#name} = ${this.#assignment.C(func)};`;
+    return `${this.#type.Declare(this.#name)} = ${this.#assignment.C(func)};`;
   }
 }
 
@@ -46,7 +45,7 @@ export class WriterAssignStatement extends WriterStatement {
 
   C(func: WriterFunction): string {
     const access = `${this.#subject}->${this.#name}`;
-    return `${__SCOPE}.${access} = ${this.#assignment.C(func)};`;
+    return `${access} = ${this.#assignment.C(func)};`;
   }
 }
 

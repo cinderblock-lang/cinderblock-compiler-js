@@ -1,6 +1,5 @@
 import { Component } from "../ast/component";
-import { __ALLOCATE, __SCOPE } from "./constants";
-import type { WriterEntity, WriterFunction } from "./entity";
+import { WriterEntity, WriterFunction } from "./entity";
 import { WriterType } from "./type";
 
 export abstract class WriterExpression {
@@ -89,20 +88,14 @@ export class WriterInvokationExpression extends WriterExpression {
 export class WriterReferenceExpression extends WriterExpression {
   readonly #item: string;
 
-  constructor(item: Component);
-  constructor(item: string);
-  constructor(item: Component | string) {
+  constructor(item: Component) {
     super();
-    if (typeof item === "string") {
-      this.#item = item;
-    } else {
-      this.#item = item.CName;
-    }
+    this.#item = item.CName;
   }
 
   C(func: WriterFunction): string {
     if (func.IsParameter(this.#item)) return this.#item;
-    return __SCOPE + "." + this.#item;
+    return this.#item;
   }
 }
 
@@ -115,7 +108,7 @@ export class WriterAllocateExpression extends WriterExpression {
   }
 
   C(): string {
-    return `${__ALLOCATE}(${__SCOPE}, sizeof(${this.#item.TypeName}))`;
+    return `malloc(sizeof(${this.#item.TypeName}))`;
   }
 }
 

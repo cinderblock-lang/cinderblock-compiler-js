@@ -1,4 +1,3 @@
-import { __SCOPE, __SCOPE_ARG } from "./constants";
 import { WriterStatement, WriterVariableStatement } from "./statement";
 import { WriterFunctionType, type WriterType } from "./type";
 
@@ -62,6 +61,10 @@ export class WriterFunction extends WriterEntity {
     return this.#name;
   }
 
+  get HasParent() {
+    return !!this.#parent;
+  }
+
   get #parent(): WriterFunction | undefined {
     if (!this.#parent_name) return undefined;
     return WriterFunction.#functions[this.#parent_name];
@@ -100,24 +103,12 @@ export class WriterFunction extends WriterEntity {
   }
 
   get Declaration(): string {
-    let params = this.#parameters.map((p) => p.C).join(", ");
+    const params = this.#parameters.map((p) => p.C).join(", ");
 
-    if (this.#parent) {
-      const joiner = this.#parameters.length > 0 ? ", " : "";
-      params = `void* ${__SCOPE_ARG}${joiner}${params}`;
-    }
+    const top_line = `${this.#returns.TypeName} ${this.#name}(${params})`;
 
-    let top_line = `${this.#returns.TypeName} ${this.#name}(${params})`;
-    if (this.#returns instanceof WriterFunctionType) {
-      top_line = `${this.#returns.ReturnDeclare(this.#name)}(${params})`;
-    }
-
-    let statements = this.#parent
-      ? `${this.Scope.Reference} ${__SCOPE} = *(${this.Scope.Reference}*)${__SCOPE_ARG};\n  `
-      : `${this.Scope.Reference} ${__SCOPE};\n  `;
-
-    statements += this.#statements.map((s) => s.C(this)).join("\n  ");
-    return `${this.Scope.Declaration}\n${top_line} {\n  ${statements}\n}`;
+    let statements = this.#statements.map((s) => s.C(this)).join("\n  ");
+    return `${top_line} {\n  ${statements}\n}`;
   }
 
   get #deep_statements() {
@@ -148,11 +139,8 @@ export class WriterFunction extends WriterEntity {
     return result;
   }
 
-  get Scope(): WriterStruct {
-    return new WriterStruct(this.#name + "_scope", [
-      ...this.Variables.map((v) => new WriterProperty(v.Name, v.Type)),
-      ...this.#parent_parameters,
-    ]);
+  get Type() {
+    return new WriterFunctionType(this.#parameters, this.#returns);
   }
 }
 
