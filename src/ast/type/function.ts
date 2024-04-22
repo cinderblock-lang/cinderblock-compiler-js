@@ -1,14 +1,9 @@
-import {
-  ConcreteId,
-  DiscoverableTypeId,
-  IConcreteType,
-  IDiscoverableType,
-  Scope,
-} from "../../linker/closure";
+import { Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
 import { WriterProperty } from "../../writer/entity";
 import { WriterFile } from "../../writer/file";
 import { WriterFunctionType, WriterType } from "../../writer/type";
+import { ConcreteId, IConcreteType } from "../component";
 import { ParameterCollection } from "../parameter-collection";
 import { Type } from "./base";
 

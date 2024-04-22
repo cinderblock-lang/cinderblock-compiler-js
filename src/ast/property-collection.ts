@@ -1,7 +1,8 @@
-import { IConcreteType, Scope } from "../linker/closure";
+import { Scope } from "../linker/closure";
 import { TokenGroup } from "../parser/token";
 import { WriterProperty } from "../writer/entity";
 import { WriterFile } from "../writer/file";
+import { IConcreteType } from "./component";
 import { StructEntity } from "./entity/struct";
 import { Property } from "./property";
 

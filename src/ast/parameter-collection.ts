@@ -1,13 +1,8 @@
-import {
-  IConcreteType,
-  IDiscoverableType,
-  IInstance,
-  IsConcreteType,
-  Scope,
-} from "../linker/closure";
+import { Scope } from "../linker/closure";
 import { TokenGroup } from "../parser/token";
 import { WriterProperty } from "../writer/entity";
 import { WriterFile } from "../writer/file";
+import { IConcreteType, IDiscoverableType, IInstance } from "./component";
 import { StructEntity } from "./entity/struct";
 import { Parameter } from "./parameter";
 import { Type } from "./type/base";
@@ -55,7 +50,7 @@ export class ParameterCollection {
       }
 
       if (input instanceof FunctionType && match instanceof FunctionType) {
-        if (!IsConcreteType(match.Returns)) return undefined;
+        if (!match.Returns.IsConcreteType()) return undefined;
         return (
           input.Parameters.ResolveType(
             name,
@@ -89,13 +84,14 @@ export class ParameterCollection {
   }
 
   Resolve(name: string): IInstance | undefined {
-    return this.#components.find((c) => c.Name === name);
+    return this.#components.find((c) => c.Name === name)?.AsInstance();
   }
 
   get AsConcreteTypes() {
     return this.#components
       .map((c) => c.Type)
-      .filter(IsConcreteType) as any as Array<IConcreteType>;
+      .filter((c) => c.IsConcreteType())
+      .map((c) => c.AsConcreteType());
   }
 
   static Parse(token_group: TokenGroup): [TokenGroup, ParameterCollection] {

@@ -1,7 +1,7 @@
-import { IInstance, InstanceId } from "../linker/closure";
 import { CodeLocation } from "../location/code-location";
 import { ParserError } from "../parser/error";
 import { TokenGroup } from "../parser/token";
+import { IInstance, InstanceId } from "./component";
 import { SubItem } from "./sub-item";
 import { Type } from "./type/base";
 

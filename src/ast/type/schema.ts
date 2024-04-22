@@ -1,8 +1,9 @@
-import { IConcreteType, Scope } from "../../linker/closure";
+import { Scope } from "../../linker/closure";
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { WriterFile } from "../../writer/file";
 import { WriterType } from "../../writer/type";
+import { IConcreteType } from "../component";
 import { PropertyCollection } from "../property-collection";
 import { Type } from "./base";
 

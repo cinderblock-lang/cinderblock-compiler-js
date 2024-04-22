@@ -1,12 +1,9 @@
-import {
-  DiscoverableTypeId,
-  IDiscoverableType,
-  Scope,
-} from "../../linker/closure";
+import { Scope } from "../../linker/closure";
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { WriterEntity } from "../../writer/entity";
 import { WriterFile } from "../../writer/file";
+import { DiscoverableTypeId, IDiscoverableType } from "../component";
 import { PropertyCollection } from "../property-collection";
 import { Entity, EntityOptions } from "./base";
 

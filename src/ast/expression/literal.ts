@@ -6,7 +6,6 @@ import {
   WriterExpression,
   WriterGlobalReferenceExpression,
   WriterLiteralExpression,
-  WriterReferenceExpression,
 } from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
 import { Type } from "../type/base";

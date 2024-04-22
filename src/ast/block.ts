@@ -1,11 +1,4 @@
-import {
-  ClosureContext,
-  IClosure,
-  IConcreteType,
-  IDiscoverableType,
-  IInstance,
-  Scope,
-} from "../linker/closure";
+import { ClosureContext, IClosure, Scope } from "../linker/closure";
 import { TokenGroup } from "../parser/token";
 import { Statement } from "./statement/base";
 import { ReturnStatement } from "./statement/return";
@@ -16,6 +9,7 @@ import { WriterStatement } from "../writer/statement";
 import { LinkerError } from "../linker/error";
 import { Type } from "./type/base";
 import { WriterFunction } from "../writer/entity";
+import { IDiscoverableType, IConcreteType, IInstance } from "./component";
 
 export class Block implements IClosure {
   readonly #components: Array<Statement>;

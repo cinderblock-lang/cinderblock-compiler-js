@@ -1,4 +1,4 @@
-import { IInstance, InstanceId, Scope } from "../../linker/closure";
+import { Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
 import { WriterFunction } from "../../writer/entity";
 import { WriterExpression } from "../../writer/expression";
@@ -9,6 +9,7 @@ import {
   WriterVariableStatement,
 } from "../../writer/statement";
 import { WriterType } from "../../writer/type";
+import { IInstance, InstanceId } from "../component";
 import { Expression } from "../expression/base";
 import { Statement } from "./base";
 

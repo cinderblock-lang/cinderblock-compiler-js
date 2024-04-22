@@ -1,14 +1,7 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Block } from "../block";
-import {
-  ClosureContext,
-  IClosure,
-  IConcreteType,
-  IDiscoverableType,
-  IInstance,
-  Scope,
-} from "../../linker/closure";
+import { ClosureContext, IClosure, Scope } from "../../linker/closure";
 import {
   WriterAccessExpression,
   WriterExpression,
@@ -27,6 +20,7 @@ import { WriterFunction, WriterProperty } from "../../writer/entity";
 import { EnumEntity } from "../entity/enum";
 import { WriterStatement } from "../../writer/statement";
 import { WriterType } from "../../writer/type";
+import { IDiscoverableType, IInstance, IConcreteType } from "../component";
 
 export class MatchExpression extends Expression implements IClosure {
   readonly #subject: SubStatement;

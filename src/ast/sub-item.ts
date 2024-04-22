@@ -1,9 +1,9 @@
-import { IDiscoverableType, Scope } from "../linker/closure";
+import { Scope } from "../linker/closure";
 import { CodeLocation } from "../location/code-location";
 import { WriterProperty } from "../writer/entity";
 import { WriterFile } from "../writer/file";
 import { WriterType } from "../writer/type";
-import { Component } from "./component";
+import { Component, IDiscoverableType } from "./component";
 import { Type } from "./type/base";
 import { SchemaType } from "./type/schema";
 import { UseType } from "./type/use";

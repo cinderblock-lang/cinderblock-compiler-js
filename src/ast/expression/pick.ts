@@ -2,15 +2,7 @@ import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Type } from "../type/base";
 import { Block } from "../block";
-import {
-  ClosureContext,
-  IClosure,
-  IConcreteType,
-  IDiscoverableType,
-  IInstance,
-  InstanceId,
-  Scope,
-} from "../../linker/closure";
+import { ClosureContext, IClosure, Scope } from "../../linker/closure";
 import {
   WriterAllocateExpression,
   WriterExpression,
@@ -28,6 +20,12 @@ import {
 } from "../../writer/statement";
 import { EnumEntity } from "../entity/enum";
 import { LinkerError } from "../../linker/error";
+import {
+  IConcreteType,
+  IDiscoverableType,
+  IInstance,
+  InstanceId,
+} from "../component";
 
 export class PickExpression extends Expression implements IClosure, IInstance {
   readonly #enum: Type;

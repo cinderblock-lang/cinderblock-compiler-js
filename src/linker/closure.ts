@@ -1,51 +1,9 @@
 import type { Ast } from "../ast";
-import { Component } from "../ast/component";
+import { IConcreteType, IDiscoverableType, IInstance } from "../ast/component";
 import { FunctionEntity } from "../ast/entity/function";
 import { LambdaExpression } from "../ast/expression/lambda";
 import { EmptyCodeLocation } from "../location/empty";
 import { LinkerError } from "./error";
-
-export const InstanceId = Symbol();
-export const ConcreteId = Symbol();
-export const DiscoverableTypeId = Symbol();
-
-export interface IInstance extends Component {
-  readonly [InstanceId]: true;
-}
-
-export function IsInstance(input: unknown): input is IInstance {
-  return (
-    input instanceof Component &&
-    InstanceId in input &&
-    input[InstanceId] === true
-  );
-}
-
-export interface IConcreteType extends Component {
-  get Name(): string;
-  readonly [ConcreteId]: true;
-}
-
-export function IsConcreteType(input: unknown): input is IConcreteType {
-  return (
-    input instanceof Component &&
-    ConcreteId in input &&
-    input[ConcreteId] === true
-  );
-}
-
-export interface IDiscoverableType extends Component {
-  get Name(): string;
-  readonly [DiscoverableTypeId]: true;
-}
-
-export function IsDiscoverableType(input: unknown): input is IDiscoverableType {
-  return (
-    input instanceof Component &&
-    DiscoverableTypeId in input &&
-    input[DiscoverableTypeId] === true
-  );
-}
 
 export type ClosureContext = {
   parameters: Array<IConcreteType>;

@@ -2,15 +2,7 @@ import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Type } from "../type/base";
 import { Block } from "../block";
-import {
-  ClosureContext,
-  IClosure,
-  IConcreteType,
-  IDiscoverableType,
-  IInstance,
-  InstanceId,
-  Scope,
-} from "../../linker/closure";
+import { ClosureContext, IClosure, Scope } from "../../linker/closure";
 import {
   WriterAllocateExpression,
   WriterExpression,
@@ -26,6 +18,12 @@ import {
   WriterStatement,
   WriterVariableStatement,
 } from "../../writer/statement";
+import {
+  IInstance,
+  InstanceId,
+  IConcreteType,
+  IDiscoverableType,
+} from "../component";
 
 export class MakeExpression extends Expression implements IInstance, IClosure {
   readonly #struct: Type;

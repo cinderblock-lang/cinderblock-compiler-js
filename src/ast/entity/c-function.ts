@@ -1,4 +1,4 @@
-import { IInstance, Scope } from "../../linker/closure";
+import { Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
 import { WriterFunction, WriterProperty } from "../../writer/entity";
@@ -6,6 +6,7 @@ import { WriterFile } from "../../writer/file";
 import { WriterRawStatement } from "../../writer/statement";
 import { WriterType } from "../../writer/type";
 import { Block } from "../block";
+import { IInstance } from "../component";
 import { ParameterCollection } from "../parameter-collection";
 import { PrimitiveName, PrimitiveType } from "../type/primitive";
 import { Entity, EntityOptions } from "./base";

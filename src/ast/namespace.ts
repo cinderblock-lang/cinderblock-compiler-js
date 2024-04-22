@@ -1,18 +1,14 @@
 import type { Ast } from ".";
+import { CodeLocation } from "../location/code-location";
+import { TokenGroup } from "../parser/token";
 import {
+  Component,
   IConcreteType,
   IDiscoverableType,
   IInstance,
-  IsConcreteType,
-  IsDiscoverableType,
-} from "../linker/closure";
-import { CodeLocation } from "../location/code-location";
-import { TokenGroup } from "../parser/token";
-import { Component } from "./component";
+} from "./component";
 import { Entity } from "./entity/base";
-import { EnumEntity } from "./entity/enum";
 import { FunctionEntity } from "./entity/function";
-import { StructEntity } from "./entity/struct";
 import { UsingEntity } from "./entity/using";
 
 export class Namespace extends Component {
@@ -41,7 +37,7 @@ export class Namespace extends Component {
   ResolveType(name: string, ast: Ast): Array<IConcreteType> {
     return [
       ...this.#contents.filter(
-        (entity) => IsConcreteType(entity) && entity.Name === name
+        (entity) => entity.IsConcreteType() && entity.Name === name
       ),
       ...[...this.#using()].flatMap((namespace_name) => {
         const result = ast.GetNamespace(namespace_name).ResolveType(name, ast);
@@ -53,7 +49,7 @@ export class Namespace extends Component {
   DiscoverType(name: string, ast: Ast): Array<IDiscoverableType> {
     return [
       ...this.#contents.filter(
-        (entity) => IsDiscoverableType(entity) && entity.Name === name
+        (entity) => entity.IsDiscoverableType() && entity.Name === name
       ),
       ...[...this.#using()].flatMap((namespace_name) => {
         const result = ast.GetNamespace(namespace_name).ResolveType(name, ast);

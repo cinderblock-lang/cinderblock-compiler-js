@@ -1,18 +1,16 @@
-import {
-  ClosureContext,
-  IClosure,
-  IConcreteType,
-  IDiscoverableType,
-  IInstance,
-  InstanceId,
-  Scope,
-} from "../../linker/closure";
+import { ClosureContext, IClosure, Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
 import { WriterFunction, WriterProperty } from "../../writer/entity";
 import { WriterFile } from "../../writer/file";
 import { WriterStatement } from "../../writer/statement";
 import { WriterType } from "../../writer/type";
 import { Block } from "../block";
+import {
+  IInstance,
+  InstanceId,
+  IConcreteType,
+  IDiscoverableType,
+} from "../component";
 import { ParameterCollection } from "../parameter-collection";
 import { Type } from "../type/base";
 import { FunctionType } from "../type/function";

@@ -6,7 +6,6 @@ import { WriterFunction } from "../../writer/entity";
 import {
   WriterAccessExpression,
   WriterExpression,
-  WriterReferenceExpression,
 } from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
 import { FunctionEntity } from "../entity/function";

@@ -2,9 +2,10 @@ import z from "zod";
 import { CodeLocation } from "../../location/code-location";
 import { Type } from "./base";
 import { ParserError } from "../../parser/error";
-import { ConcreteId, IConcreteType, Scope } from "../../linker/closure";
+import { Scope } from "../../linker/closure";
 import { WriterPrimitiveType, WriterType } from "../../writer/type";
 import { WriterFile } from "../../writer/file";
+import { ConcreteId, IConcreteType } from "../component";
 
 export const PrimitiveName = z.union([
   z.literal("int"),

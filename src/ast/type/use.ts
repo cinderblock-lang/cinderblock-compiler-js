@@ -1,13 +1,13 @@
-import {
-  DiscoverableTypeId,
-  IConcreteType,
-  IDiscoverableType,
-  Scope,
-} from "../../linker/closure";
+import { Scope } from "../../linker/closure";
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { WriterFile } from "../../writer/file";
 import { WriterType } from "../../writer/type";
+import {
+  IDiscoverableType,
+  DiscoverableTypeId,
+  IConcreteType,
+} from "../component";
 import { Type } from "./base";
 
 export class UseType extends Type implements IDiscoverableType {

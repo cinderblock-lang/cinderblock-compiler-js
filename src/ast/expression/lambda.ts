@@ -3,14 +3,7 @@ import { CodeLocation } from "../../location/code-location";
 import { Namer } from "../../location/namer";
 import { Type } from "../type/base";
 import { Block } from "../block";
-import {
-  ClosureContext,
-  IClosure,
-  IConcreteType,
-  IDiscoverableType,
-  IInstance,
-  Scope,
-} from "../../linker/closure";
+import { ClosureContext, IClosure, Scope } from "../../linker/closure";
 import { ParameterCollection } from "../parameter-collection";
 import {
   WriterExpression,
@@ -21,6 +14,7 @@ import { FunctionType } from "../type/function";
 import { WriterFunction, WriterProperty } from "../../writer/entity";
 import { WriterType } from "../../writer/type";
 import { WriterStatement } from "../../writer/statement";
+import { IDiscoverableType, IConcreteType, IInstance } from "../component";
 
 export class LambdaExpression extends Expression implements IClosure {
   readonly #parameters: ParameterCollection;
