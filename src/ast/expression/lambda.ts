@@ -2,11 +2,12 @@ import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Namer } from "../../location/namer";
 import { Type } from "../type/base";
-import { Closure } from "../closure";
+import { Block } from "../block";
 import {
   ClosureContext,
   IClosure,
   IConcreteType,
+  IDiscoverableType,
   IInstance,
   Scope,
 } from "../../linker/closure";
@@ -23,7 +24,7 @@ import { WriterStatement } from "../../writer/statement";
 
 export class LambdaExpression extends Expression implements IClosure {
   readonly #parameters: ParameterCollection;
-  readonly #body: Closure;
+  readonly #body: Block;
   readonly #returns: Type | undefined;
 
   readonly #name: string;
@@ -31,7 +32,7 @@ export class LambdaExpression extends Expression implements IClosure {
   constructor(
     ctx: CodeLocation,
     parameters: ParameterCollection,
-    body: Closure,
+    body: Block,
     returns: Type | undefined
   ) {
     super(ctx);
@@ -40,6 +41,10 @@ export class LambdaExpression extends Expression implements IClosure {
     this.#returns = returns;
 
     this.#name = Namer.GetName();
+  }
+
+  DiscoverType(name: string, ctx: ClosureContext): IDiscoverableType[] {
+    return [this.#parameters.DiscoverType(name)].filter((c) => !!c) as any;
   }
 
   ResolveType(name: string, ctx: ClosureContext): Array<IConcreteType> {
@@ -108,8 +113,8 @@ Expression.Register({
 
     token_group.Expect("->");
 
-    let body: Closure;
-    [token_group, body] = Closure.Parse(token_group.Next);
+    let body: Block;
+    [token_group, body] = Block.Parse(token_group.Next);
 
     return [
       token_group,

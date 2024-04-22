@@ -2,6 +2,7 @@ import {
   ClosureContext,
   IClosure,
   IConcreteType,
+  IDiscoverableType,
   IInstance,
   Scope,
 } from "../linker/closure";
@@ -16,11 +17,15 @@ import { LinkerError } from "../linker/error";
 import { Type } from "./type/base";
 import { WriterFunction } from "../writer/entity";
 
-export class Closure implements IClosure {
+export class Block implements IClosure {
   readonly #components: Array<Statement>;
 
   constructor(...components: Array<Statement>) {
     this.#components = components;
+  }
+
+  DiscoverType(name: string, ctx: ClosureContext): IDiscoverableType[] {
+    return [];
   }
 
   ResolveType(name: string, ctx: ClosureContext): Array<IConcreteType> {
@@ -68,14 +73,14 @@ export class Closure implements IClosure {
   static Parse(
     token_group: TokenGroup,
     progress_single_line = true
-  ): [TokenGroup, Closure] {
+  ): [TokenGroup, Block] {
     if (token_group.Text !== "{") {
       let expression: Expression;
       [token_group, expression] = Expression.Parse(token_group, [";"]);
 
       return [
         progress_single_line ? token_group.Next : token_group,
-        new Closure(new ReturnStatement(token_group.CodeLocation, expression)),
+        new Block(new ReturnStatement(token_group.CodeLocation, expression)),
       ];
     }
 
@@ -89,6 +94,6 @@ export class Closure implements IClosure {
       result.push(r);
     }
 
-    return [token_group.Next, new Closure(...result)];
+    return [token_group.Next, new Block(...result)];
   }
 }

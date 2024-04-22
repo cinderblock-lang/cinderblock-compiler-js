@@ -3,7 +3,7 @@ import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { WriterFunction } from "../../writer/entity";
 import { WriterFile } from "../../writer/file";
-import { Closure } from "../closure";
+import { Block } from "../block";
 import { ParameterCollection } from "../parameter-collection";
 import { PrimitiveType } from "../type/primitive";
 import { Entity, EntityOptions } from "./base";
@@ -16,7 +16,7 @@ export class TestEntity extends FunctionEntity {
     ctx: CodeLocation,
     options: EntityOptions,
     description: string,
-    content: Closure
+    content: Block
   ) {
     super(
       ctx,
@@ -46,8 +46,8 @@ Entity.Register({
   Extract(token_group, options) {
     const name = token_group.Next.Text;
 
-    let body: Closure;
-    [token_group, body] = Closure.Parse(token_group);
+    let body: Block;
+    [token_group, body] = Block.Parse(token_group);
 
     return [
       token_group,

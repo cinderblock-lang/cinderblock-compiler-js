@@ -1,4 +1,4 @@
-import { IInstance, Scope } from "../../linker/closure";
+import { IInstance, InstanceId, Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
 import { WriterFunction } from "../../writer/entity";
 import { WriterExpression } from "../../writer/expression";
@@ -15,6 +15,8 @@ import { Statement } from "./base";
 export class SubStatement extends Statement implements IInstance {
   readonly #name: string;
   readonly #equals: Expression;
+
+  readonly [InstanceId] = true;
 
   #inserted = false;
 

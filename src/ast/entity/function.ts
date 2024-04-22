@@ -2,7 +2,9 @@ import {
   ClosureContext,
   IClosure,
   IConcreteType,
+  IDiscoverableType,
   IInstance,
+  InstanceId,
   Scope,
 } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
@@ -10,7 +12,7 @@ import { WriterFunction, WriterProperty } from "../../writer/entity";
 import { WriterFile } from "../../writer/file";
 import { WriterStatement } from "../../writer/statement";
 import { WriterType } from "../../writer/type";
-import { Closure } from "../closure";
+import { Block } from "../block";
 import { ParameterCollection } from "../parameter-collection";
 import { Type } from "../type/base";
 import { FunctionType } from "../type/function";
@@ -19,15 +21,17 @@ import { Entity, EntityOptions } from "./base";
 export class FunctionEntity extends Entity implements IClosure, IInstance {
   readonly #name: string;
   readonly #parameters: ParameterCollection;
-  readonly #content: Closure;
+  readonly #content: Block;
   readonly #returns: Type | undefined;
+
+  readonly [InstanceId] = true;
 
   constructor(
     ctx: CodeLocation,
     options: EntityOptions,
     name: string,
     parameters: ParameterCollection,
-    content: Closure,
+    content: Block,
     returns: Type | undefined
   ) {
     super(ctx, options);
@@ -53,6 +57,10 @@ export class FunctionEntity extends Entity implements IClosure, IInstance {
     return [this.#parameters.ResolveType(name, ctx.parameters)].filter(
       (c) => !!c
     ) as any;
+  }
+
+  DiscoverType(name: string, ctx: ClosureContext): IDiscoverableType[] {
+    return [this.#parameters.DiscoverType(name)].filter((c) => !!c) as any;
   }
 
   get Name() {
@@ -117,8 +125,8 @@ Entity.Register({
       [token_group, returns] = Type.Parse(token_group.Next);
     }
 
-    let body: Closure;
-    [token_group, body] = Closure.Parse(token_group);
+    let body: Block;
+    [token_group, body] = Block.Parse(token_group);
 
     return [
       token_group,

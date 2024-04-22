@@ -31,8 +31,8 @@ export class ReferenceType extends Type {
     if (result instanceof Entity) [file] = result.Declare(file, scope);
 
     if (result instanceof PrimitiveType)
-      return [file, new WriterPrimitiveType(result.TypeName)];
-    return [file, new WriterStructType(result.TypeName)];
+      return [file, new WriterPrimitiveType(result.CName)];
+    return [file, new WriterStructType(result.CName)];
   }
 
   ResolveConcrete(scope: Scope): IConcreteType {

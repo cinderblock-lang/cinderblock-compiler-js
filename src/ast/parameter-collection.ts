@@ -1,5 +1,6 @@
 import {
   IConcreteType,
+  IDiscoverableType,
   IInstance,
   IsConcreteType,
   Scope,
@@ -67,6 +68,24 @@ export class ParameterCollection {
     return this.#components
       .map((p, i) => resolve(p.Type, parameters[i]))
       .find((p) => !!p);
+  }
+
+  DiscoverType(name: string) {
+    const resolve = (
+      input: Type | undefined
+    ): IDiscoverableType | undefined => {
+      if (!input) return undefined;
+
+      if (input instanceof UseType && input.Name === name) return input;
+
+      if (input instanceof SchemaType)
+        return input.Properties.DiscoverType(name);
+
+      if (input instanceof FunctionType)
+        return input.Parameters.DiscoverType(name);
+    };
+
+    return this.#components.map((p, i) => resolve(p.Type)).find((p) => !!p);
   }
 
   Resolve(name: string): IInstance | undefined {

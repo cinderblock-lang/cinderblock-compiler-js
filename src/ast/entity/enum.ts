@@ -1,13 +1,25 @@
-import { IConcreteType, Scope } from "../../linker/closure";
+import {
+  ConcreteId,
+  DiscoverableTypeId,
+  IConcreteType,
+  IDiscoverableType,
+  Scope,
+} from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
 import { WriterProperty, WriterStruct } from "../../writer/entity";
 import { WriterFile } from "../../writer/file";
 import { PropertyCollection } from "../property-collection";
 import { Entity, EntityOptions } from "./base";
 
-export class EnumEntity extends Entity implements IConcreteType {
+export class EnumEntity
+  extends Entity
+  implements IConcreteType, IDiscoverableType
+{
   readonly #name: string;
   readonly #properties: PropertyCollection;
+
+  readonly [ConcreteId] = true;
+  readonly [DiscoverableTypeId] = true;
 
   constructor(
     ctx: CodeLocation,

@@ -1,4 +1,4 @@
-import { IInstance } from "../linker/closure";
+import { IInstance, InstanceId } from "../linker/closure";
 import { CodeLocation } from "../location/code-location";
 import { ParserError } from "../parser/error";
 import { TokenGroup } from "../parser/token";
@@ -9,6 +9,8 @@ export class Parameter extends SubItem implements IInstance {
   constructor(ctx: CodeLocation, name: string, type: Type, optional: boolean) {
     super(ctx, name, type, optional);
   }
+
+  readonly [InstanceId] = true;
 
   get Reference(): string {
     return this.CName;

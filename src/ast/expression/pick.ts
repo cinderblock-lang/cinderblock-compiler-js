@@ -1,12 +1,14 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Type } from "../type/base";
-import { Closure } from "../closure";
+import { Block } from "../block";
 import {
   ClosureContext,
   IClosure,
   IConcreteType,
+  IDiscoverableType,
   IInstance,
+  InstanceId,
   Scope,
 } from "../../linker/closure";
 import {
@@ -30,9 +32,11 @@ import { LinkerError } from "../../linker/error";
 export class PickExpression extends Expression implements IClosure, IInstance {
   readonly #enum: Type;
   readonly #key: string;
-  readonly #using: Closure;
+  readonly #using: Block;
 
-  constructor(ctx: CodeLocation, target: Type, key: string, using: Closure) {
+  readonly [InstanceId] = true;
+
+  constructor(ctx: CodeLocation, target: Type, key: string, using: Block) {
     super(ctx);
     this.#enum = target;
     this.#key = key;
@@ -107,6 +111,10 @@ export class PickExpression extends Expression implements IClosure, IInstance {
   ResolvesTo(scope: Scope): Type {
     return this.#enum;
   }
+
+  DiscoverType(name: string, ctx: ClosureContext): IDiscoverableType[] {
+    return [];
+  }
 }
 
 Expression.Register({
@@ -121,7 +129,7 @@ Expression.Register({
 
     const key = after_target.Next.Text;
 
-    const [after_block, block] = Closure.Parse(after_target.Skip(2));
+    const [after_block, block] = Block.Parse(after_target.Skip(2));
 
     return [
       after_block,

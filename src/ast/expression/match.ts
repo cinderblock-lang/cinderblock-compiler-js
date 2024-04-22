@@ -1,10 +1,11 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
-import { Closure } from "../closure";
+import { Block } from "../block";
 import {
   ClosureContext,
   IClosure,
   IConcreteType,
+  IDiscoverableType,
   IInstance,
   Scope,
 } from "../../linker/closure";
@@ -29,17 +30,21 @@ import { WriterType } from "../../writer/type";
 
 export class MatchExpression extends Expression implements IClosure {
   readonly #subject: SubStatement;
-  readonly #using: Record<string, Closure>;
+  readonly #using: Record<string, Block>;
 
   constructor(
     ctx: CodeLocation,
     subject: Expression,
     as: string,
-    using: Record<string, Closure>
+    using: Record<string, Block>
   ) {
     super(ctx);
     this.#subject = new SubStatement(this.CodeLocation, as, subject);
     this.#using = using;
+  }
+
+  DiscoverType(name: string, ctx: ClosureContext): IDiscoverableType[] {
+    return [];
   }
 
   Resolve(name: string, ctx: ClosureContext): Array<IInstance> {
@@ -195,11 +200,11 @@ Expression.Register({
     let after_using = after_subject.Skip(2);
     after_using.Expect("{");
 
-    const using: Record<string, Closure> = {};
+    const using: Record<string, Block> = {};
     while (after_using.Text !== "}") {
       const name = after_using.Next.Text;
       after_using.Skip(2).Expect(":");
-      const [after_block, block] = Closure.Parse(after_subject.Skip(3));
+      const [after_block, block] = Block.Parse(after_subject.Skip(3));
 
       using[name] = block;
       after_using = after_block;

@@ -1,10 +1,12 @@
-import { Scope } from "../linker/closure";
+import { IDiscoverableType, Scope } from "../linker/closure";
 import { CodeLocation } from "../location/code-location";
 import { WriterProperty } from "../writer/entity";
 import { WriterFile } from "../writer/file";
 import { WriterType } from "../writer/type";
 import { Component } from "./component";
 import { Type } from "./type/base";
+import { SchemaType } from "./type/schema";
+import { UseType } from "./type/use";
 
 export class SubItem extends Component {
   readonly #name: string;
@@ -28,6 +30,15 @@ export class SubItem extends Component {
 
   get Optional() {
     return this.#optional;
+  }
+
+  DiscoverType(name: string): IDiscoverableType | undefined {
+    if (this.Type instanceof UseType && this.Type.Name === name)
+      return this.Type;
+    if (this.Type instanceof SchemaType)
+      return this.Type.Properties.DiscoverType(name);
+
+    return undefined;
   }
 
   Build(

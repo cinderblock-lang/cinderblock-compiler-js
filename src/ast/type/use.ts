@@ -1,13 +1,20 @@
-import { IConcreteType, Scope } from "../../linker/closure";
+import {
+  DiscoverableTypeId,
+  IConcreteType,
+  IDiscoverableType,
+  Scope,
+} from "../../linker/closure";
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { WriterFile } from "../../writer/file";
 import { WriterType } from "../../writer/type";
 import { Type } from "./base";
 
-export class UseType extends Type {
+export class UseType extends Type implements IDiscoverableType {
   readonly #name: string;
   readonly #constraints: Array<Type>;
+
+  readonly [DiscoverableTypeId] = true;
 
   constructor(ctx: CodeLocation, name: string, constraints: Array<Type>) {
     super(ctx);

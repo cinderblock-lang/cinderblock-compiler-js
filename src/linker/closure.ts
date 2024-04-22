@@ -5,22 +5,46 @@ import { LambdaExpression } from "../ast/expression/lambda";
 import { EmptyCodeLocation } from "../location/empty";
 import { LinkerError } from "./error";
 
-export interface IInstance {
-  get CName(): string;
-  get Reference(): string;
+export const InstanceId = Symbol();
+export const ConcreteId = Symbol();
+export const DiscoverableTypeId = Symbol();
+
+export interface IInstance extends Component {
+  readonly [InstanceId]: true;
 }
 
 export function IsInstance(input: unknown): input is IInstance {
-  return input instanceof Component && "Reference" in input;
+  return (
+    input instanceof Component &&
+    InstanceId in input &&
+    input[InstanceId] === true
+  );
 }
 
-export interface IConcreteType {
-  get CName(): string;
-  get TypeName(): string;
+export interface IConcreteType extends Component {
+  get Name(): string;
+  readonly [ConcreteId]: true;
 }
 
 export function IsConcreteType(input: unknown): input is IConcreteType {
-  return input instanceof Component && "TypeName" in input;
+  return (
+    input instanceof Component &&
+    ConcreteId in input &&
+    input[ConcreteId] === true
+  );
+}
+
+export interface IDiscoverableType extends Component {
+  get Name(): string;
+  readonly [DiscoverableTypeId]: true;
+}
+
+export function IsDiscoverableType(input: unknown): input is IDiscoverableType {
+  return (
+    input instanceof Component &&
+    DiscoverableTypeId in input &&
+    input[DiscoverableTypeId] === true
+  );
 }
 
 export type ClosureContext = {
@@ -31,6 +55,7 @@ export type ClosureContext = {
 export interface IClosure {
   Resolve(name: string, ctx: ClosureContext): Array<IInstance>;
   ResolveType(name: string, ctx: ClosureContext): Array<IConcreteType>;
+  DiscoverType(name: string, ctx: ClosureContext): Array<IDiscoverableType>;
 }
 
 export class Scope {
@@ -113,6 +138,17 @@ export class Scope {
     const namespace = this.#ast.GetNamespaceForFunction(this.#func);
 
     return namespace.ResolveType(name, this.#ast);
+  }
+
+  DiscoverType(name: string) {
+    for (const [closure, parameters] of this.#closures.reverse()) {
+      const result = closure.DiscoverType(name, { parameters, scope: this });
+      if (result) return result;
+    }
+
+    const namespace = this.#ast.GetNamespaceForFunction(this.#func);
+
+    return namespace.DiscoverType(name, this.#ast);
   }
 
   get #current_func() {

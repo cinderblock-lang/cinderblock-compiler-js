@@ -1,4 +1,4 @@
-import { IConcreteType, IInstance, Scope } from "../linker/closure";
+import { IConcreteType, Scope } from "../linker/closure";
 import { TokenGroup } from "../parser/token";
 import { WriterProperty } from "../writer/entity";
 import { WriterFile } from "../writer/file";
@@ -18,6 +18,10 @@ export class PropertyCollection {
 
   ResolveType(name: string, real: StructEntity): IConcreteType | undefined {
     return undefined;
+  }
+
+  DiscoverType(name: string) {
+    return this.#components.map((c) => c.DiscoverType(name)).find((c) => !!c);
   }
 
   Build(file: WriterFile, scope: Scope): [WriterFile, Array<WriterProperty>] {

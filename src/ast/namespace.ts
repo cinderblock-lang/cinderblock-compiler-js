@@ -1,5 +1,11 @@
 import type { Ast } from ".";
-import { IConcreteType, IInstance } from "../linker/closure";
+import {
+  IConcreteType,
+  IDiscoverableType,
+  IInstance,
+  IsConcreteType,
+  IsDiscoverableType,
+} from "../linker/closure";
 import { CodeLocation } from "../location/code-location";
 import { TokenGroup } from "../parser/token";
 import { Component } from "./component";
@@ -35,15 +41,25 @@ export class Namespace extends Component {
   ResolveType(name: string, ast: Ast): Array<IConcreteType> {
     return [
       ...this.#contents.filter(
-        (entity) =>
-          (entity instanceof StructEntity || entity instanceof EnumEntity) &&
-          entity.Name === name
+        (entity) => IsConcreteType(entity) && entity.Name === name
       ),
       ...[...this.#using()].flatMap((namespace_name) => {
         const result = ast.GetNamespace(namespace_name).ResolveType(name, ast);
         return result.filter((r) => r instanceof Entity && r.Exported);
       }),
     ] as any as Array<IConcreteType>;
+  }
+
+  DiscoverType(name: string, ast: Ast): Array<IDiscoverableType> {
+    return [
+      ...this.#contents.filter(
+        (entity) => IsDiscoverableType(entity) && entity.Name === name
+      ),
+      ...[...this.#using()].flatMap((namespace_name) => {
+        const result = ast.GetNamespace(namespace_name).ResolveType(name, ast);
+        return result.filter((r) => r instanceof Entity && r.Exported);
+      }),
+    ] as any as Array<IDiscoverableType>;
   }
 
   Resolve(name: string, ast: Ast): Array<IInstance> {

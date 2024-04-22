@@ -1,12 +1,14 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Type } from "../type/base";
-import { Closure } from "../closure";
+import { Block } from "../block";
 import {
   ClosureContext,
   IClosure,
   IConcreteType,
+  IDiscoverableType,
   IInstance,
+  InstanceId,
   Scope,
 } from "../../linker/closure";
 import {
@@ -27,9 +29,11 @@ import {
 
 export class MakeExpression extends Expression implements IInstance, IClosure {
   readonly #struct: Type;
-  readonly #using: Closure;
+  readonly #using: Block;
 
-  constructor(ctx: CodeLocation, struct: Type, using: Closure) {
+  readonly [InstanceId] = true;
+
+  constructor(ctx: CodeLocation, struct: Type, using: Block) {
     super(ctx);
     this.#struct = struct;
     this.#using = using;
@@ -45,6 +49,10 @@ export class MakeExpression extends Expression implements IInstance, IClosure {
   }
 
   ResolveType(name: string, ctx: ClosureContext): Array<IConcreteType> {
+    return [];
+  }
+
+  DiscoverType(name: string, ctx: ClosureContext): IDiscoverableType[] {
     return [];
   }
 
@@ -106,7 +114,7 @@ Expression.Register({
   Extract(token_group, prefix) {
     const [after_type, type] = Type.Parse(token_group.Next);
 
-    const [after_using, using] = Closure.Parse(after_type);
+    const [after_using, using] = Block.Parse(after_type);
 
     return [
       after_using,

@@ -5,7 +5,7 @@ import { WriterFunction, WriterProperty } from "../../writer/entity";
 import { WriterFile } from "../../writer/file";
 import { WriterRawStatement } from "../../writer/statement";
 import { WriterType } from "../../writer/type";
-import { Closure } from "../closure";
+import { Block } from "../block";
 import { ParameterCollection } from "../parameter-collection";
 import { PrimitiveName, PrimitiveType } from "../type/primitive";
 import { Entity, EntityOptions } from "./base";
@@ -31,7 +31,7 @@ export class CFunction extends FunctionEntity implements IInstance {
       { ...options, unsafe: true },
       name,
       parameters,
-      new Closure(),
+      new Block(),
       returns
     );
 

@@ -1,4 +1,10 @@
-import { IConcreteType, Scope } from "../../linker/closure";
+import {
+  ConcreteId,
+  DiscoverableTypeId,
+  IConcreteType,
+  IDiscoverableType,
+  Scope,
+} from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
 import { WriterProperty } from "../../writer/entity";
 import { WriterFile } from "../../writer/file";
@@ -10,6 +16,8 @@ export class FunctionType extends Type implements IConcreteType {
   readonly #parameters: ParameterCollection;
   readonly #returns: Type;
 
+  readonly [ConcreteId] = true;
+
   constructor(
     ctx: CodeLocation,
     parameters: ParameterCollection,
@@ -20,8 +28,8 @@ export class FunctionType extends Type implements IConcreteType {
     this.#returns = returns;
   }
 
-  get TypeName(): string {
-    return "void*";
+  get Name() {
+    return "func";
   }
 
   get Parameters() {

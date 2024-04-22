@@ -2,7 +2,7 @@ import z from "zod";
 import { CodeLocation } from "../../location/code-location";
 import { Type } from "./base";
 import { ParserError } from "../../parser/error";
-import { IConcreteType, Scope } from "../../linker/closure";
+import { ConcreteId, IConcreteType, Scope } from "../../linker/closure";
 import { WriterPrimitiveType, WriterType } from "../../writer/type";
 import { WriterFile } from "../../writer/file";
 
@@ -35,6 +35,8 @@ export function IsPrimitiveName(input: string): input is PrimitiveName {
 export class PrimitiveType extends Type implements IConcreteType {
   readonly #name: PrimitiveName;
 
+  readonly [ConcreteId] = true;
+
   constructor(ctx: CodeLocation, name: PrimitiveName) {
     super(ctx);
     this.#name = name;
@@ -44,7 +46,7 @@ export class PrimitiveType extends Type implements IConcreteType {
     return this.#name;
   }
 
-  get TypeName(): string {
+  get CName(): string {
     switch (this.#name) {
       case "any":
         return "void*";
@@ -80,7 +82,7 @@ export class PrimitiveType extends Type implements IConcreteType {
   }
 
   Build(file: WriterFile, scope: Scope): [WriterFile, WriterType] {
-    return [file, new WriterPrimitiveType(this.TypeName)];
+    return [file, new WriterPrimitiveType(this.CName)];
   }
 
   ResolveConcrete(scope: Scope): IConcreteType {

@@ -1,4 +1,8 @@
-import { Scope } from "../../linker/closure";
+import {
+  DiscoverableTypeId,
+  IDiscoverableType,
+  Scope,
+} from "../../linker/closure";
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { WriterEntity } from "../../writer/entity";
@@ -6,9 +10,11 @@ import { WriterFile } from "../../writer/file";
 import { PropertyCollection } from "../property-collection";
 import { Entity, EntityOptions } from "./base";
 
-export class SchemaEntity extends Entity {
+export class SchemaEntity extends Entity implements IDiscoverableType {
   readonly #name: string;
   readonly #properties: PropertyCollection;
+
+  readonly [DiscoverableTypeId] = true;
 
   constructor(
     ctx: CodeLocation,
@@ -19,6 +25,10 @@ export class SchemaEntity extends Entity {
     super(ctx, options);
     this.#name = name;
     this.#properties = properties;
+  }
+
+  get Name() {
+    return this.#name;
   }
 
   Declare(file: WriterFile, scope: Scope): [WriterFile, WriterEntity] {

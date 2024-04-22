@@ -8,7 +8,7 @@ import "./entity/using";
 
 import "./expression/access";
 import "./expression/brackets";
-import "./closure";
+import "./block";
 import "./expression/default";
 import "./expression/empty";
 import "./expression/if";
