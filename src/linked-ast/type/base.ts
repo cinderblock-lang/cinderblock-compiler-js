@@ -1,3 +1,3 @@
-import { Component } from "../component";
+import { LinkedComponent } from "../component";
 
-export abstract class Type extends Component {}
+export abstract class LinkedType extends LinkedComponent {}

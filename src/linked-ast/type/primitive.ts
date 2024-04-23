@@ -1,6 +1,6 @@
 import z from "zod";
 import { CodeLocation } from "../../location/code-location";
-import { Type } from "./base";
+import { LinkedType } from "./base";
 
 export const PrimitiveName = z.union([
   z.literal("int"),
@@ -28,7 +28,7 @@ export function IsPrimitiveName(input: string): input is PrimitiveName {
   return result.success;
 }
 
-export class PrimitiveType extends Type {
+export class PrimitiveType extends LinkedType {
   readonly #name: PrimitiveName;
 
   constructor(ctx: CodeLocation, name: PrimitiveName) {

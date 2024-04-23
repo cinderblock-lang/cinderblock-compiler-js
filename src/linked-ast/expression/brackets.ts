@@ -1,10 +1,10 @@
-import { Expression } from "./base";
+import { LinkedExpression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 
-export class BracketsExpression extends Expression {
-  readonly #expression: Expression;
+export class BracketsExpression extends LinkedExpression {
+  readonly #expression: LinkedExpression;
 
-  constructor(ctx: CodeLocation, expression: Expression) {
+  constructor(ctx: CodeLocation, expression: LinkedExpression) {
     super(ctx);
     this.#expression = expression;
   }

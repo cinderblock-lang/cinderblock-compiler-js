@@ -1,19 +1,19 @@
 import { CodeLocation } from "../../location/code-location";
-import { Expression } from "../expression/base";
+import { LinkedExpression } from "../expression/base";
 import { MakeExpression } from "../expression/make";
 import { Property } from "../property";
-import { Statement } from "./base";
+import { LinkedStatement } from "./base";
 
-export class AssignStatement extends Statement {
+export class AssignStatement extends LinkedStatement {
   readonly #name: string;
-  readonly #equals: Expression;
+  readonly #equals: LinkedExpression;
   readonly #target: MakeExpression;
   readonly #property: Property;
 
   constructor(
     ctx: CodeLocation,
     name: string,
-    equals: Expression,
+    equals: LinkedExpression,
     target: MakeExpression,
     property: Property
   ) {

@@ -1,13 +1,13 @@
-import { Expression } from "./base";
+import { LinkedExpression } from "./base";
 import { CodeLocation } from "../../location/code-location";
-import { Type } from "../type/base";
+import { LinkedType } from "../type/base";
 import { PrimitiveType } from "../type/primitive";
 
-export class IsExpression extends Expression {
-  readonly #left: Expression;
-  readonly #right: Type;
+export class IsExpression extends LinkedExpression {
+  readonly #left: LinkedExpression;
+  readonly #right: LinkedType;
 
-  constructor(ctx: CodeLocation, left: Expression, right: Type) {
+  constructor(ctx: CodeLocation, left: LinkedExpression, right: LinkedType) {
     super(ctx);
     this.#left = left;
     this.#right = right;

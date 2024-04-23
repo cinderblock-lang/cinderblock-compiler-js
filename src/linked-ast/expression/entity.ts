@@ -1,17 +1,17 @@
 import { CodeLocation } from "../../location/code-location";
-import { Entity } from "../entity/base";
-import { Type } from "../type/base";
-import { Expression } from "./base";
+import { LinkedEntity } from "../entity/base";
+import { LinkedType } from "../type/base";
+import { LinkedExpression } from "./base";
 
-export class EntityExpression extends Expression {
-  readonly #entity: Entity;
+export class EntityExpression extends LinkedExpression {
+  readonly #entity: LinkedEntity;
 
-  constructor(ctx: CodeLocation, entity: Entity) {
+  constructor(ctx: CodeLocation, entity: LinkedEntity) {
     super(ctx);
     this.#entity = entity;
   }
 
-  get Type(): Type {
+  get Type(): LinkedType {
     return this.#entity.Type;
   }
 }

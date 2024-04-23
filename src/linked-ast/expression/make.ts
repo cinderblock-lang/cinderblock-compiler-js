@@ -1,10 +1,10 @@
-import { Expression } from "./base";
+import { LinkedExpression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Block } from "../block";
 import { StructType } from "../type/struct";
-import { Type } from "../type/base";
+import { LinkedType } from "../type/base";
 
-export class MakeExpression extends Expression {
+export class MakeExpression extends LinkedExpression {
   readonly #struct: StructType;
   readonly #using: Block;
 
@@ -14,7 +14,7 @@ export class MakeExpression extends Expression {
     this.#using = using;
   }
 
-  get Type(): Type {
+  get Type(): LinkedType {
     return this.#struct;
   }
 }

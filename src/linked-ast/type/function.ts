@@ -1,15 +1,15 @@
 import { CodeLocation } from "../../location/code-location";
 import { ParameterCollection } from "../parameter-collection";
-import { Type } from "./base";
+import { LinkedType } from "./base";
 
-export class FunctionType extends Type {
+export class FunctionType extends LinkedType {
   readonly #parameters: ParameterCollection;
-  readonly #returns: Type;
+  readonly #returns: LinkedType;
 
   constructor(
     ctx: CodeLocation,
     parameters: ParameterCollection,
-    returns: Type
+    returns: LinkedType
   ) {
     super(ctx);
     this.#parameters = parameters;

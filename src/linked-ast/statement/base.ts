@@ -1,3 +1,3 @@
-import { Component } from "../component";
+import { LinkedComponent } from "../component";
 
-export abstract class Statement extends Component {}
+export abstract class LinkedStatement extends LinkedComponent {}

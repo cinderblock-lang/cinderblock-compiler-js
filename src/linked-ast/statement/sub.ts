@@ -1,15 +1,15 @@
 import { Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
-import { Expression } from "../expression/base";
-import { Type } from "../type/base";
-import { Statement } from "./base";
+import { LinkedExpression } from "../expression/base";
+import { LinkedType } from "../type/base";
+import { LinkedStatement } from "./base";
 
-export class SubStatement extends Statement {
+export class SubStatement extends LinkedStatement {
   readonly #name: string;
-  readonly #equals: Expression;
-  readonly #type: Type;
+  readonly #equals: LinkedExpression;
+  readonly #type: LinkedType;
 
-  constructor(ctx: CodeLocation, name: string, equals: Expression, type: Type) {
+  constructor(ctx: CodeLocation, name: string, equals: LinkedExpression, type: LinkedType) {
     super(ctx);
     this.#name = name;
     this.#equals = equals;

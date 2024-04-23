@@ -1,6 +1,6 @@
-import { Expression } from "./base";
+import { LinkedExpression } from "./base";
 import { CodeLocation } from "../../location/code-location";
-import { Type } from "../type/base";
+import { LinkedType } from "../type/base";
 import { PrimitiveType } from "../type/primitive";
 
 export const Operators = [
@@ -25,16 +25,16 @@ export const Operators = [
 
 export type Operator = (typeof Operators)[number];
 
-export class OperatorExpression extends Expression {
-  readonly #left: Expression;
+export class OperatorExpression extends LinkedExpression {
+  readonly #left: LinkedExpression;
   readonly #operator: Operator;
-  readonly #right: Expression;
+  readonly #right: LinkedExpression;
 
   constructor(
     ctx: CodeLocation,
-    left: Expression,
+    left: LinkedExpression,
     operator: Operator,
-    right: Expression
+    right: LinkedExpression
   ) {
     super(ctx);
     this.#left = left;
@@ -42,7 +42,7 @@ export class OperatorExpression extends Expression {
     this.#right = right;
   }
 
-  get Type(): Type {
+  get Type(): LinkedType {
     switch (this.#operator) {
       case "!=":
       case "&&":

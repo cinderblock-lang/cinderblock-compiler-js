@@ -1,8 +1,8 @@
 import { CodeLocation } from "../../location/code-location";
 import { PropertyCollection } from "../property-collection";
-import { Type } from "./base";
+import { LinkedType } from "./base";
 
-export class StructType extends Type {
+export class StructType extends LinkedType {
   readonly #name: string;
   readonly #properties: PropertyCollection;
 

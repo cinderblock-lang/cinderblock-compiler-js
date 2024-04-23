@@ -1,13 +1,13 @@
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { StructType } from "../type/struct";
-import { Expression } from "./base";
+import { LinkedExpression } from "./base";
 
-export class AccessExpression extends Expression {
-  readonly #subject: Expression;
+export class AccessExpression extends LinkedExpression {
+  readonly #subject: LinkedExpression;
   readonly #target: string;
 
-  constructor(ctx: CodeLocation, subject: Expression, target: string) {
+  constructor(ctx: CodeLocation, subject: LinkedExpression, target: string) {
     super(ctx);
     this.#subject = subject;
     this.#target = target;

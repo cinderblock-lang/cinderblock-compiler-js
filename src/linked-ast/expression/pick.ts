@@ -1,9 +1,9 @@
-import { Expression } from "./base";
+import { LinkedExpression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Block } from "../block";
 import { EnumType } from "../type/enum";
 
-export class PickExpression extends Expression {
+export class PickExpression extends LinkedExpression {
   readonly #enum: EnumType;
   readonly #key: string;
   readonly #using: Block;

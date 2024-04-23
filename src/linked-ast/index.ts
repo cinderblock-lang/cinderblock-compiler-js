@@ -32,16 +32,16 @@ import "./type/reference";
 import "./type/schema";
 import "./type/use";
 
-import { Entity } from "./entity/base";
+import { LinkedEntity } from "./entity/base";
 
 export class Ast {
-  readonly #data: Array<Entity>;
+  readonly #data: Array<LinkedEntity>;
 
-  constructor(...data: Array<Entity>) {
+  constructor(...data: Array<LinkedEntity>) {
     this.#data = data;
   }
 
-  With(input: Entity) {
+  With(input: LinkedEntity) {
     return new Ast(input, ...this.#data);
   }
 }

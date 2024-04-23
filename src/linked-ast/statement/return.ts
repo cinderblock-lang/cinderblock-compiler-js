@@ -1,11 +1,11 @@
 import { CodeLocation } from "../../location/code-location";
-import { Expression } from "../expression/base";
-import { Statement } from "./base";
+import { LinkedExpression } from "../expression/base";
+import { LinkedStatement } from "./base";
 
-export class ReturnStatement extends Statement {
-  readonly #value: Expression;
+export class ReturnStatement extends LinkedStatement {
+  readonly #value: LinkedExpression;
 
-  constructor(ctx: CodeLocation, value: Expression) {
+  constructor(ctx: CodeLocation, value: LinkedExpression) {
     super(ctx);
     this.#value = value;
   }

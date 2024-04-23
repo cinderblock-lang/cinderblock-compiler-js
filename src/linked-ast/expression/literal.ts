@@ -1,6 +1,6 @@
-import { Expression } from "./base";
+import { LinkedExpression } from "./base";
 import { CodeLocation } from "../../location/code-location";
-import { Type } from "../type/base";
+import { LinkedType } from "../type/base";
 import { PrimitiveType } from "../type/primitive";
 
 export type LiteralType =
@@ -13,7 +13,7 @@ export type LiteralType =
   | "bool"
   | "null";
 
-export class LiteralExpression extends Expression {
+export class LiteralExpression extends LinkedExpression {
   readonly #type: LiteralType;
   readonly #value: string;
 
@@ -23,7 +23,7 @@ export class LiteralExpression extends Expression {
     this.#value = value;
   }
 
-  get Type(): Type {
+  get Type(): LinkedType {
     switch (this.#type) {
       case "string":
         return new PrimitiveType(this.CodeLocation, "string");

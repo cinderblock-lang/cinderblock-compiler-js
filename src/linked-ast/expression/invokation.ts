@@ -1,16 +1,16 @@
-import { Expression } from "./base";
+import { LinkedExpression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { FunctionType } from "../type/function";
 import { LinkerError } from "../../linker/error";
 
-export class InvokationExpression extends Expression {
-  readonly #subject: Expression;
-  readonly #parameters: Array<Expression>;
+export class InvokationExpression extends LinkedExpression {
+  readonly #subject: LinkedExpression;
+  readonly #parameters: Array<LinkedExpression>;
 
   constructor(
     ctx: CodeLocation,
-    subject: Expression,
-    parameters: Array<Expression>
+    subject: LinkedExpression,
+    parameters: Array<LinkedExpression>
   ) {
     super(ctx);
     this.#subject = subject;

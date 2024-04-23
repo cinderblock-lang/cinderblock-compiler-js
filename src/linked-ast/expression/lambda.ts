@@ -1,19 +1,19 @@
-import { Expression } from "./base";
+import { LinkedExpression } from "./base";
 import { CodeLocation } from "../../location/code-location";
-import { Type } from "../type/base";
+import { LinkedType } from "../type/base";
 import { Block } from "../block";
 import { ParameterCollection } from "../parameter-collection";
 
-export class LambdaExpression extends Expression {
+export class LambdaExpression extends LinkedExpression {
   readonly #parameters: ParameterCollection;
   readonly #body: Block;
-  readonly #returns: Type;
+  readonly #returns: LinkedType;
 
   constructor(
     ctx: CodeLocation,
     parameters: ParameterCollection,
     body: Block,
-    returns: Type
+    returns: LinkedType
   ) {
     super(ctx);
     this.#parameters = parameters;

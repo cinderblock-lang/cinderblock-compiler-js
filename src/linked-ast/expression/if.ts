@@ -1,15 +1,15 @@
-import { Expression } from "./base";
+import { LinkedExpression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Block } from "../block";
 
-export class IfExpression extends Expression {
-  readonly #check: Expression;
+export class IfExpression extends LinkedExpression {
+  readonly #check: LinkedExpression;
   readonly #if: Block;
   readonly #else: Block;
 
   constructor(
     ctx: CodeLocation,
-    check: Expression,
+    check: LinkedExpression,
     on_if: Block,
     on_else: Block
   ) {

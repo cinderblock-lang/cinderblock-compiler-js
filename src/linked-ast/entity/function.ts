@@ -1,22 +1,22 @@
 import { CodeLocation } from "../../location/code-location";
 import { Block } from "../block";
 import { ParameterCollection } from "../parameter-collection";
-import { Type } from "../type/base";
+import { LinkedType } from "../type/base";
 import { FunctionType } from "../type/function";
-import { Entity } from "./base";
+import { LinkedEntity } from "./base";
 
-export class FunctionEntity extends Entity {
+export class FunctionEntity extends LinkedEntity {
   readonly #name: string;
   readonly #parameters: ParameterCollection;
   readonly #content: Block;
-  readonly #returns: Type;
+  readonly #returns: LinkedType;
 
   constructor(
     ctx: CodeLocation,
     name: string,
     parameters: ParameterCollection,
     content: Block,
-    returns: Type
+    returns: LinkedType
   ) {
     super(ctx);
     this.#name = name;

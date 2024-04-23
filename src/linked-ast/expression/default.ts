@@ -1,11 +1,11 @@
 import { CodeLocation } from "../../location/code-location";
-import { Type } from "../type/base";
-import { Expression } from "./base";
+import { LinkedType } from "../type/base";
+import { LinkedExpression } from "./base";
 
-export class DefaultExpression extends Expression {
-  readonly #subject: Type;
+export class DefaultExpression extends LinkedExpression {
+  readonly #subject: LinkedType;
 
-  constructor(ctx: CodeLocation, subject: Type) {
+  constructor(ctx: CodeLocation, subject: LinkedType) {
     super(ctx);
     this.#subject = subject;
   }

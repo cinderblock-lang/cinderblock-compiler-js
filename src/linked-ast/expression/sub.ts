@@ -1,10 +1,10 @@
 import { CodeLocation } from "../../location/code-location";
-import { Entity } from "../entity/base";
+import { LinkedEntity } from "../entity/base";
 import { SubStatement } from "../statement/sub";
-import { Type } from "../type/base";
-import { Expression } from "./base";
+import { LinkedType } from "../type/base";
+import { LinkedExpression } from "./base";
 
-export class SubExpression extends Expression {
+export class SubExpression extends LinkedExpression {
   readonly #statement: SubStatement;
 
   constructor(ctx: CodeLocation, statement: SubStatement) {
@@ -12,7 +12,7 @@ export class SubExpression extends Expression {
     this.#statement = statement;
   }
 
-  get Type(): Type {
+  get Type(): LinkedType {
     return this.#statement.Type;
   }
 }

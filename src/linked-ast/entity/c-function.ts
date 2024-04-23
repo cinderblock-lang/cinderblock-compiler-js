@@ -3,10 +3,10 @@ import { Block } from "../block";
 import { ParameterCollection } from "../parameter-collection";
 import { FunctionType } from "../type/function";
 import { PrimitiveType } from "../type/primitive";
-import { Entity } from "./base";
+import { LinkedEntity } from "./base";
 import { FunctionEntity } from "./function";
 
-export class CFunction extends Entity {
+export class CFunction extends LinkedEntity {
   readonly #name: string;
   readonly #includes: Array<string>;
   readonly #parameters: ParameterCollection;

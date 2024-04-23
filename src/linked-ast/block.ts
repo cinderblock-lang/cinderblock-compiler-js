@@ -1,11 +1,11 @@
-import { Statement } from "./statement/base";
-import { Type } from "./type/base";
+import { LinkedStatement } from "./statement/base";
+import { LinkedType } from "./type/base";
 
 export class Block {
-  readonly #components: Array<Statement>;
-  readonly #returns: Type;
+  readonly #components: Array<LinkedStatement>;
+  readonly #returns: LinkedType;
 
-  constructor(components: Array<Statement>, returns: Type) {
+  constructor(components: Array<LinkedStatement>, returns: LinkedType) {
     this.#components = components;
     this.#returns = returns;
   }
