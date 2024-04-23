@@ -3,7 +3,6 @@ import "./entity/function";
 import "./entity/c-function";
 import "./entity/schema";
 import "./entity/struct";
-import "./entity/test";
 import "./entity/using";
 
 import "./expression/access";
