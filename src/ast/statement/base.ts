@@ -1,9 +1,5 @@
-import { Scope } from "../../linker/closure";
 import { ParserError } from "../../parser/error";
 import { TokenGroup } from "../../parser/token";
-import { WriterFunction } from "../../writer/entity";
-import { WriterFile } from "../../writer/file";
-import { WriterStatement } from "../../writer/statement";
 import { Component } from "../component";
 
 export interface IBaseable {
@@ -12,12 +8,6 @@ export interface IBaseable {
 }
 
 export abstract class Statement extends Component {
-  abstract Build(
-    file: WriterFile,
-    func: WriterFunction,
-    scope: Scope
-  ): [WriterFile, WriterFunction, WriterStatement];
-
   static #possible: Array<IBaseable> = [];
 
   static Register(instance: IBaseable): void {

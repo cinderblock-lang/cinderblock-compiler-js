@@ -1,9 +1,12 @@
+import { Namer } from "./namer";
+
 export class CodeLocation {
   readonly #file_name: string;
   readonly #start_line: number;
   readonly #start_column: number;
   readonly #end_line: number;
   readonly #end_column: number;
+  readonly #c_name: string;
 
   constructor(
     file_name: string,
@@ -17,6 +20,12 @@ export class CodeLocation {
     this.#start_column = start_column;
     this.#end_line = end_line;
     this.#end_column = end_column;
+
+    this.#c_name = Namer.GetName();
+  }
+
+  get CName() {
+    return this.#c_name;
   }
 
   get FileName() {

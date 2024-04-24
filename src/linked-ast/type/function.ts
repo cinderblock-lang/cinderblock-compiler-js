@@ -1,14 +1,17 @@
 import { CodeLocation } from "../../location/code-location";
-import { ParameterCollection } from "../parameter-collection";
+import { WriterProperty } from "../../writer/entity";
+import { WriterFile } from "../../writer/file";
+import { WriterFunctionType, WriterType } from "../../writer/type";
+import { LinkedParameterCollection } from "../parameter-collection";
 import { LinkedType } from "./base";
 
-export class FunctionType extends LinkedType {
-  readonly #parameters: ParameterCollection;
+export class LinkedFunctionType extends LinkedType {
+  readonly #parameters: LinkedParameterCollection;
   readonly #returns: LinkedType;
 
   constructor(
     ctx: CodeLocation,
-    parameters: ParameterCollection,
+    parameters: LinkedParameterCollection,
     returns: LinkedType
   ) {
     super(ctx);
@@ -16,15 +19,15 @@ export class FunctionType extends LinkedType {
     this.#returns = returns;
   }
 
-  get Name() {
-    return "func";
-  }
-
-  get Parameters() {
-    return this.#parameters;
-  }
-
   get Returns() {
     return this.#returns;
+  }
+
+  Build(file: WriterFile): [WriterFile, WriterType] {
+    let parameters: Array<WriterProperty>;
+    let returns: WriterType;
+    [file, parameters] = this.#parameters.Build(file);
+    [file, returns] = this.#returns.Build(file);
+    return [file, new WriterFunctionType(parameters, returns)];
   }
 }

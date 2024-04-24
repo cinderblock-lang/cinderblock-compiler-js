@@ -1,25 +1,11 @@
-import { Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
-import { WriterProperty, WriterStruct } from "../../writer/entity";
-import { WriterFile } from "../../writer/file";
-import {
-  IConcreteType,
-  IDiscoverableType,
-  ConcreteId,
-  DiscoverableTypeId,
-} from "../component";
 import { PropertyCollection } from "../property-collection";
 import { Entity, EntityOptions } from "./base";
+import { TypeEntity } from "./type-entity";
 
-export class StructEntity
-  extends Entity
-  implements IConcreteType, IDiscoverableType
-{
+export class StructEntity extends TypeEntity {
   readonly #name: string;
   readonly #properties: PropertyCollection;
-
-  readonly [ConcreteId] = true;
-  readonly [DiscoverableTypeId] = true;
 
   constructor(
     ctx: CodeLocation,
@@ -34,18 +20,6 @@ export class StructEntity
 
   get Name() {
     return this.#name;
-  }
-
-  get TypeName(): string {
-    return this.CName;
-  }
-
-  Declare(file: WriterFile, scope: Scope): [WriterFile, WriterStruct] {
-    let properties: Array<WriterProperty>;
-    [file, properties] = this.#properties.Build(file, scope);
-    const result = new WriterStruct(this.CName, properties);
-
-    return [file.WithEntity(result), result];
   }
 
   HasKey(key: string) {

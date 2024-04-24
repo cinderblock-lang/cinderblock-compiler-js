@@ -1,12 +1,6 @@
-import type { Ast } from ".";
 import { CodeLocation } from "../location/code-location";
 import { TokenGroup } from "../parser/token";
-import {
-  Component,
-  IConcreteType,
-  IDiscoverableType,
-  IInstance,
-} from "./component";
+import { Component } from "./component";
 import { Entity } from "./entity/base";
 import { FunctionEntity } from "./entity/function";
 import { UsingEntity } from "./entity/using";
@@ -32,42 +26,6 @@ export class Namespace extends Component {
 
   Contains(func: FunctionEntity) {
     return !!this.#contents.find((c) => c === func);
-  }
-
-  ResolveType(name: string, ast: Ast): Array<IConcreteType> {
-    return [
-      ...this.#contents.filter(
-        (entity) => entity.IsConcreteType() && entity.Name === name
-      ),
-      ...[...this.#using()].flatMap((namespace_name) => {
-        const result = ast.GetNamespace(namespace_name).ResolveType(name, ast);
-        return result.filter((r) => r instanceof Entity && r.Exported);
-      }),
-    ] as any as Array<IConcreteType>;
-  }
-
-  DiscoverType(name: string, ast: Ast): Array<IDiscoverableType> {
-    return [
-      ...this.#contents.filter(
-        (entity) => entity.IsDiscoverableType() && entity.Name === name
-      ),
-      ...[...this.#using()].flatMap((namespace_name) => {
-        const result = ast.GetNamespace(namespace_name).ResolveType(name, ast);
-        return result.filter((r) => r instanceof Entity && r.Exported);
-      }),
-    ] as any as Array<IDiscoverableType>;
-  }
-
-  Resolve(name: string, ast: Ast): Array<IInstance> {
-    return [
-      ...this.#contents.filter(
-        (entity) => entity instanceof FunctionEntity && entity.Name === name
-      ),
-      ...[...this.#using()].flatMap((namespace_name) => {
-        const result = ast.GetNamespace(namespace_name).Resolve(name, ast);
-        return result.filter((r) => r instanceof Entity && r.Exported);
-      }),
-    ] as any as Array<IInstance>;
   }
 
   static Parse(token_group: TokenGroup): [TokenGroup, Namespace] {

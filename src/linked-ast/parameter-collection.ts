@@ -1,9 +1,11 @@
-import { Parameter } from "./parameter";
+import { WriterProperty } from "../writer/entity";
+import { WriterFile } from "../writer/file";
+import { LinkedParameter } from "./parameter";
 
-export class ParameterCollection {
-  readonly #components: Array<Parameter>;
+export class LinkedParameterCollection {
+  readonly #components: Array<LinkedParameter>;
 
-  constructor(...components: Array<Parameter>) {
+  constructor(...components: Array<LinkedParameter>) {
     this.#components = components;
   }
 
@@ -13,5 +15,18 @@ export class ParameterCollection {
 
   GetKey(name: string) {
     return this.#components.find((c) => c.Name === name);
+  }
+
+  Build(
+    file: WriterFile,
+    preserve_name = false
+  ): [WriterFile, Array<WriterProperty>] {
+    return this.#components.reduce(
+      ([cf, cp], n) => {
+        const [f, p] = n.Build(cf, preserve_name);
+        return [f, [...cp, p]];
+      },
+      [file, []] as [WriterFile, Array<WriterProperty>]
+    );
   }
 }

@@ -1,20 +1,9 @@
-import { Scope } from "../../linker/closure";
-import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
-import { WriterFile } from "../../writer/file";
-import { WriterType } from "../../writer/type";
-import {
-  IDiscoverableType,
-  DiscoverableTypeId,
-  IConcreteType,
-} from "../component";
 import { Type } from "./base";
 
-export class UseType extends Type implements IDiscoverableType {
+export class UseType extends Type {
   readonly #name: string;
   readonly #constraints: Array<Type>;
-
-  readonly [DiscoverableTypeId] = true;
 
   constructor(ctx: CodeLocation, name: string, constraints: Array<Type>) {
     super(ctx);
@@ -24,22 +13,6 @@ export class UseType extends Type implements IDiscoverableType {
 
   get Name() {
     return this.#name;
-  }
-
-  Build(file: WriterFile, scope: Scope): [WriterFile, WriterType] {
-    throw new LinkerError(
-      this.CodeLocation,
-      "error",
-      "Cannot resolve type of use statement"
-    );
-  }
-
-  ResolveConcrete(scope: Scope): IConcreteType {
-    throw new LinkerError(
-      this.CodeLocation,
-      "error",
-      "Cannot resolve type of use statement"
-    );
   }
 }
 

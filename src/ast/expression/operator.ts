@@ -1,15 +1,6 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
-import { Scope } from "../../linker/closure";
-import {
-  WriterExpression,
-  WriterOperatorExpression,
-} from "../../writer/expression";
-import { WriterFile } from "../../writer/file";
-import { Type } from "../type/base";
-import { PrimitiveType } from "../type/primitive";
-import { WriterFunction } from "../../writer/entity";
 
 export const Operators = [
   "+",
@@ -51,49 +42,6 @@ export class OperatorExpression extends Expression {
     this.#left = left;
     this.#operator = operator;
     this.#right = right;
-  }
-
-  Build(
-    file: WriterFile,
-    func: WriterFunction,
-    scope: Scope
-  ): [WriterFile, WriterFunction, WriterExpression] {
-    let left: WriterExpression;
-    let right: WriterExpression;
-
-    [file, func, left] = this.#left.Build(file, func, scope);
-    [file, func, right] = this.#right.Build(file, func, scope);
-
-    return [
-      file,
-      func,
-      new WriterOperatorExpression(left, right, this.#operator),
-    ];
-  }
-
-  ResolvesTo(scope: Scope): Type {
-    switch (this.#operator) {
-      case "!=":
-      case "&&":
-      case "<":
-      case "<=":
-      case "==":
-      case ">":
-      case ">=":
-      case "||":
-        return new PrimitiveType(this.CodeLocation, "bool");
-      case "%":
-        return new PrimitiveType(this.CodeLocation, "double");
-      case "&":
-      case "*":
-      case "+":
-      case "-":
-      case "/":
-      case "<<":
-      case ">>":
-      case "|":
-        return this.#right.ResolvesTo(scope);
-    }
   }
 }
 

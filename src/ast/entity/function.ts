@@ -1,28 +1,14 @@
-import { ClosureContext, IClosure, Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
-import { WriterFunction, WriterProperty } from "../../writer/entity";
-import { WriterFile } from "../../writer/file";
-import { WriterStatement } from "../../writer/statement";
-import { WriterType } from "../../writer/type";
 import { Block } from "../block";
-import {
-  IInstance,
-  InstanceId,
-  IConcreteType,
-  IDiscoverableType,
-} from "../component";
 import { ParameterCollection } from "../parameter-collection";
 import { Type } from "../type/base";
-import { FunctionType } from "../type/function";
 import { Entity, EntityOptions } from "./base";
 
-export class FunctionEntity extends Entity implements IClosure, IInstance {
+export class FunctionEntity extends Entity {
   readonly #name: string;
   readonly #parameters: ParameterCollection;
   readonly #content: Block;
   readonly #returns: Type | undefined;
-
-  readonly [InstanceId] = true;
 
   constructor(
     ctx: CodeLocation,
@@ -39,68 +25,12 @@ export class FunctionEntity extends Entity implements IClosure, IInstance {
     this.#returns = returns;
   }
 
-  #is_main(scope: Scope) {
-    return this.#name === "main" && scope.Namespace.Name === "App";
-  }
-
   get Parameters() {
     return this.#parameters;
   }
 
-  get Reference(): string {
-    return this.CName;
-  }
-
-  ResolveType(name: string, ctx: ClosureContext): Array<IConcreteType> {
-    return [this.#parameters.ResolveType(name, ctx.parameters)].filter(
-      (c) => !!c
-    ) as any;
-  }
-
-  DiscoverType(name: string, ctx: ClosureContext): IDiscoverableType[] {
-    return [this.#parameters.DiscoverType(name)].filter((c) => !!c) as any;
-  }
-
   get Name() {
     return this.#name;
-  }
-
-  Resolve(name: string): Array<IInstance> {
-    return [
-      ...this.#content.Resolve(name),
-      this.#parameters.Resolve(name),
-    ].filter((c) => !!c) as any;
-  }
-
-  Declare(file: WriterFile, scope: Scope): [WriterFile, WriterFunction] {
-    scope = scope.ResetTo(this);
-    let parameters: Array<WriterProperty>;
-    [file, parameters] = this.#parameters.Build(file, scope);
-    let returns: WriterType;
-    [file, returns] = (this.#returns ?? this.#content.ResolvesTo(scope)).Build(
-      file,
-      scope
-    );
-
-    let result = new WriterFunction(
-      this.#is_main(scope) ? "main" : this.CName,
-      parameters,
-      returns,
-      []
-    );
-
-    let statements: Array<WriterStatement>;
-    [file, result, statements] = this.#content.Build(file, result, scope);
-    result = result.WithStatements(statements);
-    return [file.WithEntity(result), result];
-  }
-
-  ResolvesTo(scope: Scope): Type {
-    return new FunctionType(
-      this.CodeLocation,
-      this.#parameters,
-      this.#returns ?? this.#content.ResolvesTo(scope)
-    );
   }
 }
 

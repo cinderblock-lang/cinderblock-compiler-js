@@ -1,25 +1,11 @@
-import { Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
-import { WriterProperty, WriterStruct } from "../../writer/entity";
-import { WriterFile } from "../../writer/file";
-import {
-  IConcreteType,
-  IDiscoverableType,
-  ConcreteId,
-  DiscoverableTypeId,
-} from "../component";
 import { PropertyCollection } from "../property-collection";
 import { Entity, EntityOptions } from "./base";
+import { TypeEntity } from "./type-entity";
 
-export class EnumEntity
-  extends Entity
-  implements IConcreteType, IDiscoverableType
-{
+export class EnumEntity extends TypeEntity {
   readonly #name: string;
   readonly #properties: PropertyCollection;
-
-  readonly [ConcreteId] = true;
-  readonly [DiscoverableTypeId] = true;
 
   constructor(
     ctx: CodeLocation,
@@ -34,18 +20,6 @@ export class EnumEntity
 
   get Name() {
     return this.#name;
-  }
-
-  Declare(file: WriterFile, scope: Scope): [WriterFile, WriterStruct] {
-    let properties: Array<WriterProperty>;
-    [file, properties] = this.#properties.Build(file, scope);
-    const result = new WriterStruct(this.CName, properties);
-
-    return [file.WithEntity(result), result];
-  }
-
-  get TypeName(): string {
-    return this.CName;
   }
 
   HasKey(key: string) {

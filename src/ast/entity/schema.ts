@@ -1,17 +1,10 @@
-import { Scope } from "../../linker/closure";
-import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
-import { WriterEntity } from "../../writer/entity";
-import { WriterFile } from "../../writer/file";
-import { DiscoverableTypeId, IDiscoverableType } from "../component";
 import { PropertyCollection } from "../property-collection";
 import { Entity, EntityOptions } from "./base";
 
-export class SchemaEntity extends Entity implements IDiscoverableType {
+export class SchemaEntity extends Entity {
   readonly #name: string;
   readonly #properties: PropertyCollection;
-
-  readonly [DiscoverableTypeId] = true;
 
   constructor(
     ctx: CodeLocation,
@@ -26,10 +19,6 @@ export class SchemaEntity extends Entity implements IDiscoverableType {
 
   get Name() {
     return this.#name;
-  }
-
-  Declare(file: WriterFile, scope: Scope): [WriterFile, WriterEntity] {
-    throw new LinkerError(this.CodeLocation, "error", "Code not serialisable");
   }
 
   HasKey(key: string) {

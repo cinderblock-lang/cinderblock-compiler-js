@@ -1,4 +1,4 @@
-import { Component } from "../ast/component";
+import { LinkedComponent } from "../linked-ast/component";
 import { WriterEntity, WriterFunction } from "./entity";
 import { WriterType } from "./type";
 
@@ -84,7 +84,7 @@ export class WriterInvokationExpression extends WriterExpression {
 export class WriterReferenceExpression extends WriterExpression {
   readonly #item: string;
 
-  constructor(item: Component) {
+  constructor(item: LinkedComponent) {
     super();
     this.#item = item.CName;
   }

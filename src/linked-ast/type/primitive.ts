@@ -1,6 +1,8 @@
 import z from "zod";
 import { CodeLocation } from "../../location/code-location";
 import { LinkedType } from "./base";
+import { WriterFile } from "../../writer/file";
+import { WriterPrimitiveType, WriterType } from "../../writer/type";
 
 export const PrimitiveName = z.union([
   z.literal("int"),
@@ -28,7 +30,7 @@ export function IsPrimitiveName(input: string): input is PrimitiveName {
   return result.success;
 }
 
-export class PrimitiveType extends LinkedType {
+export class LinkedPrimitiveType extends LinkedType {
   readonly #name: PrimitiveName;
 
   constructor(ctx: CodeLocation, name: PrimitiveName) {
@@ -73,5 +75,9 @@ export class PrimitiveType extends LinkedType {
       case "null":
         return "void*";
     }
+  }
+
+  Build(file: WriterFile): [WriterFile, WriterType] {
+    return [file, new WriterPrimitiveType(this.CName)];
   }
 }

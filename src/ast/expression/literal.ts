@@ -1,18 +1,6 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
-import { Scope } from "../../linker/closure";
-import {
-  WriterExpression,
-  WriterGlobalReferenceExpression,
-  WriterLiteralExpression,
-} from "../../writer/expression";
-import { WriterFile } from "../../writer/file";
-import { Type } from "../type/base";
-import { PrimitiveType } from "../type/primitive";
-import { WriterFunction, WriterString } from "../../writer/entity";
-import { WriterType } from "../../writer/type";
-import { Namer } from "../../location/namer";
 
 export type LiteralType =
   | "string"
@@ -32,72 +20,6 @@ export class LiteralExpression extends Expression {
     super(ctx);
     this.#type = type;
     this.#value = value;
-  }
-
-  Build(
-    file: WriterFile,
-    func: WriterFunction,
-    scope: Scope
-  ): [WriterFile, WriterFunction, WriterExpression] {
-    let type: WriterType;
-    [file, type] = this.ResolvesTo(scope).Build(file, scope);
-
-    switch (this.#type) {
-      case "bool":
-        return [
-          file,
-          func,
-          new WriterLiteralExpression(this.#value === "true" ? "1" : "0"),
-        ];
-      case "char":
-        return [file, func, new WriterLiteralExpression(`'${this.#value}'`)];
-      case "double":
-        return [
-          file,
-          func,
-          new WriterLiteralExpression(this.#value.replace("d", "")),
-        ];
-      case "float":
-        return [file, func, new WriterLiteralExpression(this.#value)];
-      case "int":
-        return [
-          file,
-          func,
-          new WriterLiteralExpression(this.#value.replace("i", "")),
-        ];
-      case "long":
-        return [file, func, new WriterLiteralExpression(this.#value)];
-      case "string":
-        const entity = new WriterString(this.CName, this.#value);
-        return [
-          file.WithEntity(entity),
-          func,
-          new WriterGlobalReferenceExpression(entity),
-        ];
-      case "null":
-        return [file, func, new WriterLiteralExpression("NULL")];
-    }
-  }
-
-  ResolvesTo(scope: Scope): Type {
-    switch (this.#type) {
-      case "string":
-        return new PrimitiveType(this.CodeLocation, "string");
-      case "int":
-        return new PrimitiveType(this.CodeLocation, "int");
-      case "char":
-        return new PrimitiveType(this.CodeLocation, "char");
-      case "float":
-        return new PrimitiveType(this.CodeLocation, "float");
-      case "double":
-        return new PrimitiveType(this.CodeLocation, "double");
-      case "long":
-        return new PrimitiveType(this.CodeLocation, "long");
-      case "bool":
-        return new PrimitiveType(this.CodeLocation, "bool");
-      case "null":
-        return new PrimitiveType(this.CodeLocation, "null");
-    }
   }
 }
 

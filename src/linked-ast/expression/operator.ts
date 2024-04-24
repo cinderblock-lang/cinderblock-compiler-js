@@ -1,7 +1,13 @@
 import { LinkedExpression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { LinkedType } from "../type/base";
-import { PrimitiveType } from "../type/primitive";
+import { LinkedPrimitiveType } from "../type/primitive";
+import { WriterFunction } from "../../writer/entity";
+import {
+  WriterExpression,
+  WriterOperatorExpression,
+} from "../../writer/expression";
+import { WriterFile } from "../../writer/file";
 
 export const Operators = [
   "+",
@@ -25,7 +31,7 @@ export const Operators = [
 
 export type Operator = (typeof Operators)[number];
 
-export class OperatorExpression extends LinkedExpression {
+export class LinkedOperatorExpression extends LinkedExpression {
   readonly #left: LinkedExpression;
   readonly #operator: Operator;
   readonly #right: LinkedExpression;
@@ -52,9 +58,9 @@ export class OperatorExpression extends LinkedExpression {
       case ">":
       case ">=":
       case "||":
-        return new PrimitiveType(this.CodeLocation, "bool");
+        return new LinkedPrimitiveType(this.CodeLocation, "bool");
       case "%":
-        return new PrimitiveType(this.CodeLocation, "double");
+        return new LinkedPrimitiveType(this.CodeLocation, "double");
       case "&":
       case "*":
       case "+":
@@ -65,5 +71,22 @@ export class OperatorExpression extends LinkedExpression {
       case "|":
         return this.#right.Type;
     }
+  }
+
+  Build(
+    file: WriterFile,
+    func: WriterFunction
+  ): [WriterFile, WriterFunction, WriterExpression] {
+    let left: WriterExpression;
+    let right: WriterExpression;
+
+    [file, func, left] = this.#left.Build(file, func);
+    [file, func, right] = this.#right.Build(file, func);
+
+    return [
+      file,
+      func,
+      new WriterOperatorExpression(left, right, this.#operator),
+    ];
   }
 }

@@ -1,19 +1,12 @@
 import { CodeLocation } from "../location/code-location";
 import { ParserError } from "../parser/error";
 import { TokenGroup } from "../parser/token";
-import { IInstance, InstanceId } from "./component";
 import { SubItem } from "./sub-item";
 import { Type } from "./type/base";
 
-export class Parameter extends SubItem implements IInstance {
+export class Parameter extends SubItem {
   constructor(ctx: CodeLocation, name: string, type: Type, optional: boolean) {
     super(ctx, name, type, optional);
-  }
-
-  readonly [InstanceId] = true;
-
-  get Reference(): string {
-    return this.CName;
   }
 
   static Parse(token_group: TokenGroup): [TokenGroup, Parameter] {

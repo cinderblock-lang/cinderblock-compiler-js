@@ -1,9 +1,4 @@
-import { Scope } from "../../linker/closure";
-import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
-import { WriterFile } from "../../writer/file";
-import { WriterType } from "../../writer/type";
-import { IConcreteType } from "../component";
 import { PropertyCollection } from "../property-collection";
 import { Type } from "./base";
 
@@ -25,22 +20,6 @@ export class SchemaType extends Type {
 
   get Properties() {
     return this.#properties;
-  }
-
-  Build(file: WriterFile, scope: Scope): [WriterFile, WriterType] {
-    throw new LinkerError(
-      this.CodeLocation,
-      "error",
-      "Cannot resolve type of schema"
-    );
-  }
-
-  ResolveConcrete(scope: Scope): IConcreteType {
-    throw new LinkerError(
-      this.CodeLocation,
-      "error",
-      "Cannot resolve type of schema"
-    );
   }
 }
 

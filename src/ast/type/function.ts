@@ -1,17 +1,10 @@
-import { Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
-import { WriterProperty } from "../../writer/entity";
-import { WriterFile } from "../../writer/file";
-import { WriterFunctionType, WriterType } from "../../writer/type";
-import { ConcreteId, IConcreteType } from "../component";
 import { ParameterCollection } from "../parameter-collection";
 import { Type } from "./base";
 
-export class FunctionType extends Type implements IConcreteType {
+export class FunctionType extends Type {
   readonly #parameters: ParameterCollection;
   readonly #returns: Type;
-
-  readonly [ConcreteId] = true;
 
   constructor(
     ctx: CodeLocation,
@@ -33,18 +26,6 @@ export class FunctionType extends Type implements IConcreteType {
 
   get Returns() {
     return this.#returns;
-  }
-
-  Build(file: WriterFile, scope: Scope): [WriterFile, WriterType] {
-    let parameters: Array<WriterProperty>;
-    let returns: WriterType;
-    [file, parameters] = this.#parameters.Build(file, scope);
-    [file, returns] = this.#returns.Build(file, scope);
-    return [file, new WriterFunctionType(parameters, returns)];
-  }
-
-  ResolveConcrete(scope: Scope): IConcreteType {
-    return this;
   }
 }
 

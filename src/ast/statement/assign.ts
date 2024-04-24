@@ -1,10 +1,4 @@
-import { Scope } from "../../linker/closure";
-import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
-import { WriterFunction } from "../../writer/entity";
-import { WriterExpression } from "../../writer/expression";
-import { WriterFile } from "../../writer/file";
-import { WriterAssignStatement, WriterStatement } from "../../writer/statement";
 import { Expression } from "../expression/base";
 import { Statement } from "./base";
 
@@ -16,27 +10,6 @@ export class AssignStatement extends Statement {
     super(ctx);
     this.#name = name;
     this.#equals = equals;
-  }
-
-  Build(
-    file: WriterFile,
-    func: WriterFunction,
-    scope: Scope
-  ): [WriterFile, WriterFunction, WriterStatement] {
-    const [make] = scope.Resolve("__make_target__");
-    if (!make)
-      throw new LinkerError(
-        this.CodeLocation,
-        "error",
-        "Attempting an assign outside of a make expression"
-      );
-    let value: WriterExpression;
-    [file, func, value] = this.#equals.Build(file, func, scope);
-    return [
-      file,
-      func,
-      new WriterAssignStatement(make.CName, this.#name, value),
-    ];
   }
 }
 

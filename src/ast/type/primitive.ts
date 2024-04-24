@@ -2,10 +2,6 @@ import z from "zod";
 import { CodeLocation } from "../../location/code-location";
 import { Type } from "./base";
 import { ParserError } from "../../parser/error";
-import { Scope } from "../../linker/closure";
-import { WriterPrimitiveType, WriterType } from "../../writer/type";
-import { WriterFile } from "../../writer/file";
-import { ConcreteId, IConcreteType } from "../component";
 
 export const PrimitiveName = z.union([
   z.literal("int"),
@@ -33,10 +29,8 @@ export function IsPrimitiveName(input: string): input is PrimitiveName {
   return result.success;
 }
 
-export class PrimitiveType extends Type implements IConcreteType {
+export class PrimitiveType extends Type {
   readonly #name: PrimitiveName;
-
-  readonly [ConcreteId] = true;
 
   constructor(ctx: CodeLocation, name: PrimitiveName) {
     super(ctx);
@@ -45,49 +39,6 @@ export class PrimitiveType extends Type implements IConcreteType {
 
   get Name() {
     return this.#name;
-  }
-
-  get CName(): string {
-    switch (this.#name) {
-      case "any":
-        return "void*";
-      case "bool":
-        return "_Bool";
-      case "char":
-        return "char";
-      case "float":
-        return "float";
-      case "ufloat":
-        return "unsigned float";
-      case "double":
-        return "double";
-      case "udouble":
-        return "unsigned double";
-      case "int":
-        return "int";
-      case "uint":
-        return "unsigned int";
-      case "short":
-        return "short";
-      case "ushort":
-        return "unsigned short";
-      case "long":
-        return "long";
-      case "ulong":
-        return "unsigned long";
-      case "string":
-        return "char*";
-      case "null":
-        return "void*";
-    }
-  }
-
-  Build(file: WriterFile, scope: Scope): [WriterFile, WriterType] {
-    return [file, new WriterPrimitiveType(this.CName)];
-  }
-
-  ResolveConcrete(scope: Scope): IConcreteType {
-    return this;
   }
 }
 

@@ -2,31 +2,29 @@ import { CodeLocation } from "../../location/code-location";
 import { WriterFunction } from "../../writer/entity";
 import {
   WriterExpression,
-  WriterGlobalReferenceExpression,
+  WriterReferenceExpression,
 } from "../../writer/expression";
 import { WriterFile } from "../../writer/file";
-import { LinkedEntity } from "../entity/base";
+import { LinkedParameter } from "../parameter";
 import { LinkedType } from "../type/base";
 import { LinkedExpression } from "./base";
 
-export class LinkedEntityExpression extends LinkedExpression {
-  readonly #entity: LinkedEntity;
+export class LinkedParameterExpression extends LinkedExpression {
+  readonly #parameter: LinkedParameter;
 
-  constructor(ctx: CodeLocation, entity: LinkedEntity) {
+  constructor(ctx: CodeLocation, statement: LinkedParameter) {
     super(ctx);
-    this.#entity = entity;
+    this.#parameter = statement;
   }
 
   get Type(): LinkedType {
-    return this.#entity.Type;
+    return this.#parameter.Type;
   }
 
   Build(
     file: WriterFile,
     func: WriterFunction
   ): [WriterFile, WriterFunction, WriterExpression] {
-    let sub_func: WriterFunction;
-    [file, sub_func] = this.#entity.Declare(file);
-    return [file, func, new WriterGlobalReferenceExpression(sub_func)];
+    return [file, func, new WriterReferenceExpression(this.#parameter)];
   }
 }

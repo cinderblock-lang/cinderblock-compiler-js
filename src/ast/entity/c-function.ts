@@ -1,18 +1,12 @@
-import { Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
-import { WriterFunction, WriterProperty } from "../../writer/entity";
-import { WriterFile } from "../../writer/file";
-import { WriterRawStatement } from "../../writer/statement";
-import { WriterType } from "../../writer/type";
 import { Block } from "../block";
-import { IInstance } from "../component";
 import { ParameterCollection } from "../parameter-collection";
 import { PrimitiveName, PrimitiveType } from "../type/primitive";
 import { Entity, EntityOptions } from "./base";
 import { FunctionEntity } from "./function";
 
-export class CFunction extends FunctionEntity implements IInstance {
+export class CFunction extends FunctionEntity {
   readonly #includes: Array<string>;
   readonly #parameters: ParameterCollection;
   readonly #content: string;
@@ -40,20 +34,6 @@ export class CFunction extends FunctionEntity implements IInstance {
     this.#parameters = parameters;
     this.#content = content;
     this.#returns = returns;
-  }
-
-  Declare(file: WriterFile, scope: Scope): [WriterFile, WriterFunction] {
-    for (const include of this.#includes) file = file.WithInclude(include);
-
-    let parameters: Array<WriterProperty>;
-    [file, parameters] = this.#parameters.Build(file, scope, true);
-    let returns: WriterType;
-    [file, returns] = this.#returns.Build(file, scope);
-
-    let result = new WriterFunction(this.CName, parameters, returns, []);
-
-    result = result.WithStatement(new WriterRawStatement(this.#content));
-    return [file.WithEntity(result), result];
   }
 }
 

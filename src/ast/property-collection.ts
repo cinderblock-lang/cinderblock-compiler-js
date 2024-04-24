@@ -1,9 +1,4 @@
-import { Scope } from "../linker/closure";
 import { TokenGroup } from "../parser/token";
-import { WriterProperty } from "../writer/entity";
-import { WriterFile } from "../writer/file";
-import { IConcreteType } from "./component";
-import { StructEntity } from "./entity/struct";
 import { Property } from "./property";
 
 export class PropertyCollection {
@@ -15,24 +10,6 @@ export class PropertyCollection {
 
   Resolve(name: string) {
     return this.#components.find((c) => c.Name === name);
-  }
-
-  ResolveType(name: string, real: StructEntity): IConcreteType | undefined {
-    return undefined;
-  }
-
-  DiscoverType(name: string) {
-    return this.#components.map((c) => c.DiscoverType(name)).find((c) => !!c);
-  }
-
-  Build(file: WriterFile, scope: Scope): [WriterFile, Array<WriterProperty>] {
-    return this.#components.reduce(
-      ([cf, cp], n) => {
-        const [f, p] = n.Build(cf, scope);
-        return [f, [...cp, p]];
-      },
-      [file, []] as [WriterFile, Array<WriterProperty>]
-    );
   }
 
   get Keys() {

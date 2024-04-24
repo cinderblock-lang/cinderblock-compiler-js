@@ -2,14 +2,6 @@ import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Type } from "../type/base";
 import { ParserError } from "../../parser/error";
-import { Scope } from "../../linker/closure";
-import {
-  WriterExpression,
-  WriterLiteralExpression,
-} from "../../writer/expression";
-import { WriterFile } from "../../writer/file";
-import { PrimitiveType } from "../type/primitive";
-import { WriterFunction } from "../../writer/entity";
 
 export class IsExpression extends Expression {
   readonly #left: Expression;
@@ -19,33 +11,6 @@ export class IsExpression extends Expression {
     super(ctx);
     this.#left = left;
     this.#right = right;
-  }
-
-  Build(
-    file: WriterFile,
-    func: WriterFunction,
-    scope: Scope
-  ): [WriterFile, WriterFunction, WriterExpression] {
-    const left = this.#left.ResolvesTo(scope).ResolveConcrete(scope);
-    const right = this.#right.ResolveConcrete(scope);
-
-    if (left instanceof PrimitiveType && right instanceof PrimitiveType) {
-      return [
-        file,
-        func,
-        new WriterLiteralExpression(left.Name === right.Name ? "1" : "0"),
-      ];
-    }
-
-    return [
-      file,
-      func,
-      new WriterLiteralExpression(left === right ? "1" : "0"),
-    ];
-  }
-
-  ResolvesTo(scope: Scope): Type {
-    return new PrimitiveType(this.CodeLocation, "bool");
   }
 }
 

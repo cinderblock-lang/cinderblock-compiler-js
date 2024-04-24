@@ -1,25 +1,10 @@
-import { Scope } from "../../linker/closure";
 import { CodeLocation } from "../../location/code-location";
-import { WriterFunction } from "../../writer/entity";
-import { WriterExpression } from "../../writer/expression";
-import { WriterFile } from "../../writer/file";
-import {
-  WriterEmptyStatement,
-  WriterStatement,
-  WriterVariableStatement,
-} from "../../writer/statement";
-import { WriterType } from "../../writer/type";
-import { IInstance, InstanceId } from "../component";
 import { Expression } from "../expression/base";
 import { Statement } from "./base";
 
-export class SubStatement extends Statement implements IInstance {
+export class SubStatement extends Statement {
   readonly #name: string;
   readonly #equals: Expression;
-
-  readonly [InstanceId] = true;
-
-  #inserted = false;
 
   constructor(ctx: CodeLocation, name: string, equals: Expression) {
     super(ctx);
@@ -27,33 +12,8 @@ export class SubStatement extends Statement implements IInstance {
     this.#equals = equals;
   }
 
-  get Reference(): string {
-    return this.CName;
-  }
-
   get Name() {
     return this.#name;
-  }
-
-  Build(
-    file: WriterFile,
-    func: WriterFunction,
-    scope: Scope
-  ): [WriterFile, WriterFunction, WriterStatement] {
-    if (this.#inserted) return [file, func, new WriterEmptyStatement()];
-
-    this.#inserted = true;
-    let assignment: WriterExpression;
-    [file, func, assignment] = this.#equals.Build(file, func, scope);
-    let type: WriterType;
-    [file, type] = this.#equals.ResolvesTo(scope).Build(file, scope);
-
-    const result = new WriterVariableStatement(this.CName, type, assignment);
-    return [file, func, result];
-  }
-
-  Type(scope: Scope) {
-    return this.#equals.ResolvesTo(scope);
   }
 }
 
