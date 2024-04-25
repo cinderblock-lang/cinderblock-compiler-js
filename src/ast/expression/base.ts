@@ -1,6 +1,10 @@
+import { LinkedExpression } from "../../linked-ast/expression/base";
 import { ParserError } from "../../parser/error";
 import { TokenGroup } from "../../parser/token";
+import { CallStack } from "../callstack";
 import { Component } from "../component";
+import { Scope } from "../scope";
+import { Type } from "../type/base";
 
 export interface IBaseable {
   Priority: number;
@@ -17,6 +21,13 @@ export interface IBaseable {
 }
 
 export abstract class Expression extends Component {
+  abstract Linked(
+    scope: Scope,
+    callstack: CallStack
+  ): [Scope, LinkedExpression];
+
+  abstract Type(scope: Scope, callstack: CallStack): Type;
+
   static #possible: Array<IBaseable> = [];
 
   static Register(instance: IBaseable): void {

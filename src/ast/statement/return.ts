@@ -1,5 +1,8 @@
 import { CodeLocation } from "../../location/code-location";
+import { CallStack } from "../callstack";
 import { Expression } from "../expression/base";
+import { Scope } from "../scope";
+import { Type } from "../type/base";
 import { Statement } from "./base";
 
 export class ReturnStatement extends Statement {
@@ -9,6 +12,8 @@ export class ReturnStatement extends Statement {
     super(ctx);
     this.#value = value;
   }
+
+  ReturnType(scope: Scope, callstack: CallStack): Type {}
 }
 
 Statement.Register({

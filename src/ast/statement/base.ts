@@ -1,6 +1,9 @@
+import { LinkedStatement } from "../../linked-ast/statement/base";
 import { ParserError } from "../../parser/error";
 import { TokenGroup } from "../../parser/token";
+import { CallStack } from "../callstack";
 import { Component } from "../component";
+import { Scope } from "../scope";
 
 export interface IBaseable {
   Is(token_group: TokenGroup): boolean;
@@ -8,6 +11,8 @@ export interface IBaseable {
 }
 
 export abstract class Statement extends Component {
+  abstract Linked(scope: Scope, callstack: CallStack): [Scope, LinkedStatement];
+
   static #possible: Array<IBaseable> = [];
 
   static Register(instance: IBaseable): void {

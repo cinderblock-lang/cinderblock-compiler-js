@@ -1,4 +1,4 @@
-import { Ast } from "../ast";
+import { Ast } from "../ast/code-base";
 import { Tokenise } from "../parser";
 import { Dto } from "./dtos";
 import File from "./file";

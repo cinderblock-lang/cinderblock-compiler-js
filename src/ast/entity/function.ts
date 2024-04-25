@@ -1,6 +1,9 @@
+import { LinkedEntity } from "../../linked-ast/entity/base";
 import { CodeLocation } from "../../location/code-location";
 import { Block } from "../block";
+import { CallStack } from "../callstack";
 import { ParameterCollection } from "../parameter-collection";
+import { Scope } from "../scope";
 import { Type } from "../type/base";
 import { Entity, EntityOptions } from "./base";
 
@@ -32,6 +35,8 @@ export class FunctionEntity extends Entity {
   get Name() {
     return this.#name;
   }
+
+  Linked(scope: Scope, callstack: CallStack): [Scope, LinkedEntity] {}
 }
 
 Entity.Register({

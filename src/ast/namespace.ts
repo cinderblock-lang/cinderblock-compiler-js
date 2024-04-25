@@ -2,7 +2,6 @@ import { CodeLocation } from "../location/code-location";
 import { TokenGroup } from "../parser/token";
 import { Component } from "./component";
 import { Entity } from "./entity/base";
-import { FunctionEntity } from "./entity/function";
 import { UsingEntity } from "./entity/using";
 
 export class Namespace extends Component {
@@ -22,10 +21,6 @@ export class Namespace extends Component {
   *#using() {
     for (const entity of this.#contents)
       if (entity instanceof UsingEntity) yield entity.Name;
-  }
-
-  Contains(func: FunctionEntity) {
-    return !!this.#contents.find((c) => c === func);
   }
 
   static Parse(token_group: TokenGroup): [TokenGroup, Namespace] {

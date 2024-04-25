@@ -3,7 +3,7 @@ import Library from "./library";
 import Fs from "fs/promises";
 import FsOld from "fs";
 import Path from "path";
-import { Ast } from "../ast";
+import { Ast } from "../ast/code-base";
 import Source from "./source";
 import Gcc from "./gcc";
 import { ParserError } from "../parser/error";
