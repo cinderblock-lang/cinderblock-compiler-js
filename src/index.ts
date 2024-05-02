@@ -5,8 +5,3 @@ export async function Compile(root_dir: string, options: Dto.Options = {}) {
   const project = new Project(root_dir);
   await project.Compile(process.platform, options);
 }
-
-export async function Test(root_dir: string) {
-  const project = new Project(root_dir);
-  await project.Test(process.platform);
-}

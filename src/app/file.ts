@@ -1,5 +1,5 @@
-import { Ast } from "../ast/code-base";
+import { CodeBase } from "../ast/code-base";
 
 export default abstract class File {
-  abstract GetAst(input: Ast): Promise<Ast>;
+  abstract GetAst(input: CodeBase): Promise<CodeBase>;
 }

@@ -16,16 +16,6 @@ yargs(hideBin(process.argv))
       Compile(".", { debug: argv.debug, no_cache: argv["no-cache"] });
     }
   )
-  .command(
-    "test",
-    "Compile the test code",
-    (yargs) => {
-      return yargs;
-    },
-    (argv) => {
-      Test(".");
-    }
-  )
   .option("debug", {
     alias: "d",
     type: "boolean",
