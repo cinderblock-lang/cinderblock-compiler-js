@@ -5,7 +5,6 @@ import { Expression } from "./expression/base";
 import { LinkedBlock } from "../linked-ast/block";
 import { LinkedStatement } from "../linked-ast/statement/base";
 import { LinkerError } from "../linker/error";
-import { Type } from "./type/base";
 import { ContextResponse } from "./context-response";
 import { Context } from "./context";
 import { LinkedType } from "../linked-ast/type/base";
@@ -21,14 +20,7 @@ export class Block {
     return context.Build(
       {
         content: (context) =>
-          this.#components.reduce((ctx, n, i) => {
-            const result = n.Linked(ctx.Context);
-
-            return new ContextResponse(result.Context, [
-              ...ctx.Response,
-              result.Response,
-            ]);
-          }, new ContextResponse(context, [] as Array<LinkedStatement>)),
+          context.Reduce(this.#components, (ctx, n) => n.Linked(ctx)),
         returns: (context) => {
           const target = this.#components.find(
             (c) => c instanceof ReturnStatement

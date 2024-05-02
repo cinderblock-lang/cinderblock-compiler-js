@@ -31,9 +31,9 @@ export class LambdaExpression extends Expression {
   Linked(context: Context) {
     return context.Build(
       {
-        params: this.#parameters.Linked,
-        body: this.#body.Linked,
-        returns: this.#get_returns,
+        params: (c) => this.#parameters.Linked(c),
+        body: (c) => this.#body.Linked(c),
+        returns: (c) => this.#get_returns(c),
       },
       ({ params, body, returns }) =>
         new ContextResponse(

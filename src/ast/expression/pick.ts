@@ -22,8 +22,8 @@ export class PickExpression extends Expression {
   Linked(context: Context) {
     return context.Build(
       {
-        type: this.#enum.Linked,
-        using: this.#using.Linked,
+        type: (c) => this.#enum.Linked(c),
+        using: (c) => this.#using.Linked(c),
       },
       ({ type, using }) => {
         if (!(type instanceof LinkedEnumType))

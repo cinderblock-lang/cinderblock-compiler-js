@@ -27,7 +27,7 @@ export class MatchExpression extends Expression {
   Linked(context: Context) {
     return context.Build(
       {
-        subject: this.#subject.Linked,
+        subject: (c) => this.#subject.Linked(c),
         using: (ctx) =>
           new ContextResponse(
             ctx,

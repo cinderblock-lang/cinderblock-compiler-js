@@ -21,7 +21,7 @@ export class SubStatement extends Statement {
   Linked(context: Context) {
     return context.Build(
       {
-        equals: this.#equals.Linked,
+        equals: (c) => this.#equals.Linked(c),
       },
       ({ equals }) =>
         new LinkedSubStatement(

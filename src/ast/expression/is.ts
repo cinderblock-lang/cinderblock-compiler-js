@@ -18,8 +18,8 @@ export class IsExpression extends Expression {
   Linked(context: Context) {
     return context.Build(
       {
-        left: this.#left.Linked,
-        right: this.#right.Linked,
+        left: (c) => this.#left.Linked(c),
+        right: (c) => this.#right.Linked(c),
       },
       ({ left, right }) =>
         new LinkedLiteralExpression(

@@ -24,14 +24,7 @@ export class PropertyCollection {
     return context.Build(
       {
         params: (context) =>
-          this.#components.reduce((ctx, n, i) => {
-            const result = n.Linked(ctx.Context);
-
-            return new ContextResponse(result.Context, [
-              ...ctx.Response,
-              result.Response,
-            ]);
-          }, new ContextResponse(context, [] as Array<LinkedProperty>)),
+          context.Reduce(this.#components, (ctx, n) => n.Linked(ctx)),
       },
       ({ params }) => new LinkedPropertyCollection(...params)
     );

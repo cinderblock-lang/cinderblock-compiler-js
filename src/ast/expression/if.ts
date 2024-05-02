@@ -24,9 +24,9 @@ export class IfExpression extends Expression {
   Linked(context: Context) {
     return context.Build(
       {
-        check: this.#check.Linked,
-        if_block: this.#if.Linked,
-        else_block: this.#else.Linked,
+        check: (c) => this.#check.Linked(c),
+        if_block: (c) => this.#if.Linked(c),
+        else_block: (c) => this.#else.Linked(c),
       },
       ({ check, if_block, else_block }) =>
         new LinkedIfExpression(this.CodeLocation, check, if_block, else_block)

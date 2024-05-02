@@ -23,16 +23,9 @@ export class InvokationExpression extends Expression {
   Linked(context: Context) {
     return context.Build(
       {
-        subject: this.#subject.Linked,
+        subject: (c) => this.#subject.Linked(c),
         params: (context) =>
-          this.#parameters.reduce((ctx, n, i) => {
-            const result = n.Linked(ctx.Context);
-
-            return new ContextResponse(result.Context, [
-              ...ctx.Response,
-              result.Response,
-            ]);
-          }, new ContextResponse(context, [] as Array<LinkedExpression>)),
+          context.Reduce(this.#parameters, (ctx, n) => n.Linked(ctx)),
       },
       ({ subject, params }, ctx) =>
         new ContextResponse(

@@ -17,7 +17,7 @@ export class DefaultExpression extends Expression {
   Linked(context: Context) {
     return context.Build(
       {
-        subject: this.#subject.Linked,
+        subject: (c) => this.#subject.Linked(c),
       },
       ({ subject }) => new LinkedDefaultExpression(this.CodeLocation, subject)
     );

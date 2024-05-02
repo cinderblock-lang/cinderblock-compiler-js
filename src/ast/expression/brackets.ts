@@ -14,7 +14,7 @@ export class BracketsExpression extends Expression {
 
   Linked(context: Context) {
     return context.Build(
-      { expression: this.#expression.Linked },
+      { expression: (c) => this.#expression.Linked(c) },
       ({ expression }) =>
         new LinkedBracketsExpression(this.CodeLocation, expression)
     );

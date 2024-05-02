@@ -16,14 +16,9 @@ export class ParameterCollection {
     return context.Build(
       {
         params: (context) =>
-          this.#components.reduce((ctx, n, i) => {
-            const result = n.Linked(ctx.Context.WithParameterIndex(i));
-
-            return new ContextResponse(result.Context, [
-              ...ctx.Response,
-              result.Response,
-            ]);
-          }, new ContextResponse(context, [] as Array<LinkedParameter>)),
+          context.Reduce(this.#components, (ctx, n, i) =>
+            n.Linked(ctx.WithParameterIndex(i))
+          ),
       },
       ({ params }) => new LinkedParameterCollection(...params)
     );

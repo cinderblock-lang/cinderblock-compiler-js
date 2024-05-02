@@ -33,8 +33,8 @@ export class FunctionType extends Type {
   Linked(context: Context) {
     return context.Build(
       {
-        parameters: this.#parameters.Linked,
-        returns: this.Returns.Linked,
+        parameters: (c) => this.#parameters.Linked(c),
+        returns: (c) => this.Returns.Linked(c),
       },
       ({ parameters, returns }) =>
         new LinkedFunctionType(this.CodeLocation, parameters, returns)

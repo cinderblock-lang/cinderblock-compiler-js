@@ -44,7 +44,7 @@ export class EnumEntity extends TypeEntity {
   Linked(context: Context) {
     return context.Build(
       {
-        properties: this.#properties.Linked,
+        properties: (c) => this.#properties.Linked(c),
       },
       ({ properties }) => new LinkedEnumType(this.CodeLocation, properties)
     );

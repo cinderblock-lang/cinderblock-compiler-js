@@ -35,7 +35,7 @@ export class StructEntity extends TypeEntity {
   Linked(context: Context) {
     return context.Build(
       {
-        properties: this.#properties.Linked,
+        properties: (c) => this.#properties.Linked(c),
       },
       ({ properties }) => new LinkedStructType(this.CodeLocation, properties)
     );

@@ -15,7 +15,7 @@ export class SideStatement extends Statement {
   Linked(context: Context) {
     return context.Build(
       {
-        value: this.#value.Linked,
+        value: (c) => this.#value.Linked(c),
       },
       ({ value }) => new LinkedSideStatement(this.CodeLocation, value)
     );

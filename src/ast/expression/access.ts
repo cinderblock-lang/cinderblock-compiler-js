@@ -21,7 +21,7 @@ export class AccessExpression extends Expression {
   Linked(context: Context) {
     return context.Build(
       {
-        subject: this.#subject.Linked,
+        subject: (c) => this.#subject.Linked(c),
       },
       ({ subject }) =>
         new LinkedAccessExpression(this.CodeLocation, subject, this.#target)

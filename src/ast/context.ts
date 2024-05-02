@@ -145,4 +145,22 @@ export class Context {
     if (result instanceof ContextResponse) return result;
     return new ContextResponse(context, result);
   }
+
+  Reduce<TItem, TResult>(
+    input: TItem[],
+    mapper: (
+      context: Context,
+      item: TItem,
+      index: number
+    ) => ContextResponse<TResult>
+  ) {
+    return input.reduce((ctx, n, i) => {
+      const result = mapper(ctx.Context, n, i);
+
+      return new ContextResponse(result.Context, [
+        ...ctx.Response,
+        result.Response,
+      ]);
+    }, new ContextResponse(this, [] as Array<TResult>));
+  }
 }
