@@ -103,16 +103,4 @@ export default class Project {
       throw err;
     }
   }
-
-  async Test(target: Dto.Target) {
-    const ast = await this.#parse(target, true);
-
-    const dir = Path.resolve(this.#dir, this.#dto.bin, target);
-    await this.#ensure_dir(dir);
-
-    // await Fs.writeFile(Path.resolve(dir, "test.c"), ast.c_test());
-
-    const gcc = new Gcc(dir, target);
-    await gcc.Compile("test.c", this.#dto.name + "_tests", true);
-  }
 }
