@@ -3,11 +3,12 @@ import Library from "./library";
 import Fs from "fs/promises";
 import FsOld from "fs";
 import Path from "path";
-import { Ast } from "../ast/code-base";
+import { CodeBase } from "../ast/code-base";
 import Source from "./source";
 import Gcc from "./gcc";
 import { ParserError } from "../parser/error";
 import { LinkerError } from "../linker/error";
+import { WriterFile } from "../writer/file";
 
 export default class Project {
   readonly #dir: string;
@@ -59,7 +60,7 @@ export default class Project {
   async #parse(target: Dto.Target, no_cache?: boolean) {
     await this.#ensure_libraries(no_cache);
 
-    let parsed = new Ast();
+    let parsed = new CodeBase();
 
     for (const library of this.#libraries) {
       const source = await library.GetSource();
@@ -80,7 +81,9 @@ export default class Project {
 
       const dir = Path.resolve(this.#dir, this.#dto.bin, target);
       await this.#ensure_dir(dir);
-      await Fs.writeFile(Path.resolve(dir, "main.c"), ast.Writer.C);
+      const writer_file = new WriterFile([], []);
+      const [writer] = ast.Linked.Declare(writer_file);
+      await Fs.writeFile(Path.resolve(dir, "main.c"), writer.C);
 
       const gcc = new Gcc(dir, target);
       await gcc.Compile("main.c", this.#dto.name, options.debug ?? false);

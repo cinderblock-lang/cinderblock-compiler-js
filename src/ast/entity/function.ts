@@ -1,9 +1,10 @@
 import { LinkedEntity } from "../../linked-ast/entity/base";
+import { LinkedFunctionEntity } from "../../linked-ast/entity/function";
 import { CodeLocation } from "../../location/code-location";
 import { Block } from "../block";
-import { CallStack } from "../callstack";
+import { Context } from "../context";
+import { ContextResponse } from "../context-response";
 import { ParameterCollection } from "../parameter-collection";
-import { Scope } from "../scope";
 import { Type } from "../type/base";
 import { Entity, EntityOptions } from "./base";
 
@@ -36,7 +37,27 @@ export class FunctionEntity extends Entity {
     return this.#name;
   }
 
-  Linked(scope: Scope, callstack: CallStack): [Scope, LinkedEntity] {}
+  #get_returns(context: Context) {
+    return this.#returns?.Linked(context) ?? this.#content.Returns(context);
+  }
+
+  Linked(context: Context): ContextResponse<LinkedEntity> {
+    return context.EnterFunction(this).Build(
+      {
+        params: this.#parameters.Linked,
+        returns: this.#get_returns,
+        contents: this.#content.Linked,
+      },
+      ({ params, returns, contents }) =>
+        new LinkedFunctionEntity(
+          this.CodeLocation,
+          this.#name,
+          params,
+          contents,
+          returns
+        )
+    );
+  }
 }
 
 Entity.Register({

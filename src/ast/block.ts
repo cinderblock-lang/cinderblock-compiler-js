@@ -2,12 +2,13 @@ import { TokenGroup } from "../parser/token";
 import { Statement } from "./statement/base";
 import { ReturnStatement } from "./statement/return";
 import { Expression } from "./expression/base";
-import { Scope } from "./scope";
-import { CallStack } from "./callstack";
 import { LinkedBlock } from "../linked-ast/block";
 import { LinkedStatement } from "../linked-ast/statement/base";
-import { LinkedType } from "../linked-ast/type/base";
 import { LinkerError } from "../linker/error";
+import { Type } from "./type/base";
+import { ContextResponse } from "./context-response";
+import { Context } from "./context";
+import { LinkedType } from "../linked-ast/type/base";
 
 export class Block {
   readonly #components: Array<Statement>;
@@ -16,33 +17,51 @@ export class Block {
     this.#components = components;
   }
 
-  Linked(scope: Scope, callstack: CallStack): [Scope, LinkedBlock] {
-    let result: Array<LinkedStatement>;
-    let returns: LinkedType | undefined = undefined;
+  Linked(context: Context) {
+    return context.Build(
+      {
+        content: (context) =>
+          this.#components.reduce((ctx, n, i) => {
+            const result = n.Linked(ctx.Context);
 
-    [scope, result] = this.#components.reduce(
-      ([scope, map], n) => {
-        if (n instanceof ReturnStatement)
-          [scope, returns] = n
-            .ReturnType(scope, callstack)
-            .Linked(scope, callstack);
+            return new ContextResponse(result.Context, [
+              ...ctx.Response,
+              result.Response,
+            ]);
+          }, new ContextResponse(context, [] as Array<LinkedStatement>)),
+        returns: (context) => {
+          const target = this.#components.find(
+            (c) => c instanceof ReturnStatement
+          );
+          if (!target || !(target instanceof ReturnStatement))
+            throw new LinkerError(
+              this.#components[0].CodeLocation,
+              "error",
+              "Unable to determine return type"
+            );
 
-        let result: LinkedStatement;
-        [scope, result] = n.Linked(scope, callstack);
-
-        return [scope, [...map, result]];
+          return target.ReturnType(context);
+        },
       },
-      [scope, []] as [Scope, Array<LinkedStatement>]
+      ({ content, returns }) => new LinkedBlock(content, returns)
     );
+  }
 
-    if (!returns)
+  Returns(context: Context): ContextResponse<LinkedType> {
+    const result = this.#components
+      .map((c) =>
+        c instanceof ReturnStatement ? c.ReturnType(context) : undefined
+      )
+      .find((c) => !!c);
+
+    if (!result)
       throw new LinkerError(
         this.#components[0].CodeLocation,
         "error",
         "Unable to determine return type"
       );
 
-    return [scope, new LinkedBlock(result, returns)];
+    return result;
   }
 
   static Parse(

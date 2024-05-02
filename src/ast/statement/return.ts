@@ -1,8 +1,8 @@
+import { LinkedReturnStatement } from "../../linked-ast/statement/return";
 import { CodeLocation } from "../../location/code-location";
-import { CallStack } from "../callstack";
+import { Context } from "../context";
+import { ContextResponse } from "../context-response";
 import { Expression } from "../expression/base";
-import { Scope } from "../scope";
-import { Type } from "../type/base";
 import { Statement } from "./base";
 
 export class ReturnStatement extends Statement {
@@ -13,7 +13,19 @@ export class ReturnStatement extends Statement {
     this.#value = value;
   }
 
-  ReturnType(scope: Scope, callstack: CallStack): Type {}
+  ReturnType(context: Context) {
+    const result = this.#value.Linked(context);
+    return new ContextResponse(result.Context, result.Response.Type);
+  }
+
+  Linked(context: Context) {
+    return context.Build(
+      {
+        value: this.#value.Linked,
+      },
+      ({ value }) => new LinkedReturnStatement(this.CodeLocation, value)
+    );
+  }
 }
 
 Statement.Register({

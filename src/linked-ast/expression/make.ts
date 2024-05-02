@@ -18,27 +18,35 @@ import {
   WriterReturnStatement,
 } from "../../writer/statement";
 import { WriterType } from "../../writer/type";
+import { LinkedAllocateStatement } from "../statement/allocate";
 
 export class LinkedMakeExpression extends LinkedExpression {
-  readonly #struct: LinkedStructType;
+  readonly #allocation: LinkedAllocateStatement;
   readonly #using: LinkedBlock;
 
-  constructor(ctx: CodeLocation, struct: LinkedStructType, using: LinkedBlock) {
+  constructor(
+    ctx: CodeLocation,
+    allocation: LinkedAllocateStatement,
+    using: LinkedBlock
+  ) {
     super(ctx);
-    this.#struct = struct;
+    this.#allocation = allocation;
     this.#using = using;
   }
 
   get Type(): LinkedType {
-    return this.#struct;
+    return this.#allocation.Type;
   }
 
   Build(
     file: WriterFile,
     func: WriterFunction
   ): [WriterFile, WriterFunction, WriterExpression] {
+    let creation: WriterStatement;
+    [file, func, creation] = this.#allocation.Build(file, func);
+
     let type: WriterType;
-    [file, type] = this.#struct.Build(file);
+    [file, type] = this.#allocation.Type.Build(file);
 
     let main_func = new WriterFunction(
       this.CName,
@@ -46,13 +54,7 @@ export class LinkedMakeExpression extends LinkedExpression {
       type,
       [],
       func
-    ).WithStatement(
-      new WriterVariableStatement(
-        this.CName,
-        type,
-        new WriterAllocateExpression(type)
-      )
-    );
+    ).WithStatement(creation);
     let main_statements: Array<WriterStatement>;
     [file, main_func, main_statements] = this.#using.Build(file, main_func);
 

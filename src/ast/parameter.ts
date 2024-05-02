@@ -1,10 +1,10 @@
+import { LinkedParameterExpression } from "../linked-ast/expression/parameter";
 import { LinkedParameter } from "../linked-ast/parameter";
-import { LinkedType } from "../linked-ast/type/base";
 import { CodeLocation } from "../location/code-location";
 import { ParserError } from "../parser/error";
 import { TokenGroup } from "../parser/token";
-import { CallStack } from "./callstack";
-import { Scope } from "./scope";
+import { Context } from "./context";
+import { ContextResponse } from "./context-response";
 import { SubItem } from "./sub-item";
 import { Type } from "./type/base";
 
@@ -13,11 +13,27 @@ export class Parameter extends SubItem {
     super(ctx, name, type, optional);
   }
 
-  Linked(scope: Scope, callstack: CallStack): [Scope, LinkedParameter] {
-    let type: LinkedType;
-    [scope, type] = this.Type.Linked(scope, callstack);
+  Linked(context: Context) {
+    return context.Build(
+      {
+        type: (c) => this.Type.Linked(c),
+      },
+      ({ type }, ctx) => {
+        const parameter = new LinkedParameter(
+          this.CodeLocation,
+          this.Name,
+          type
+        );
 
-    return [scope, new LinkedParameter(this.CodeLocation, this.Name, type)];
+        return new ContextResponse(
+          ctx.WithObject(
+            this.Name,
+            new LinkedParameterExpression(this.CodeLocation, parameter)
+          ),
+          parameter
+        );
+      }
+    );
   }
 
   static Parse(token_group: TokenGroup): [TokenGroup, Parameter] {

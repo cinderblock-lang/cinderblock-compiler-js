@@ -1,8 +1,9 @@
 import { LinkedStatement } from "../../linked-ast/statement/base";
 import { ParserError } from "../../parser/error";
 import { TokenGroup } from "../../parser/token";
-import { CallStack } from "../callstack";
 import { Component } from "../component";
+import { Context } from "../context";
+import { ContextResponse } from "../context-response";
 import { Scope } from "../scope";
 
 export interface IBaseable {
@@ -11,7 +12,7 @@ export interface IBaseable {
 }
 
 export abstract class Statement extends Component {
-  abstract Linked(scope: Scope, callstack: CallStack): [Scope, LinkedStatement];
+  abstract Linked(context: Context): ContextResponse<LinkedStatement>;
 
   static #possible: Array<IBaseable> = [];
 

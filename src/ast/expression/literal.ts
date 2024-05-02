@@ -1,6 +1,8 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
+import { Context } from "../context";
+import { LinkedLiteralExpression } from "../../linked-ast/expression/literal";
 
 export type LiteralType =
   | "string"
@@ -20,6 +22,14 @@ export class LiteralExpression extends Expression {
     super(ctx);
     this.#type = type;
     this.#value = value;
+  }
+
+  Linked(context: Context) {
+    return context.Build(
+      {},
+      () =>
+        new LinkedLiteralExpression(this.CodeLocation, this.#type, this.#value)
+    );
   }
 }
 

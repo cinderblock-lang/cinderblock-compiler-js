@@ -1,4 +1,6 @@
+import { LinkedStructType } from "../../linked-ast/type/struct";
 import { CodeLocation } from "../../location/code-location";
+import { Context } from "../context";
 import { PropertyCollection } from "../property-collection";
 import { Entity, EntityOptions } from "./base";
 import { TypeEntity } from "./type-entity";
@@ -28,6 +30,15 @@ export class StructEntity extends TypeEntity {
 
   GetKey(key: string) {
     return this.#properties.Resolve(key);
+  }
+
+  Linked(context: Context) {
+    return context.Build(
+      {
+        properties: this.#properties.Linked,
+      },
+      ({ properties }) => new LinkedStructType(this.CodeLocation, properties)
+    );
   }
 }
 

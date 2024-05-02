@@ -1,4 +1,4 @@
-import { Ast } from "../ast/code-base";
+import { CodeBase } from "../ast/code-base";
 import { Tokenise } from "../parser";
 import { Dto } from "./dtos";
 import File from "./file";
@@ -12,7 +12,7 @@ export default class CinderblockFile extends File {
     this.#dto = dto;
   }
 
-  async GetAst(input: Ast): Promise<Ast> {
+  async GetAst(input: CodeBase): Promise<CodeBase> {
     const code = await Fs.readFile(this.#dto, "utf-8");
     const tokens = Tokenise(code, this.#dto);
     return input.With(tokens);

@@ -1,6 +1,8 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Block } from "../block";
+import { Context } from "../context";
+import { LinkedIfExpression } from "../../linked-ast/expression/if";
 
 export class IfExpression extends Expression {
   readonly #check: Expression;
@@ -17,6 +19,18 @@ export class IfExpression extends Expression {
     this.#check = check;
     this.#if = on_if;
     this.#else = on_else;
+  }
+
+  Linked(context: Context) {
+    return context.Build(
+      {
+        check: this.#check.Linked,
+        if_block: this.#if.Linked,
+        else_block: this.#else.Linked,
+      },
+      ({ check, if_block, else_block }) =>
+        new LinkedIfExpression(this.CodeLocation, check, if_block, else_block)
+    );
   }
 }
 

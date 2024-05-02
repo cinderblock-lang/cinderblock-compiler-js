@@ -1,5 +1,7 @@
+import { LinkedAccessExpression } from "../../linked-ast/expression/access";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
+import { Context } from "../context";
 import { Expression } from "./base";
 
 export class AccessExpression extends Expression {
@@ -14,6 +16,16 @@ export class AccessExpression extends Expression {
 
   get Subject() {
     return this.#subject;
+  }
+
+  Linked(context: Context) {
+    return context.Build(
+      {
+        subject: this.#subject.Linked,
+      },
+      ({ subject }) =>
+        new LinkedAccessExpression(this.CodeLocation, subject, this.#target)
+    );
   }
 }
 

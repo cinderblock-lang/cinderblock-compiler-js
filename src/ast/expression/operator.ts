@@ -1,6 +1,8 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
+import { Context } from "../context";
+import { LinkedOperatorExpression } from "../../linked-ast/expression/operator";
 
 export const Operators = [
   "+",
@@ -42,6 +44,22 @@ export class OperatorExpression extends Expression {
     this.#left = left;
     this.#operator = operator;
     this.#right = right;
+  }
+
+  Linked(context: Context) {
+    return context.Build(
+      {
+        left: this.#left.Linked,
+        right: this.#right.Linked,
+      },
+      ({ left, right }) =>
+        new LinkedOperatorExpression(
+          this.CodeLocation,
+          left,
+          this.#operator,
+          right
+        )
+    );
   }
 }
 

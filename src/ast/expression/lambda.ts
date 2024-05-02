@@ -1,16 +1,16 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
-import { Namer } from "../../location/namer";
 import { Type } from "../type/base";
 import { Block } from "../block";
 import { ParameterCollection } from "../parameter-collection";
+import { Context } from "../context";
+import { ContextResponse } from "../context-response";
+import { LinkedLambdaExpression } from "../../linked-ast/expression/lambda";
 
 export class LambdaExpression extends Expression {
   readonly #parameters: ParameterCollection;
   readonly #body: Block;
   readonly #returns: Type | undefined;
-
-  readonly #name: string;
 
   constructor(
     ctx: CodeLocation,
@@ -22,8 +22,25 @@ export class LambdaExpression extends Expression {
     this.#parameters = parameters;
     this.#body = body;
     this.#returns = returns;
+  }
 
-    this.#name = Namer.GetName();
+  #get_returns(context: Context) {
+    return this.#returns?.Linked(context) ?? this.#body.Returns(context);
+  }
+
+  Linked(context: Context) {
+    return context.Build(
+      {
+        params: this.#parameters.Linked,
+        body: this.#body.Linked,
+        returns: this.#get_returns,
+      },
+      ({ params, body, returns }) =>
+        new ContextResponse(
+          context,
+          new LinkedLambdaExpression(this.CodeLocation, params, body, returns)
+        )
+    );
   }
 }
 

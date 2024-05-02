@@ -1,4 +1,6 @@
+import { LinkedSubStatement } from "../../linked-ast/statement/sub";
 import { CodeLocation } from "../../location/code-location";
+import { Context } from "../context";
 import { Expression } from "../expression/base";
 import { Statement } from "./base";
 
@@ -14,6 +16,21 @@ export class SubStatement extends Statement {
 
   get Name() {
     return this.#name;
+  }
+
+  Linked(context: Context) {
+    return context.Build(
+      {
+        equals: this.#equals.Linked,
+      },
+      ({ equals }) =>
+        new LinkedSubStatement(
+          this.CodeLocation,
+          this.#name,
+          equals,
+          equals.Type
+        )
+    );
   }
 }
 

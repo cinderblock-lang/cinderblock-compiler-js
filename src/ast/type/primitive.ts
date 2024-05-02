@@ -2,6 +2,9 @@ import { CodeLocation } from "../../location/code-location";
 import { Type } from "./base";
 import { ParserError } from "../../parser/error";
 import { IsPrimitiveName, PrimitiveName } from "../../parser/types";
+import { Context } from "../context";
+import { ContextResponse } from "../context-response";
+import { LinkedPrimitiveType } from "../../linked-ast/type/primitive";
 
 export class PrimitiveType extends Type {
   readonly #name: PrimitiveName;
@@ -13,6 +16,13 @@ export class PrimitiveType extends Type {
 
   get Name() {
     return this.#name;
+  }
+
+  Linked(context: Context) {
+    return new ContextResponse(
+      context,
+      new LinkedPrimitiveType(this.CodeLocation, this.#name)
+    );
   }
 }
 

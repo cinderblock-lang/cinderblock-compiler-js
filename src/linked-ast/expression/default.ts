@@ -14,7 +14,7 @@ import { LinkedPrimitiveType } from "../type/primitive";
 import { LinkedStructType } from "../type/struct";
 import { LinkedExpression } from "./base";
 
-export class DefaultExpression extends LinkedExpression {
+export class LinkedDefaultExpression extends LinkedExpression {
   readonly #subject: LinkedType;
 
   constructor(ctx: CodeLocation, subject: LinkedType) {

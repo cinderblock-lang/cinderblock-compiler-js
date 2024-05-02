@@ -1,5 +1,8 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
+import { Context } from "../context";
+import { LinkedBracketsExpression } from "../../linked-ast/expression/brackets";
+import { ContextResponse } from "../context-response";
 
 export class BracketsExpression extends Expression {
   readonly #expression: Expression;
@@ -7,6 +10,14 @@ export class BracketsExpression extends Expression {
   constructor(ctx: CodeLocation, expression: Expression) {
     super(ctx);
     this.#expression = expression;
+  }
+
+  Linked(context: Context) {
+    return context.Build(
+      { expression: this.#expression.Linked },
+      ({ expression }) =>
+        new LinkedBracketsExpression(this.CodeLocation, expression)
+    );
   }
 }
 

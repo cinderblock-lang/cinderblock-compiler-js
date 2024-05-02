@@ -1,8 +1,13 @@
+import { LinkedEntity } from "../../linked-ast/entity/base";
+import { LinkedCFunction } from "../../linked-ast/entity/c-function";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
+import { PrimitiveName } from "../../parser/types";
 import { Block } from "../block";
+import { Context } from "../context";
+import { ContextResponse } from "../context-response";
 import { ParameterCollection } from "../parameter-collection";
-import { PrimitiveName, PrimitiveType } from "../type/primitive";
+import { PrimitiveType } from "../type/primitive";
 import { Entity, EntityOptions } from "./base";
 import { FunctionEntity } from "./function";
 
@@ -34,6 +39,24 @@ export class CFunction extends FunctionEntity {
     this.#parameters = parameters;
     this.#content = content;
     this.#returns = returns;
+  }
+
+  Linked(context: Context): ContextResponse<LinkedEntity> {
+    return context.EnterFunction(this).Build(
+      {
+        params: this.#parameters.Linked,
+        returns: this.#returns.Linked,
+      },
+      ({ params, returns }) =>
+        new LinkedCFunction(
+          this.CodeLocation,
+          this.#includes,
+          this.Name,
+          params,
+          this.#content,
+          returns
+        )
+    );
   }
 }
 

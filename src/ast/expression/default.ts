@@ -1,5 +1,8 @@
+import { LinkedDefaultExpression } from "../../linked-ast/expression/default";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
+import { Context } from "../context";
+import { ContextResponse } from "../context-response";
 import { Type } from "../type/base";
 import { Expression } from "./base";
 
@@ -9,6 +12,15 @@ export class DefaultExpression extends Expression {
   constructor(ctx: CodeLocation, subject: Type) {
     super(ctx);
     this.#subject = subject;
+  }
+
+  Linked(context: Context) {
+    return context.Build(
+      {
+        subject: this.#subject.Linked,
+      },
+      ({ subject }) => new LinkedDefaultExpression(this.CodeLocation, subject)
+    );
   }
 }
 

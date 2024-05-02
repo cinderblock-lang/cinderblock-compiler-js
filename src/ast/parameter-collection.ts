@@ -1,9 +1,9 @@
 import { LinkedParameter } from "../linked-ast/parameter";
 import { LinkedParameterCollection } from "../linked-ast/parameter-collection";
 import { TokenGroup } from "../parser/token";
-import { CallStack } from "./callstack";
+import { Context } from "./context";
+import { ContextResponse } from "./context-response";
 import { Parameter } from "./parameter";
-import { Scope } from "./scope";
 
 export class ParameterCollection {
   readonly #components: Array<Parameter>;
@@ -12,23 +12,21 @@ export class ParameterCollection {
     this.#components = components;
   }
 
-  Linked(
-    scope: Scope,
-    callstack: CallStack
-  ): [Scope, LinkedParameterCollection] {
-    let result: Array<LinkedParameter>;
+  Linked(context: Context): ContextResponse<LinkedParameterCollection> {
+    return context.Build(
+      {
+        params: (context) =>
+          this.#components.reduce((ctx, n, i) => {
+            const result = n.Linked(ctx.Context.WithParameterIndex(i));
 
-    [scope, result] = this.#components.reduce(
-      ([scope, map], n, i) => {
-        let result: LinkedParameter;
-        [scope, result] = n.Linked(scope, callstack.WithParameterIndex(i));
-
-        return [scope, [...map, result]];
+            return new ContextResponse(result.Context, [
+              ...ctx.Response,
+              result.Response,
+            ]);
+          }, new ContextResponse(context, [] as Array<LinkedParameter>)),
       },
-      [scope, []] as [Scope, Array<LinkedParameter>]
+      ({ params }) => new LinkedParameterCollection(...params)
     );
-
-    return [scope, new LinkedParameterCollection(...result)];
   }
 
   static Parse(token_group: TokenGroup): [TokenGroup, ParameterCollection] {

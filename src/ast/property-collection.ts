@@ -1,9 +1,9 @@
 import { LinkedProperty } from "../linked-ast/property";
 import { LinkedPropertyCollection } from "../linked-ast/property-collection";
 import { TokenGroup } from "../parser/token";
-import { CallStack } from "./callstack";
+import { Context } from "./context";
+import { ContextResponse } from "./context-response";
 import { Property } from "./property";
-import { Scope } from "./scope";
 
 export class PropertyCollection {
   readonly #components: Array<Property>;
@@ -20,23 +20,21 @@ export class PropertyCollection {
     return this.#components.map((c) => c.Name);
   }
 
-  Linked(
-    scope: Scope,
-    callstack: CallStack
-  ): [Scope, LinkedPropertyCollection] {
-    let result: Array<LinkedProperty>;
+  Linked(context: Context) {
+    return context.Build(
+      {
+        params: (context) =>
+          this.#components.reduce((ctx, n, i) => {
+            const result = n.Linked(ctx.Context);
 
-    [scope, result] = this.#components.reduce(
-      ([scope, map], n, i) => {
-        let result: LinkedProperty;
-        [scope, result] = n.Linked(scope, callstack.WithParameterIndex(i));
-
-        return [scope, [...map, result]];
+            return new ContextResponse(result.Context, [
+              ...ctx.Response,
+              result.Response,
+            ]);
+          }, new ContextResponse(context, [] as Array<LinkedProperty>)),
       },
-      [scope, []] as [Scope, Array<LinkedProperty>]
+      ({ params }) => new LinkedPropertyCollection(...params)
     );
-
-    return [scope, new LinkedPropertyCollection(...result)];
   }
 
   static Parse(token_group: TokenGroup): [TokenGroup, PropertyCollection] {

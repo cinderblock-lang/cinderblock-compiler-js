@@ -20,23 +20,17 @@ import { WriterStatement } from "../../writer/statement";
 import { WriterType } from "../../writer/type";
 import { LinkedEnumType } from "../type/enum";
 
-export class MatchExpression extends LinkedExpression {
+export class LinkedMatchExpression extends LinkedExpression {
   readonly #subject: LinkedSubStatement;
   readonly #using: Record<string, LinkedBlock>;
 
   constructor(
     ctx: CodeLocation,
-    subject: LinkedExpression,
-    as: string,
+    subject: LinkedSubStatement,
     using: Record<string, LinkedBlock>
   ) {
     super(ctx);
-    this.#subject = new LinkedSubStatement(
-      this.CodeLocation,
-      as,
-      subject,
-      subject.Type
-    );
+    this.#subject = subject;
     this.#using = using;
   }
 

@@ -1,9 +1,9 @@
 import { LinkedExpression } from "../../linked-ast/expression/base";
 import { ParserError } from "../../parser/error";
 import { TokenGroup } from "../../parser/token";
-import { CallStack } from "../callstack";
 import { Component } from "../component";
-import { Scope } from "../scope";
+import { Context } from "../context";
+import { ContextResponse } from "../context-response";
 import { Type } from "../type/base";
 
 export interface IBaseable {
@@ -21,12 +21,7 @@ export interface IBaseable {
 }
 
 export abstract class Expression extends Component {
-  abstract Linked(
-    scope: Scope,
-    callstack: CallStack
-  ): [Scope, LinkedExpression];
-
-  abstract Type(scope: Scope, callstack: CallStack): Type;
+  abstract Linked(context: Context): ContextResponse<LinkedExpression>;
 
   static #possible: Array<IBaseable> = [];
 

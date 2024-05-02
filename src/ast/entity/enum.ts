@@ -1,5 +1,12 @@
+import { LinkedPropertyCollection } from "../../linked-ast/property-collection";
+import { LinkedType } from "../../linked-ast/type/base";
+import { LinkedEnumType } from "../../linked-ast/type/enum";
 import { CodeLocation } from "../../location/code-location";
+import { Callstack } from "../callstack";
+import { Context } from "../context";
+import { ContextResponse } from "../context-response";
 import { PropertyCollection } from "../property-collection";
+import { Scope } from "../scope";
 import { Entity, EntityOptions } from "./base";
 import { TypeEntity } from "./type-entity";
 
@@ -32,6 +39,15 @@ export class EnumEntity extends TypeEntity {
 
   get Keys() {
     return this.#properties.Keys;
+  }
+
+  Linked(context: Context) {
+    return context.Build(
+      {
+        properties: this.#properties.Linked,
+      },
+      ({ properties }) => new LinkedEnumType(this.CodeLocation, properties)
+    );
   }
 }
 

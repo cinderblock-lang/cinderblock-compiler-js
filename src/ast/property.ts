@@ -1,9 +1,8 @@
 import { LinkedProperty } from "../linked-ast/property";
-import { LinkedType } from "../linked-ast/type/base";
 import { CodeLocation } from "../location/code-location";
 import { TokenGroup } from "../parser/token";
-import { CallStack } from "./callstack";
-import { Scope } from "./scope";
+import { Context } from "./context";
+import { ContextResponse } from "./context-response";
 import { SubItem } from "./sub-item";
 import { Type } from "./type/base";
 
@@ -12,11 +11,13 @@ export class Property extends SubItem {
     super(ctx, name, type, optional);
   }
 
-  Linked(scope: Scope, callstack: CallStack): [Scope, LinkedProperty] {
-    let type: LinkedType;
-    [scope, type] = this.Type.Linked(scope, callstack);
-
-    return [scope, new LinkedProperty(this.CodeLocation, this.Name, type)];
+  Linked(context: Context) {
+    return context.Build(
+      {
+        type: (c) => this.Type.Linked(c),
+      },
+      ({ type }) => new LinkedProperty(this.CodeLocation, this.Name, type)
+    );
   }
 
   static Parse(token_group: TokenGroup): [TokenGroup, Property] {

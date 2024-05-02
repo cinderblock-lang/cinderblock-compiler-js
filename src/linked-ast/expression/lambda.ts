@@ -12,7 +12,7 @@ import { WriterFile } from "../../writer/file";
 import { WriterStatement } from "../../writer/statement";
 import { WriterType } from "../../writer/type";
 
-export class LambdaExpression extends LinkedExpression {
+export class LinkedLambdaExpression extends LinkedExpression {
   readonly #parameters: LinkedParameterCollection;
   readonly #body: LinkedBlock;
   readonly #returns: LinkedType;

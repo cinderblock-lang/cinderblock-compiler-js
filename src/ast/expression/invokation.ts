@@ -1,6 +1,10 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
+import { Context } from "../context";
+import { LinkedExpression } from "../../linked-ast/expression/base";
+import { ContextResponse } from "../context-response";
+import { LinkedInvokationExpression } from "../../linked-ast/expression/invokation";
 
 export class InvokationExpression extends Expression {
   readonly #subject: Expression;
@@ -14,6 +18,28 @@ export class InvokationExpression extends Expression {
     super(ctx);
     this.#subject = subject;
     this.#parameters = parameters;
+  }
+
+  Linked(context: Context) {
+    return context.Build(
+      {
+        subject: this.#subject.Linked,
+        params: (context) =>
+          this.#parameters.reduce((ctx, n, i) => {
+            const result = n.Linked(ctx.Context);
+
+            return new ContextResponse(result.Context, [
+              ...ctx.Response,
+              result.Response,
+            ]);
+          }, new ContextResponse(context, [] as Array<LinkedExpression>)),
+      },
+      ({ subject, params }, ctx) =>
+        new ContextResponse(
+          ctx.PrepareInvokation(params),
+          new LinkedInvokationExpression(this.CodeLocation, subject, params)
+        )
+    );
   }
 }
 

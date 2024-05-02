@@ -2,6 +2,8 @@ import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Type } from "../type/base";
 import { ParserError } from "../../parser/error";
+import { Context } from "../context";
+import { LinkedLiteralExpression } from "../../linked-ast/expression/literal";
 
 export class IsExpression extends Expression {
   readonly #left: Expression;
@@ -11,6 +13,21 @@ export class IsExpression extends Expression {
     super(ctx);
     this.#left = left;
     this.#right = right;
+  }
+
+  Linked(context: Context) {
+    return context.Build(
+      {
+        left: this.#left.Linked,
+        right: this.#right.Linked,
+      },
+      ({ left, right }) =>
+        new LinkedLiteralExpression(
+          this.CodeLocation,
+          "bool",
+          left.Type === right ? "true" : "false"
+        )
+    );
   }
 }
 

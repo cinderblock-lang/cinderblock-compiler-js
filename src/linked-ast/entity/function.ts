@@ -9,7 +9,7 @@ import { LinkedType } from "../type/base";
 import { LinkedFunctionType } from "../type/function";
 import { LinkedEntity } from "./base";
 
-export class FunctionEntity extends LinkedEntity {
+export class LinkedFunctionEntity extends LinkedEntity {
   readonly #parameters: LinkedParameterCollection;
   readonly #content: LinkedBlock;
   readonly #returns: LinkedType;

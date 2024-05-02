@@ -1,7 +1,15 @@
+import { LinkedExpression } from "../linked-ast/expression/base";
+import { LinkedEntityExpression } from "../linked-ast/expression/entity";
+import { LinkedType } from "../linked-ast/type/base";
+import { LinkerError } from "../linker/error";
 import { CodeLocation } from "../location/code-location";
 import { TokenGroup } from "../parser/token";
 import { Component } from "./component";
+import { Context } from "./context";
+import { ContextResponse } from "./context-response";
 import { Entity } from "./entity/base";
+import { FunctionEntity } from "./entity/function";
+import { TypeEntity } from "./entity/type-entity";
 import { UsingEntity } from "./entity/using";
 
 export class Namespace extends Component {
@@ -21,6 +29,60 @@ export class Namespace extends Component {
   *#using() {
     for (const entity of this.#contents)
       if (entity instanceof UsingEntity) yield entity.Name;
+  }
+
+  IncludesFunction(func: Component) {
+    return !!this.#contents.find((f) => f === func);
+  }
+
+  GetMain() {
+    for (const entity of this.#contents) {
+      if (entity instanceof FunctionEntity && entity.Name === "main") {
+        return entity;
+      }
+    }
+
+    throw new LinkerError(this.CodeLocation, "error", "Could not resolve main");
+  }
+
+  GetObject(
+    name: string,
+    context: Context
+  ): ContextResponse<LinkedExpression> | undefined {
+    for (const entity of this.#contents) {
+      if (entity instanceof FunctionEntity && entity.Name === name) {
+        const response = entity.Linked(context);
+        return new ContextResponse(
+          response.Context,
+          new LinkedEntityExpression(this.CodeLocation, response.Response)
+        );
+      }
+    }
+
+    for (const name of this.#using()) {
+      const result = context.GetNamespace(name).GetObject(name, context);
+      if (result) return result;
+    }
+
+    return undefined;
+  }
+
+  GetType(
+    name: string,
+    context: Context
+  ): ContextResponse<LinkedType> | undefined {
+    for (const entity of this.#contents) {
+      if (entity instanceof TypeEntity && entity.Name === name) {
+        return entity.Linked(context);
+      }
+    }
+
+    for (const name of this.#using()) {
+      const result = context.GetNamespace(name).GetType(name, context);
+      if (result) return result;
+    }
+
+    return undefined;
   }
 
   static Parse(token_group: TokenGroup): [TokenGroup, Namespace] {

@@ -33,11 +33,12 @@ import "./type/use";
 
 import { Namespace } from "./namespace";
 import { TokenGroup } from "../parser/token";
-import { WriterFile } from "../writer/file";
-import { FunctionEntity } from "./entity/function";
+import { Component } from "./component";
+import { Context } from "./context";
 import { LinkerError } from "../linker/error";
 import { EmptyCodeLocation } from "../location/empty";
-import { WriterFunction } from "../writer/entity";
+import { Scope } from "./scope";
+import { Callstack } from "./callstack";
 
 export class CodeBase {
   readonly #data: Array<Namespace>;
@@ -67,5 +68,33 @@ export class CodeBase {
     }
 
     return new CodeBase(...result, ...this.#data);
+  }
+
+  GetNamespaceForFunc(func: Component) {
+    return this.#data.find((n) => n.IncludesFunction(func));
+  }
+
+  GetNamespace(name: string) {
+    return this.#data.find((n) => n.Name === name);
+  }
+
+  get Linked() {
+    const app = this.GetNamespace("App");
+    if (!app)
+      throw new LinkerError(
+        EmptyCodeLocation,
+        "error",
+        "Could not resolve App namespace"
+      );
+
+    const context = new Context(
+      this,
+      app,
+      new Scope({}, {}, undefined),
+      new Callstack([], [], 0)
+    );
+
+    const result = app.GetMain().Linked(context);
+    return result.Response;
   }
 }

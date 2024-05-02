@@ -1,4 +1,6 @@
+import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
+import { Context } from "../context";
 import { Type } from "./base";
 
 export class ReferenceType extends Type {
@@ -7,6 +9,18 @@ export class ReferenceType extends Type {
   constructor(ctx: CodeLocation, name: string) {
     super(ctx);
     this.#name = name;
+  }
+
+  Linked(context: Context) {
+    const referencing = context.GetType(this.#name);
+    if (!referencing)
+      throw new LinkerError(
+        this.CodeLocation,
+        "error",
+        "Could not resolve reference"
+      );
+
+    return referencing;
   }
 }
 

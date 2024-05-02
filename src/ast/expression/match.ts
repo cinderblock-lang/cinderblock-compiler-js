@@ -2,6 +2,12 @@ import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Block } from "../block";
 import { SubStatement } from "../statement/sub";
+import { Context } from "../context";
+import { LinkedBlock } from "../../linked-ast/block";
+import { ContextResponse } from "../context-response";
+import { LinkedMatchExpression } from "../../linked-ast/expression/match";
+import { LinkedSubStatement } from "../../linked-ast/statement/sub";
+import { LinkerError } from "../../linker/error";
 
 export class MatchExpression extends Expression {
   readonly #subject: SubStatement;
@@ -16,6 +22,31 @@ export class MatchExpression extends Expression {
     super(ctx);
     this.#subject = new SubStatement(this.CodeLocation, as, subject);
     this.#using = using;
+  }
+
+  Linked(context: Context) {
+    return context.Build(
+      {
+        subject: this.#subject.Linked,
+        using: (ctx) =>
+          new ContextResponse(
+            ctx,
+            Object.keys(this.#using).reduce(
+              (c, n) => ({ ...c, [n]: this.#using[n].Linked(ctx).Response }),
+              {} as Record<string, LinkedBlock>
+            )
+          ),
+      },
+      ({ subject, using }) => {
+        if (!(subject instanceof LinkedSubStatement))
+          throw new LinkerError(
+            this.CodeLocation,
+            "error",
+            "Subject must be a sub statement"
+          );
+        return new LinkedMatchExpression(this.CodeLocation, subject, using);
+      }
+    );
   }
 }
 

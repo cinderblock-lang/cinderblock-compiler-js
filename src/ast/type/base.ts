@@ -1,9 +1,9 @@
 import { LinkedType } from "../../linked-ast/type/base";
 import { ParserError } from "../../parser/error";
 import { TokenGroup } from "../../parser/token";
-import { CallStack } from "../callstack";
 import { Component } from "../component";
-import { Scope } from "../scope";
+import { Context } from "../context";
+import { ContextResponse } from "../context-response";
 
 export interface IBaseable {
   Priority: number;
@@ -12,7 +12,7 @@ export interface IBaseable {
 }
 
 export abstract class Type extends Component {
-  abstract Linked(scope: Scope, callstack: CallStack): [Scope, LinkedType];
+  abstract Linked(context: Context): ContextResponse<LinkedType>;
 
   static #possible: Array<IBaseable> = [];
 

@@ -21,7 +21,7 @@ export type LiteralType =
   | "bool"
   | "null";
 
-export class LiteralExpression extends LinkedExpression {
+export class LinkedLiteralExpression extends LinkedExpression {
   readonly #type: LiteralType;
   readonly #value: string;
 

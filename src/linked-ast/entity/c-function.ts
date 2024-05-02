@@ -3,19 +3,18 @@ import { WriterFunction, WriterProperty } from "../../writer/entity";
 import { WriterFile } from "../../writer/file";
 import { WriterRawStatement } from "../../writer/statement";
 import { WriterType } from "../../writer/type";
-import { LinkedBlock } from "../block";
 import { LinkedParameterCollection } from "../parameter-collection";
+import { LinkedType } from "../type/base";
 import { LinkedFunctionType } from "../type/function";
 import { LinkedPrimitiveType } from "../type/primitive";
 import { LinkedEntity } from "./base";
-import { FunctionEntity } from "./function";
 
-export class CFunction extends LinkedEntity {
+export class LinkedCFunction extends LinkedEntity {
   readonly #name: string;
   readonly #includes: Array<string>;
   readonly #parameters: LinkedParameterCollection;
   readonly #content: string;
-  readonly #returns: LinkedPrimitiveType;
+  readonly #returns: LinkedType;
 
   constructor(
     ctx: CodeLocation,
@@ -23,7 +22,7 @@ export class CFunction extends LinkedEntity {
     name: string,
     parameters: LinkedParameterCollection,
     content: string,
-    returns: LinkedPrimitiveType
+    returns: LinkedType
   ) {
     super(ctx);
 

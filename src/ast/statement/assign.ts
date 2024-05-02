@@ -1,4 +1,8 @@
+import { LinkedAssignStatement } from "../../linked-ast/statement/assign";
+import { LinkedStructType } from "../../linked-ast/type/struct";
+import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
+import { Context } from "../context";
 import { Expression } from "../expression/base";
 import { Statement } from "./base";
 
@@ -10,6 +14,46 @@ export class AssignStatement extends Statement {
     super(ctx);
     this.#name = name;
     this.#equals = equals;
+  }
+
+  Linked(context: Context) {
+    return context.Build(
+      {
+        equals: this.#equals.Linked,
+      },
+      ({ equals }) => {
+        const make = context.GetMake();
+        if (!make)
+          throw new LinkerError(
+            this.CodeLocation,
+            "error",
+            "Cannot assign here"
+          );
+
+        const type = make.Type;
+        if (!(type instanceof LinkedStructType))
+          throw new LinkerError(
+            this.CodeLocation,
+            "error",
+            "May only make a struct"
+          );
+
+        const property = type.GetKey(this.#name);
+        if (!property)
+          throw new LinkerError(
+            this.CodeLocation,
+            "error",
+            "Property not found"
+          );
+
+        return new LinkedAssignStatement(
+          this.CodeLocation,
+          property,
+          equals,
+          make
+        );
+      }
+    );
   }
 }
 

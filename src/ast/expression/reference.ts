@@ -1,5 +1,7 @@
 import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
+import { Context } from "../context";
+import { LinkerError } from "../../linker/error";
 
 export class ReferenceExpression extends Expression {
   readonly #name: string;
@@ -11,6 +13,19 @@ export class ReferenceExpression extends Expression {
 
   get Name() {
     return this.#name;
+  }
+
+  Linked(context: Context) {
+    const target = context.GetObject(this.#name);
+
+    if (!target)
+      throw new LinkerError(
+        this.CodeLocation,
+        "error",
+        "Could not resolve symbol"
+      );
+
+    return target;
   }
 }
 

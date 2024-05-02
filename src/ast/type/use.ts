@@ -1,4 +1,7 @@
+import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
+import { Context } from "../context";
+import { ContextResponse } from "../context-response";
 import { Type } from "./base";
 
 export class UseType extends Type {
@@ -13,6 +16,21 @@ export class UseType extends Type {
 
   get Name() {
     return this.#name;
+  }
+
+  Linked(context: Context) {
+    const invoked_with = context.GetCurrentParameter();
+    if (!invoked_with)
+      throw new LinkerError(
+        this.CodeLocation,
+        "error",
+        "Could not resolve schema"
+      );
+
+    return new ContextResponse(
+      context.WithType(this.#name, invoked_with.Type),
+      invoked_with.Type
+    );
   }
 }
 

@@ -1,4 +1,6 @@
+import { LinkedFunctionType } from "../../linked-ast/type/function";
 import { CodeLocation } from "../../location/code-location";
+import { Context } from "../context";
 import { ParameterCollection } from "../parameter-collection";
 import { Type } from "./base";
 
@@ -26,6 +28,17 @@ export class FunctionType extends Type {
 
   get Returns() {
     return this.#returns;
+  }
+
+  Linked(context: Context) {
+    return context.Build(
+      {
+        parameters: this.#parameters.Linked,
+        returns: this.Returns.Linked,
+      },
+      ({ parameters, returns }) =>
+        new LinkedFunctionType(this.CodeLocation, parameters, returns)
+    );
   }
 }
 

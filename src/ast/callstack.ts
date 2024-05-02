@@ -1,28 +1,32 @@
+import { LinkedExpression } from "../linked-ast/expression/base";
 import { FunctionEntity } from "./entity/function";
-import { Expression } from "./expression/base";
 import { LambdaExpression } from "./expression/lambda";
 
 class Invokation {
   readonly #subject: FunctionEntity | LambdaExpression;
-  readonly #argument: Array<Expression>;
+  readonly #argument: Array<LinkedExpression>;
 
   constructor(
     subject: FunctionEntity | LambdaExpression,
-    args: Array<Expression>
+    args: Array<LinkedExpression>
   ) {
     this.#subject = subject;
     this.#argument = args;
   }
+
+  GetArgument(index: number): LinkedExpression | undefined {
+    return this.#argument[index];
+  }
 }
 
-export class CallStack {
+export class Callstack {
   readonly #invokations: Array<Invokation>;
-  readonly #staged_arguments: Array<Expression>;
+  readonly #staged_arguments: Array<LinkedExpression>;
   readonly #current_parameter_index: number;
 
   constructor(
     invokations: Array<Invokation>,
-    staged_arguments: Array<Expression>,
+    staged_arguments: Array<LinkedExpression>,
     current_parameter_index: number
   ) {
     this.#invokations = invokations;
@@ -30,8 +34,8 @@ export class CallStack {
     this.#current_parameter_index = current_parameter_index;
   }
 
-  PrepareInvokation(args: Array<Expression>) {
-    return new CallStack(
+  PrepareInvokation(args: Array<LinkedExpression>) {
+    return new Callstack(
       this.#invokations,
       args,
       this.#current_parameter_index
@@ -39,7 +43,7 @@ export class CallStack {
   }
 
   EnterFunction(self: FunctionEntity | LambdaExpression) {
-    return new CallStack(
+    return new Callstack(
       [...this.#invokations, new Invokation(self, this.#staged_arguments)],
       [],
       this.#current_parameter_index
@@ -47,6 +51,12 @@ export class CallStack {
   }
 
   WithParameterIndex(index: number) {
-    return new CallStack(this.#invokations, this.#staged_arguments, index);
+    return new Callstack(this.#invokations, this.#staged_arguments, index);
+  }
+
+  GetCurrentParameter() {
+    return this.#invokations[this.#invokations.length - 1].GetArgument(
+      this.#current_parameter_index
+    );
   }
 }

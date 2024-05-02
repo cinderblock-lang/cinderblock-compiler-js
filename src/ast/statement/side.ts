@@ -1,4 +1,6 @@
+import { LinkedSideStatement } from "../../linked-ast/statement/side";
 import { CodeLocation } from "../../location/code-location";
+import { Context } from "../context";
 import { Expression } from "../expression/base";
 import { Statement } from "./base";
 
@@ -8,6 +10,15 @@ export class SideStatement extends Statement {
   constructor(ctx: CodeLocation, value: Expression) {
     super(ctx);
     this.#value = value;
+  }
+
+  Linked(context: Context) {
+    return context.Build(
+      {
+        value: this.#value.Linked,
+      },
+      ({ value }) => new LinkedSideStatement(this.CodeLocation, value)
+    );
   }
 }
 

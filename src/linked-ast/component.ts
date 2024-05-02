@@ -1,5 +1,4 @@
 import { CodeLocation } from "../location/code-location";
-import { Namer } from "../location/namer";
 
 export abstract class LinkedComponent {
   readonly #location: CodeLocation;

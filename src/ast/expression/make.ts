@@ -2,6 +2,11 @@ import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Type } from "../type/base";
 import { Block } from "../block";
+import { Context } from "../context";
+import { LinkedMakeExpression } from "../../linked-ast/expression/make";
+import { LinkedStructType } from "../../linked-ast/type/struct";
+import { LinkerError } from "../../linker/error";
+import { LinkedAllocateStatement } from "../../linked-ast/statement/allocate";
 
 export class MakeExpression extends Expression {
   readonly #struct: Type;
@@ -11,6 +16,28 @@ export class MakeExpression extends Expression {
     super(ctx);
     this.#struct = struct;
     this.#using = using;
+  }
+
+  Linked(context: Context) {
+    const type_response = this.#struct.Linked(context);
+    context = type_response.Context;
+    const type = type_response.Response;
+
+    if (!(type instanceof LinkedStructType))
+      throw new LinkerError(
+        this.CodeLocation,
+        "error",
+        "May only make a struct"
+      );
+    const allocate = new LinkedAllocateStatement(this.CodeLocation, type);
+    return context.WithMake(allocate).Build(
+      {
+        using: this.#using.Linked,
+      },
+      ({ using }) => {
+        return new LinkedMakeExpression(this.CodeLocation, allocate, using);
+      }
+    );
   }
 }
 
