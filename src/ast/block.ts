@@ -20,7 +20,7 @@ export class Block {
     return context.Build(
       {
         content: (context) =>
-          context.Reduce(this.#components, (ctx, n) => n.Linked(ctx)),
+          context.Map(this.#components, (ctx, n) => n.Linked(ctx)),
         returns: (context) => {
           const target = this.#components.find(
             (c) => c instanceof ReturnStatement

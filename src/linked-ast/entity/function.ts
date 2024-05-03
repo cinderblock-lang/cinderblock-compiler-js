@@ -10,21 +10,29 @@ import { LinkedFunctionType } from "../type/function";
 import { LinkedEntity } from "./base";
 
 export class LinkedFunctionEntity extends LinkedEntity {
+  readonly #is_main: boolean;
   readonly #parameters: LinkedParameterCollection;
   readonly #content: LinkedBlock;
   readonly #returns: LinkedType;
 
   constructor(
     ctx: CodeLocation,
-    name: string,
+    is_main: boolean,
     parameters: LinkedParameterCollection,
     content: LinkedBlock,
     returns: LinkedType
   ) {
     super(ctx);
+    this.#is_main = is_main;
     this.#parameters = parameters;
     this.#content = content;
     this.#returns = returns;
+  }
+
+  get CName() {
+    if (this.#is_main) return "main";
+
+    return super.CName;
   }
 
   get Type() {

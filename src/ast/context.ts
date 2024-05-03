@@ -146,7 +146,7 @@ export class Context {
     return new ContextResponse(context, result);
   }
 
-  Reduce<TItem, TResult>(
+  Map<TItem, TResult>(
     input: TItem[],
     mapper: (
       context: Context,

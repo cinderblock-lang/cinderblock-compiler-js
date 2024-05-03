@@ -1,8 +1,6 @@
-import { LinkedProperty } from "../linked-ast/property";
 import { LinkedPropertyCollection } from "../linked-ast/property-collection";
 import { TokenGroup } from "../parser/token";
 import { Context } from "./context";
-import { ContextResponse } from "./context-response";
 import { Property } from "./property";
 
 export class PropertyCollection {
@@ -24,7 +22,7 @@ export class PropertyCollection {
     return context.Build(
       {
         params: (context) =>
-          context.Reduce(this.#components, (ctx, n) => n.Linked(ctx)),
+          context.Map(this.#components, (ctx, n) => n.Linked(ctx)),
       },
       ({ params }) => new LinkedPropertyCollection(...params)
     );

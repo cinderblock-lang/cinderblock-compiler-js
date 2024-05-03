@@ -1,4 +1,3 @@
-import { LinkedParameter } from "../linked-ast/parameter";
 import { LinkedParameterCollection } from "../linked-ast/parameter-collection";
 import { TokenGroup } from "../parser/token";
 import { Context } from "./context";
@@ -16,7 +15,7 @@ export class ParameterCollection {
     return context.Build(
       {
         params: (context) =>
-          context.Reduce(this.#components, (ctx, n, i) =>
+          context.Map(this.#components, (ctx, n, i) =>
             n.Linked(ctx.WithParameterIndex(i))
           ),
       },

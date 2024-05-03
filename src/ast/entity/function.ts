@@ -41,17 +41,17 @@ export class FunctionEntity extends Entity {
     return this.#returns?.Linked(context) ?? this.#content.Returns(context);
   }
 
-  Linked(context: Context): ContextResponse<LinkedEntity> {
+  Linked(context: Context, is_main = false): ContextResponse<LinkedEntity> {
     return context.EnterFunction(this).Build(
       {
-        params: this.#parameters.Linked,
-        returns: this.#get_returns,
-        contents: this.#content.Linked,
+        params: (c) => this.#parameters.Linked(c),
+        returns: (c) => this.#get_returns(c),
+        contents: (c) => this.#content.Linked(c),
       },
       ({ params, returns, contents }) =>
         new LinkedFunctionEntity(
           this.CodeLocation,
-          this.#name,
+          is_main,
           params,
           contents,
           returns

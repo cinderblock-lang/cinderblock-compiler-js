@@ -94,7 +94,7 @@ export class CodeBase {
       new Callstack([], [], 0)
     );
 
-    const result = app.GetMain().Linked(context);
+    const result = app.GetMain().Linked(context, true);
     return result.Response;
   }
 }
