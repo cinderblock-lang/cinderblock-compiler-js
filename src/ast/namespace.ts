@@ -59,8 +59,10 @@ export class Namespace extends Component {
       }
     }
 
-    for (const name of this.#using()) {
-      const result = context.GetNamespace(name).GetObject(name, context);
+    for (const namespace_name of this.#using()) {
+      const result = context
+        .GetNamespace(namespace_name)
+        .GetObject(name, context);
       if (result) return result;
     }
 
@@ -77,8 +79,10 @@ export class Namespace extends Component {
       }
     }
 
-    for (const name of this.#using()) {
-      const result = context.GetNamespace(name).GetType(name, context);
+    for (const namespace_name of this.#using()) {
+      const result = context
+        .GetNamespace(namespace_name)
+        .GetType(name, context);
       if (result) return result;
     }
 

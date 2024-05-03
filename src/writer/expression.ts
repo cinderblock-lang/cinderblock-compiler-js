@@ -104,7 +104,7 @@ export class WriterAllocateExpression extends WriterExpression {
   }
 
   C(): string {
-    return `malloc(sizeof(${this.#item.TypeName}))`;
+    return `malloc(sizeof(${this.#item.TypeName.replace("*", "")}))`;
   }
 }
 

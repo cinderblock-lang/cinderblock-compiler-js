@@ -7,6 +7,7 @@ import { LinkedMakeExpression } from "../../linked-ast/expression/make";
 import { LinkedStructType } from "../../linked-ast/type/struct";
 import { LinkerError } from "../../linker/error";
 import { LinkedAllocateStatement } from "../../linked-ast/statement/allocate";
+import { ContextResponse } from "../context-response";
 
 export class MakeExpression extends Expression {
   readonly #struct: Type;
@@ -32,11 +33,13 @@ export class MakeExpression extends Expression {
     const allocate = new LinkedAllocateStatement(this.CodeLocation, type);
     return context.WithMake(allocate).Build(
       {
-        using: this.#using.Linked,
+        using: (c) => this.#using.Linked(c),
       },
-      ({ using }) => {
-        return new LinkedMakeExpression(this.CodeLocation, allocate, using);
-      }
+      ({ using }) =>
+        new ContextResponse(
+          context,
+          new LinkedMakeExpression(this.CodeLocation, allocate, using)
+        )
     );
   }
 }
