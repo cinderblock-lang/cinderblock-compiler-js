@@ -1,21 +1,31 @@
+import { LinkerError } from "../linker/error";
 import { WriterFunction } from "../writer/entity";
 import { WriterFile } from "../writer/file";
 import { WriterStatement } from "../writer/statement";
 import { LinkedStatement } from "./statement/base";
+import { LinkedReturnStatement } from "./statement/return";
 import { LinkedSubStatement } from "./statement/sub";
 import { LinkedType } from "./type/base";
 
 export class LinkedBlock {
   readonly #components: Array<LinkedStatement>;
-  readonly #returns: LinkedType;
 
-  constructor(components: Array<LinkedStatement>, returns: LinkedType) {
+  constructor(components: Array<LinkedStatement>) {
     this.#components = components;
-    this.#returns = returns;
   }
 
   get Returns() {
-    return this.#returns;
+    const target = this.#components.find(
+      (c) => c instanceof LinkedReturnStatement
+    );
+    if (!target || !(target instanceof LinkedReturnStatement))
+      throw new LinkerError(
+        this.#components[0].CodeLocation,
+        "error",
+        "Unable to determine return type"
+      );
+
+    return target.Type;
   }
 
   Build(

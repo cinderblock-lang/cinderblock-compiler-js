@@ -49,12 +49,15 @@ export class FunctionEntity extends Entity {
         contents: (c) => this.#content.Linked(c),
       },
       ({ params, returns, contents }) =>
-        new LinkedFunctionEntity(
-          this.CodeLocation,
-          is_main,
-          params,
-          contents,
-          returns
+        new ContextResponse(
+          context,
+          new LinkedFunctionEntity(
+            this.CodeLocation,
+            is_main,
+            params,
+            contents,
+            returns
+          )
         )
     );
   }

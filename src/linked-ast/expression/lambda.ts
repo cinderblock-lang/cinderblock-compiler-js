@@ -11,6 +11,7 @@ import {
 import { WriterFile } from "../../writer/file";
 import { WriterStatement } from "../../writer/statement";
 import { WriterType } from "../../writer/type";
+import { LinkedFunctionType } from "../type/function";
 
 export class LinkedLambdaExpression extends LinkedExpression {
   readonly #parameters: LinkedParameterCollection;
@@ -30,7 +31,11 @@ export class LinkedLambdaExpression extends LinkedExpression {
   }
 
   get Type() {
-    return this.#returns;
+    return new LinkedFunctionType(
+      this.CodeLocation,
+      this.#parameters,
+      this.#returns
+    );
   }
 
   Build(

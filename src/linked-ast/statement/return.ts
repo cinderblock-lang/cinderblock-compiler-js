@@ -14,6 +14,10 @@ export class LinkedReturnStatement extends LinkedStatement {
     this.#value = value;
   }
 
+  get Type() {
+    return this.#value.Type;
+  }
+
   Build(
     file: WriterFile,
     func: WriterFunction

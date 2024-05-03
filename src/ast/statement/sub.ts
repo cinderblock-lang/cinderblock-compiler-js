@@ -21,26 +21,27 @@ export class SubStatement extends Statement {
   }
 
   Linked(context: Context) {
-    return context.Build(
-      {
-        equals: (c) => this.#equals.Linked(c),
-      },
-      ({ equals }, ctx) => {
-        const statement = new LinkedSubStatement(
-          this.CodeLocation,
-          this.#name,
-          equals,
-          equals.Type
-        );
-        return new ContextResponse(
-          ctx.WithObject(
-            this.#name,
-            new LinkedSubExpression(this.CodeLocation, statement)
-          ),
-          statement
-        );
-      }
-    );
+    const statement = new LinkedSubStatement(this.CodeLocation, this.#name);
+    return context
+      .WithObject(
+        this.#name,
+        new LinkedSubExpression(this.CodeLocation, statement)
+      )
+      .Build(
+        {
+          equals: (c) => this.#equals.Linked(c),
+        },
+        ({ equals }, ctx) => {
+          statement.Equals = equals;
+          return new ContextResponse(
+            ctx.WithObject(
+              this.#name,
+              new LinkedSubExpression(this.CodeLocation, statement)
+            ),
+            statement
+          );
+        }
+      );
   }
 }
 

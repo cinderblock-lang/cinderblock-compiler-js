@@ -28,20 +28,26 @@ export class InvokationExpression extends Expression {
     ) {
       return context.Build(
         {
-          subject: (c) =>
-            (this.#subject as AccessExpression).LinkedFunctionTarget(c),
-          params: (context) =>
-            context.Map(
+          params: (context) => {
+            const result = context.Map(
               [
                 (this.#subject as AccessExpression).Subject,
                 ...this.#parameters,
               ],
               (ctx, n) => n.Linked(ctx)
-            ),
+            );
+
+            return new ContextResponse(
+              result.Context.PrepareInvokation(result.Response),
+              result.Response
+            );
+          },
+          subject: (c) =>
+            (this.#subject as AccessExpression).LinkedFunctionTarget(c),
         },
-        ({ subject, params }, ctx) =>
+        ({ subject, params }) =>
           new ContextResponse(
-            ctx.PrepareInvokation(params),
+            context,
             new LinkedInvokationExpression(this.CodeLocation, subject, params)
           )
       );
@@ -49,9 +55,9 @@ export class InvokationExpression extends Expression {
 
     return context.Build(
       {
-        subject: (c) => this.#subject.Linked(c),
         params: (context) =>
           context.Map(this.#parameters, (ctx, n) => n.Linked(ctx)),
+        subject: (c) => this.#subject.Linked(c),
       },
       ({ subject, params }, ctx) =>
         new ContextResponse(

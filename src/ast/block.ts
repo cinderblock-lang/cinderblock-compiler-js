@@ -8,6 +8,7 @@ import { LinkerError } from "../linker/error";
 import { ContextResponse } from "./context-response";
 import { Context } from "./context";
 import { LinkedType } from "../linked-ast/type/base";
+import { Type } from "./type/base";
 
 export class Block {
   readonly #components: Array<Statement>;
@@ -21,21 +22,8 @@ export class Block {
       {
         content: (context) =>
           context.Map(this.#components, (ctx, n) => n.Linked(ctx)),
-        returns: (context) => {
-          const target = this.#components.find(
-            (c) => c instanceof ReturnStatement
-          );
-          if (!target || !(target instanceof ReturnStatement))
-            throw new LinkerError(
-              this.#components[0].CodeLocation,
-              "error",
-              "Unable to determine return type"
-            );
-
-          return target.ReturnType(context);
-        },
       },
-      ({ content, returns }) => new LinkedBlock(content, returns)
+      ({ content }) => new ContextResponse(context, new LinkedBlock(content))
     );
   }
 
