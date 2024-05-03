@@ -1,4 +1,6 @@
 import { LinkedAccessExpression } from "../../linked-ast/expression/access";
+import { LinkedStructType } from "../../linked-ast/type/struct";
+import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
 import { Context } from "../context";
@@ -18,13 +20,58 @@ export class AccessExpression extends Expression {
     return this.#subject;
   }
 
+  get Target() {
+    return this.#target;
+  }
+
+  MayAccess(context: Context) {
+    const subject = this.#subject.Linked(context);
+
+    if (!(subject instanceof LinkedStructType)) return false;
+
+    const property = subject.GetKey(this.#target);
+    if (!property) return false;
+
+    return true;
+  }
+
+  LinkedFunctionTarget(context: Context) {
+    const result = context.GetObject(this.#target);
+    if (!result)
+      throw new LinkerError(
+        this.CodeLocation,
+        "error",
+        "Could not resolve function"
+      );
+
+    return result;
+  }
+
   Linked(context: Context) {
     return context.Build(
       {
         subject: (c) => this.#subject.Linked(c),
       },
-      ({ subject }) =>
-        new LinkedAccessExpression(this.CodeLocation, subject, this.#target)
+      ({ subject }) => {
+        const subject_type = subject.Type;
+
+        if (!(subject_type instanceof LinkedStructType))
+          throw new LinkerError(
+            this.CodeLocation,
+            "error",
+            "May only access a struct"
+          );
+
+        const property = subject_type.GetKey(this.#target);
+        if (!property)
+          throw new LinkerError(
+            this.CodeLocation,
+            "error",
+            "Cannot find key of struct"
+          );
+
+        return new LinkedAccessExpression(this.CodeLocation, subject, property);
+      }
     );
   }
 }

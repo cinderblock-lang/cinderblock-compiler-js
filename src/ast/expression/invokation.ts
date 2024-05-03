@@ -5,6 +5,7 @@ import { Context } from "../context";
 import { LinkedExpression } from "../../linked-ast/expression/base";
 import { ContextResponse } from "../context-response";
 import { LinkedInvokationExpression } from "../../linked-ast/expression/invokation";
+import { AccessExpression } from "./access";
 
 export class InvokationExpression extends Expression {
   readonly #subject: Expression;
@@ -21,6 +22,31 @@ export class InvokationExpression extends Expression {
   }
 
   Linked(context: Context) {
+    if (
+      this.#subject instanceof AccessExpression &&
+      !this.#subject.MayAccess(context)
+    ) {
+      return context.Build(
+        {
+          subject: (c) =>
+            (this.#subject as AccessExpression).LinkedFunctionTarget(c),
+          params: (context) =>
+            context.Map(
+              [
+                (this.#subject as AccessExpression).Subject,
+                ...this.#parameters,
+              ],
+              (ctx, n) => n.Linked(ctx)
+            ),
+        },
+        ({ subject, params }, ctx) =>
+          new ContextResponse(
+            ctx.PrepareInvokation(params),
+            new LinkedInvokationExpression(this.CodeLocation, subject, params)
+          )
+      );
+    }
+
     return context.Build(
       {
         subject: (c) => this.#subject.Linked(c),
