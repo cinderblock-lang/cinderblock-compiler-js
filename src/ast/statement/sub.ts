@@ -1,6 +1,8 @@
+import { LinkedSubExpression } from "../../linked-ast/expression/sub";
 import { LinkedSubStatement } from "../../linked-ast/statement/sub";
 import { CodeLocation } from "../../location/code-location";
 import { Context } from "../context";
+import { ContextResponse } from "../context-response";
 import { Expression } from "../expression/base";
 import { Statement } from "./base";
 
@@ -23,13 +25,21 @@ export class SubStatement extends Statement {
       {
         equals: (c) => this.#equals.Linked(c),
       },
-      ({ equals }) =>
-        new LinkedSubStatement(
+      ({ equals }, ctx) => {
+        const statement = new LinkedSubStatement(
           this.CodeLocation,
           this.#name,
           equals,
           equals.Type
-        )
+        );
+        return new ContextResponse(
+          ctx.WithObject(
+            this.#name,
+            new LinkedSubExpression(this.CodeLocation, statement)
+          ),
+          statement
+        );
+      }
     );
   }
 }
