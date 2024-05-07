@@ -49,6 +49,15 @@ export class Context {
     );
   }
 
+  WithoutInvokation() {
+    return new Context(
+      this.#code_base,
+      this.#namespace,
+      this.#scope,
+      new Callstack([], [], 0)
+    );
+  }
+
   WithParameterIndex(index: number) {
     return new Context(
       this.#code_base,

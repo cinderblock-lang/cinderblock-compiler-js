@@ -1,4 +1,5 @@
 import { LinkedType } from "../../linked-ast/type/base";
+import { LinkedStructType } from "../../linked-ast/type/struct";
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { Context } from "../context";
@@ -34,6 +35,22 @@ export class SchemaType extends Type {
         "error",
         "Could not resolve schema"
       );
+
+    const invoked_type = invoked_with.Type;
+    if (!(invoked_type instanceof LinkedStructType))
+      throw new LinkerError(
+        this.CodeLocation,
+        "error",
+        "May only invoke schemas with struct types"
+      );
+
+    for (const property of this.#properties.Keys)
+      if (!invoked_type.GetKey(property))
+        throw new LinkerError(
+          this.CodeLocation,
+          "error",
+          "Missing key " + property
+        );
 
     return new ContextResponse(context, invoked_with.Type);
   }

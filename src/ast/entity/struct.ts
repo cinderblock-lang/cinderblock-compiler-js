@@ -1,4 +1,5 @@
 import { LinkedStructType } from "../../linked-ast/type/struct";
+import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { Context } from "../context";
 import { PropertyCollection } from "../property-collection";
@@ -33,9 +34,27 @@ export class StructEntity extends TypeEntity {
   }
 
   Linked(context: Context) {
+    const invoked_with = context.GetCurrentParameter();
+    if (invoked_with) {
+      const invoked_type = invoked_with.Type;
+      if (!(invoked_type instanceof LinkedStructType))
+        throw new LinkerError(
+          this.CodeLocation,
+          "error",
+          "Attempting to invoke with the incorrect type"
+        );
+
+      if (invoked_type.CName !== this.CodeLocation.CName)
+        throw new LinkerError(
+          this.CodeLocation,
+          "error",
+          "Attempting to invoke with the incorrect type"
+        );
+    }
+
     return context.Build(
       {
-        properties: (c) => this.#properties.Linked(c),
+        properties: (c) => this.#properties.Linked(c.WithoutInvokation()),
       },
       ({ properties }) => new LinkedStructType(this.CodeLocation, properties)
     );

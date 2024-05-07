@@ -51,11 +51,13 @@ export class Namespace extends Component {
   ): ContextResponse<LinkedExpression> | undefined {
     for (const entity of this.#contents) {
       if (entity instanceof FunctionEntity && entity.Name === name) {
-        const response = entity.Linked(context);
-        return new ContextResponse(
-          response.Context,
-          new LinkedEntityExpression(this.CodeLocation, response.Response)
-        );
+        try {
+          const response = entity.Linked(context);
+          return new ContextResponse(
+            response.Context,
+            new LinkedEntityExpression(this.CodeLocation, response.Response)
+          );
+        } catch {}
       }
     }
 

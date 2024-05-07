@@ -38,7 +38,10 @@ export class FunctionEntity extends Entity {
   }
 
   #get_returns(context: Context) {
-    return this.#returns?.Linked(context) ?? this.#content.Returns(context);
+    return (
+      this.#returns?.Linked(context.WithoutInvokation()) ??
+      this.#content.Returns(context)
+    );
   }
 
   Linked(context: Context, is_main = false): ContextResponse<LinkedEntity> {

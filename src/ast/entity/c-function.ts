@@ -45,7 +45,7 @@ export class CFunction extends FunctionEntity {
     return context.EnterFunction(this).Build(
       {
         params: (c) => this.#parameters.Linked(c),
-        returns: (c) => this.#returns.Linked(c),
+        returns: (c) => this.#returns.Linked(c.WithoutInvokation()),
       },
       ({ params, returns }) =>
         new ContextResponse(

@@ -1,12 +1,8 @@
-import { LinkedPropertyCollection } from "../../linked-ast/property-collection";
-import { LinkedType } from "../../linked-ast/type/base";
 import { LinkedEnumType } from "../../linked-ast/type/enum";
+import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
-import { Callstack } from "../callstack";
 import { Context } from "../context";
-import { ContextResponse } from "../context-response";
 import { PropertyCollection } from "../property-collection";
-import { Scope } from "../scope";
 import { Entity, EntityOptions } from "./base";
 import { TypeEntity } from "./type-entity";
 
@@ -42,9 +38,27 @@ export class EnumEntity extends TypeEntity {
   }
 
   Linked(context: Context) {
+    const invoked_with = context.GetCurrentParameter();
+    if (invoked_with) {
+      const invoked_type = invoked_with.Type;
+      if (!(invoked_type instanceof LinkedEnumType))
+        throw new LinkerError(
+          this.CodeLocation,
+          "error",
+          "Attempting to invoke with the incorrect type"
+        );
+
+      if (invoked_type.CName !== this.CodeLocation.CName)
+        throw new LinkerError(
+          this.CodeLocation,
+          "error",
+          "Attempting to invoke with the incorrect type"
+        );
+    }
+
     return context.Build(
       {
-        properties: (c) => this.#properties.Linked(c),
+        properties: (c) => this.#properties.Linked(c.WithoutInvokation()),
       },
       ({ properties }) => new LinkedEnumType(this.CodeLocation, properties)
     );

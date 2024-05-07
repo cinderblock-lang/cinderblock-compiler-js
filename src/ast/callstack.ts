@@ -55,8 +55,12 @@ export class Callstack {
   }
 
   GetCurrentParameter() {
-    return this.#invokations[this.#invokations.length - 1].GetArgument(
-      this.#current_parameter_index
-    );
+    try {
+      return this.#invokations[this.#invokations.length - 1].GetArgument(
+        this.#current_parameter_index
+      );
+    } catch {
+      return undefined;
+    }
   }
 }

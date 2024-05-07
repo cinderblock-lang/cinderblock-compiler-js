@@ -1,3 +1,4 @@
+import { LinkedStructType } from "../../linked-ast/type/struct";
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { Context } from "../context";
@@ -41,6 +42,22 @@ export class SchemaEntity extends TypeEntity {
         "error",
         "Could not resolve schema"
       );
+
+    const invoked_type = invoked_with.Type;
+    if (!(invoked_type instanceof LinkedStructType))
+      throw new LinkerError(
+        this.CodeLocation,
+        "error",
+        "May only invoke schemas with struct types"
+      );
+
+    for (const property of this.#properties.Keys)
+      if (!invoked_type.GetKey(property))
+        throw new LinkerError(
+          this.CodeLocation,
+          "error",
+          "Missing key " + property
+        );
 
     return new ContextResponse(
       context.WithType(this.#name, invoked_with.Type),
