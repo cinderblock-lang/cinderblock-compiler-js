@@ -5,6 +5,7 @@ import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
 import { Context } from "../context";
 import { Expression } from "./base";
+import { ReferenceExpression } from "./reference";
 
 export class AccessExpression extends Expression {
   readonly #subject: Expression;
@@ -36,15 +37,9 @@ export class AccessExpression extends Expression {
   }
 
   LinkedFunctionTarget(context: Context) {
-    const result = context.GetObject(this.#target);
-    if (!result)
-      throw new LinkerError(
-        this.CodeLocation,
-        "error",
-        "Could not resolve function"
-      );
-
-    return result;
+    return new ReferenceExpression(this.CodeLocation, this.#target).Linked(
+      context
+    );
   }
 
   Linked(context: Context) {

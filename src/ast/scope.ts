@@ -1,8 +1,6 @@
 import { LinkedExpression } from "../linked-ast/expression/base";
-import { LinkedMakeExpression } from "../linked-ast/expression/make";
 import { LinkedAllocateStatement } from "../linked-ast/statement/allocate";
 import { LinkedType } from "../linked-ast/type/base";
-import { CodeLocation } from "../location/code-location";
 import { FunctionEntity } from "./entity/function";
 
 export class Scope {
