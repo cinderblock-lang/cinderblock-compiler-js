@@ -17,6 +17,10 @@ export class LinkedParameterCollection {
     return this.#components.find((c) => c.Name === name);
   }
 
+  Remaining(offset: number) {
+    return this.#components.slice(offset);
+  }
+
   Build(
     file: WriterFile,
     preserve_name = false

@@ -2,6 +2,8 @@ import { CodeLocation } from "../../location/code-location";
 import { WriterProperty } from "../../writer/entity";
 import { WriterFile } from "../../writer/file";
 import { WriterFunctionType, WriterType } from "../../writer/type";
+import { LinkedExpression } from "../expression/base";
+import { LinkedParameter } from "../parameter";
 import { LinkedParameterCollection } from "../parameter-collection";
 import { LinkedType } from "./base";
 
@@ -17,6 +19,14 @@ export class LinkedFunctionType extends LinkedType {
     super(ctx);
     this.#parameters = parameters;
     this.#returns = returns;
+  }
+
+  IsPartial(parameters: Array<LinkedExpression>) {
+    return this.Remaining(parameters).filter((p) => !p.Optional).length > 0;
+  }
+
+  Remaining(parameters: Array<LinkedExpression>): Array<LinkedParameter> {
+    return this.#parameters.Remaining(parameters.length);
   }
 
   get Returns() {

@@ -22,7 +22,8 @@ export class Parameter extends SubItem {
         const parameter = new LinkedParameter(
           this.CodeLocation,
           this.Name,
-          type
+          type,
+          this.Optional
         );
 
         return new ContextResponse(

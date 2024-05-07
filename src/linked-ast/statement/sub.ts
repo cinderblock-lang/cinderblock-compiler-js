@@ -1,4 +1,5 @@
 import { LinkerError } from "../../linker/error";
+import { UninitialisedError } from "../../linker/uninitialised-error";
 import { CodeLocation } from "../../location/code-location";
 import { WriterFunction } from "../../writer/entity";
 import { WriterExpression } from "../../writer/expression";
@@ -26,11 +27,7 @@ export class LinkedSubStatement extends LinkedStatement {
 
   get Type() {
     if (!this.#equals)
-      throw new LinkerError(
-        this.CodeLocation,
-        "error",
-        "Could not resolve type"
-      );
+      throw new UninitialisedError(this.CodeLocation, "Could not resolve type");
     return this.#equals.Type;
   }
 
