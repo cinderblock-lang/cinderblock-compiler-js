@@ -50,6 +50,7 @@ Expression.Register({
     return token_group.Text === "fn";
   },
   Extract(token_group, prefix) {
+    const location = token_group.CodeLocation;
     token_group.Next.Expect("(");
     let parameters: ParameterCollection;
     [token_group, parameters] = ParameterCollection.Parse(
@@ -68,8 +69,8 @@ Expression.Register({
     [token_group, body] = Block.Parse(token_group.Next);
 
     return [
-      token_group,
-      new LambdaExpression(token_group.CodeLocation, parameters, body, returns),
+      token_group.Previous,
+      new LambdaExpression(location, parameters, body, returns),
     ];
   },
 });

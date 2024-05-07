@@ -9,7 +9,8 @@
     "test:chained-operators": "npm run build && cd ../cinderblock-tests/chained-operators && cinderblock compile",
     "test:if-expressions": "npm run build && cd ../cinderblock-tests/if-expressions && cinderblock compile",
     "test:embedded-c": "npm run build && cd ../cinderblock-tests/embedded-c && cinderblock compile",
-    "test:function-overloading": "npm run build && cd ../cinderblock-tests/function-overloading && cinderblock compile"
+    "test:function-overloading": "npm run build && cd ../cinderblock-tests/function-overloading && cinderblock compile",
+    "test:lambdas": "npm run build && cd ../cinderblock-tests/lambdas && cinderblock compile"
   },
   "private": true,
   "bin": {

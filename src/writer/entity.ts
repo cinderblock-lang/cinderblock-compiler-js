@@ -111,7 +111,7 @@ export class WriterFunction extends WriterEntity {
 
     let params = this.#parameters.map((p) => p.C).join(", ");
 
-    const top_line = `${this.#returns.TypeName} ${this.#name}(${params})`;
+    const top_line = this.#returns.Declare(`${this.#name}(${params})`);
 
     const statements = this.#statements.map((s) => s.C(this)).join("\n  ");
     return `${top_line} {\n  ${statements}\n}`;
