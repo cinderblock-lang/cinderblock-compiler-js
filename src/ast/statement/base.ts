@@ -26,7 +26,7 @@ export abstract class Statement extends Component {
 
     throw new ParserError(
       token_group.CodeLocation,
-      "No entity candidate for " + token_group.Text
+      "No statement candidate for " + token_group.Text
     );
   }
 }

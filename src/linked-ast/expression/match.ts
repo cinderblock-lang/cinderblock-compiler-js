@@ -21,16 +21,19 @@ import { WriterType } from "../../writer/type";
 import { LinkedEnumType } from "../type/enum";
 
 export class LinkedMatchExpression extends LinkedExpression {
-  readonly #subject: LinkedSubStatement;
+  readonly #subject: LinkedExpression;
+  readonly #parameter_name: string;
   readonly #using: Record<string, LinkedBlock>;
 
   constructor(
     ctx: CodeLocation,
-    subject: LinkedSubStatement,
+    subject: LinkedExpression,
+    parameter_name: string,
     using: Record<string, LinkedBlock>
   ) {
     super(ctx);
     this.#subject = subject;
+    this.#parameter_name = parameter_name;
     this.#using = using;
   }
 
@@ -68,9 +71,11 @@ export class LinkedMatchExpression extends LinkedExpression {
         "Could not resolve key"
       );
 
+    let parameter_type: WriterType;
+    [file, parameter_type] = first.Type.Build(file);
     let first_func = new WriterFunction(
       first.CName,
-      [new WriterProperty(this.#subject.CName, subject_type)],
+      [new WriterProperty(this.#parameter_name, parameter_type)],
       type,
       [],
       func
@@ -80,7 +85,8 @@ export class LinkedMatchExpression extends LinkedExpression {
       file,
       first_func
     );
-    file = file.WithEntity(first_func.WithStatements(first_statements));
+    first_func = first_func.WithStatements(first_statements);
+    file = file.WithEntity(first_func);
 
     return subject_type_instance.Keys.slice(1)
       .map((k) => subject_type_instance.GetKey(k))
@@ -93,16 +99,19 @@ export class LinkedMatchExpression extends LinkedExpression {
               "Could not resolve key"
             );
 
+          let parameter_type: WriterType;
+          [file, parameter_type] = n.Type.Build(file);
           let n_func = new WriterFunction(
             n.CName,
-            [new WriterProperty(this.#subject.CName, subject_type)],
+            [new WriterProperty(this.#parameter_name, parameter_type)],
             type,
             [],
             func
           );
           let n_statements: Array<WriterStatement>;
           [ci, n_func, n_statements] = this.#using[n.Name].Build(file, n_func);
-          ci = ci.WithEntity(n_func.WithStatements(n_statements));
+          n_func = n_func.WithStatements(n_statements);
+          ci = ci.WithEntity(n_func);
 
           return [
             ci,

@@ -11,7 +11,8 @@
     "test:embedded-c": "npm run build && cd ../cinderblock-tests/embedded-c && cinderblock compile",
     "test:function-overloading": "npm run build && cd ../cinderblock-tests/function-overloading && cinderblock compile",
     "test:lambdas": "npm run build && cd ../cinderblock-tests/lambdas && cinderblock compile",
-    "test:partial-invokation": "npm run build && cd ../cinderblock-tests/partial-invokation && cinderblock compile"
+    "test:partial-invokation": "npm run build && cd ../cinderblock-tests/partial-invokation && cinderblock compile",
+    "test:enums": "npm run build && cd ../cinderblock-tests/enums && cinderblock compile"
   },
   "private": true,
   "bin": {

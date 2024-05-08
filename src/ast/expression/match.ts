@@ -8,9 +8,13 @@ import { ContextResponse } from "../context-response";
 import { LinkedMatchExpression } from "../../linked-ast/expression/match";
 import { LinkedSubStatement } from "../../linked-ast/statement/sub";
 import { LinkerError } from "../../linker/error";
+import { LinkedParameter } from "../../linked-ast/parameter";
+import { LinkedEnumType } from "../../linked-ast/type/enum";
+import { LinkedParameterExpression } from "../../linked-ast/expression/parameter";
 
 export class MatchExpression extends Expression {
-  readonly #subject: SubStatement;
+  readonly #subject: Expression;
+  readonly #as: string;
   readonly #using: Record<string, Block>;
 
   constructor(
@@ -20,7 +24,8 @@ export class MatchExpression extends Expression {
     using: Record<string, Block>
   ) {
     super(ctx);
-    this.#subject = new SubStatement(this.CodeLocation, as, subject);
+    this.#subject = subject;
+    this.#as = as;
     this.#using = using;
   }
 
@@ -31,20 +36,48 @@ export class MatchExpression extends Expression {
         using: (ctx) =>
           new ContextResponse(
             ctx,
-            Object.keys(this.#using).reduce(
-              (c, n) => ({ ...c, [n]: this.#using[n].Linked(ctx).Response }),
-              {} as Record<string, LinkedBlock>
-            )
+            Object.keys(this.#using).reduce((c, n) => {
+              const sub = this.#subject.Linked(ctx);
+              const type = sub.Response.Type;
+              if (!(type instanceof LinkedEnumType))
+                throw new LinkerError(
+                  this.CodeLocation,
+                  "error",
+                  "May only match on an enum"
+                );
+
+              const property = type.GetKey(n);
+              if (!property)
+                throw new LinkerError(
+                  this.CodeLocation,
+                  "error",
+                  "Key not present"
+                );
+              const result = new LinkedParameter(
+                this.CodeLocation,
+                this.#as,
+                property.Type,
+                false
+              );
+              return {
+                ...c,
+                [n]: this.#using[n].Linked(
+                  ctx.WithObject(
+                    this.#as,
+                    new LinkedParameterExpression(this.CodeLocation, result)
+                  )
+                ).Response,
+              };
+            }, {} as Record<string, LinkedBlock>)
           ),
       },
       ({ subject, using }) => {
-        if (!(subject instanceof LinkedSubStatement))
-          throw new LinkerError(
-            this.CodeLocation,
-            "error",
-            "Subject must be a sub statement"
-          );
-        return new LinkedMatchExpression(this.CodeLocation, subject, using);
+        return new LinkedMatchExpression(
+          this.CodeLocation,
+          subject,
+          this.CodeLocation.CName,
+          using
+        );
       }
     );
   }
@@ -56,29 +89,31 @@ Expression.Register({
     return token_group.Text === "match";
   },
   Extract(token_group, prefix) {
+    const location = token_group.CodeLocation;
     token_group.Next.Expect("(");
-    const [after_subject, subject] = Expression.Parse(token_group.Skip(2), [
-      "as",
-    ]);
+    let subject: Expression;
+    [token_group, subject] = Expression.Parse(token_group.Skip(2), ["as"]);
 
-    const as = after_subject.Next.Text;
+    token_group = token_group.Next;
+    const as = token_group.Text;
 
-    let after_using = after_subject.Skip(2);
-    after_using.Expect("{");
+    token_group = token_group.Skip(2);
+    token_group.Expect("{");
+    token_group = token_group.Next;
 
     const using: Record<string, Block> = {};
-    while (after_using.Text !== "}") {
-      const name = after_using.Next.Text;
-      after_using.Skip(2).Expect(":");
-      const [after_block, block] = Block.Parse(after_subject.Skip(3));
+    while (token_group.Text !== "}") {
+      const name = token_group.Text;
+      token_group = token_group.Next;
+      token_group.Expect(":");
+      let block: Block;
+      [token_group, block] = Block.Parse(token_group.Next);
 
       using[name] = block;
-      after_using = after_block;
     }
 
-    return [
-      after_using,
-      new MatchExpression(token_group.CodeLocation, subject, as, using),
-    ];
+    token_group = token_group.Next;
+
+    return [token_group, new MatchExpression(location, subject, as, using)];
   },
 });

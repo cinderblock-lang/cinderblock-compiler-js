@@ -50,7 +50,8 @@ export class LinkedPickExpression extends LinkedExpression {
     let main_func = new WriterFunction(this.CName, [], type, [], func);
     let main_statements: Array<WriterStatement>;
     [file, main_func, main_statements] = this.#using.Build(file, main_func);
-    file = file.WithEntity(main_func.WithStatements(main_statements));
+    main_func = main_func.WithStatements(main_statements);
+    file = file.WithEntity(main_func);
 
     const property = this.#enum.GetKey(this.#key);
     if (!property)

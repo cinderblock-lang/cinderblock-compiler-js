@@ -49,17 +49,21 @@ Expression.Register({
     return token_group.Text === "pick";
   },
   Extract(token_group, prefix, look_for) {
-    const [after_target, target] = Type.Parse(token_group);
+    const location = token_group.CodeLocation;
+    let target: Type;
+    [token_group, target] = Type.Parse(token_group.Next);
 
-    after_target.Expect(".");
+    token_group.Expect(".");
 
-    const key = after_target.Next.Text;
+    token_group = token_group.Next;
+    const key = token_group.Text;
 
-    const [after_block, block] = Block.Parse(after_target.Skip(2));
+    let block: Block;
+    [token_group, block] = Block.Parse(token_group.Next);
 
     return [
-      after_block,
-      new PickExpression(token_group.CodeLocation, target, key, block),
+      token_group.Previous,
+      new PickExpression(location, target, key, block),
     ];
   },
 });

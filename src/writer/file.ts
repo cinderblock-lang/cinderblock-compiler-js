@@ -24,7 +24,10 @@ export class WriterFile {
 
   get C(): string {
     const includes = this.#includes.map((i) => `#include ${i}`).join("\n");
-    const entities = this.#entities.map((e) => e.Declaration).join("\n\n");
+    const entities = this.#entities
+      .map((e) => e.Declaration)
+      .filter((c) => c)
+      .join("\n\n");
     return `${includes}\n\n${entities}`;
   }
 }

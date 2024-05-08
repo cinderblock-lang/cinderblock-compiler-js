@@ -16,6 +16,7 @@ import "./expression/is";
 import "./expression/lambda";
 import "./expression/literal";
 import "./expression/make";
+import "./expression/match";
 import "./expression/operator";
 import "./expression/pick";
 import "./expression/reference";
