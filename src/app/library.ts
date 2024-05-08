@@ -6,10 +6,12 @@ import { Dto } from "./dtos";
 import Source from "./source";
 
 export default class Library {
+  readonly #project_root: string;
   readonly #url: string;
   readonly #cache_dir: string;
 
-  constructor(url: string, cache_dir: string) {
+  constructor(project_root: string, url: string, cache_dir: string) {
+    this.#project_root = project_root;
     this.#url = url;
     this.#cache_dir = cache_dir;
   }
@@ -36,6 +38,16 @@ export default class Library {
 
   async #get_file(url: string, path: string) {
     await this.#ensure_dir(Path.dirname(path));
+
+    if (url.startsWith("file:")) {
+      await Fs.copyFile(
+        Path.resolve(this.#project_root, url.replace("file:", "")),
+        path
+      );
+
+      return;
+    }
+
     const stream = FsOld.createWriteStream(path);
 
     return new Promise<string>((res) => {

@@ -48,7 +48,7 @@ export default class Project {
             ]
           : []
       )
-      .map((l) => new Library(l, cache_dir));
+      .map((l) => new Library(this.#dir, l, cache_dir));
   }
 
   async #ensure_libraries(no_cache?: boolean) {

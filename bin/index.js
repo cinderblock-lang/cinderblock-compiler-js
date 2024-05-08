@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 const yargs = require("yargs/yargs");
 const { hideBin } = require("yargs/helpers");
-const { Compile, Test } = require("../dist");
+const { Compile, CompileWorkspace } = require("../dist");
 
 Error.stackTraceLimit = 100;
 
@@ -14,6 +14,16 @@ yargs(hideBin(process.argv))
     },
     (argv) => {
       Compile(".", { debug: argv.debug, no_cache: argv["no-cache"] });
+    }
+  )
+  .command(
+    "workspace compile",
+    "Compile the current workspace",
+    (yargs) => {
+      return yargs;
+    },
+    (argv) => {
+      CompileWorkspace(".", { debug: argv.debug, no_cache: argv["no-cache"] });
     }
   )
   .option("debug", {

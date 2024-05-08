@@ -40,6 +40,18 @@ export namespace Dto {
 
   export type Project = z.infer<typeof Project>;
 
+  export const Workspace = z.object({
+    name: z.string(),
+    projects: z.array(
+      z.object({
+        path: z.string(),
+        type: z.union([z.literal("app"), z.literal("library")]),
+      })
+    ),
+  });
+
+  export type Workspace = z.infer<typeof Workspace>;
+
   export const Library = z.object({
     files: z.array(Source),
     libs: z.optional(z.array(z.string())),
