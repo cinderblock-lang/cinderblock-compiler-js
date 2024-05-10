@@ -45,7 +45,7 @@ export default class Library {
         path
       );
 
-      return;
+      return await Fs.readFile(path, "utf-8");
     }
 
     const stream = FsOld.createWriteStream(path);
@@ -70,7 +70,7 @@ export default class Library {
       Path.join(this.#path, "cinder.json")
     );
 
-    const result = Dto.Library.safeParse(file);
+    const result = Dto.Library.safeParse(JSON.parse(file));
     if (!result.success)
       throw new Error("Could not parsed library " + this.#url);
     return result.data;
@@ -102,6 +102,11 @@ export default class Library {
   }
 
   async EnsureCloned(no_cache?: boolean) {
+    if (this.#url.startsWith("file:")) {
+      await this.#clone();
+      return;
+    }
+
     if (no_cache) {
       console.log(`Caches disabled for ${this.#url}, pulling from remote`);
 

@@ -60,7 +60,7 @@ export class LinkedMatchExpression extends LinkedExpression {
         "May only match on an enum"
       );
 
-    let subject: WriterStatement;
+    let subject: WriterExpression;
     [file, func, subject] = this.#subject.Build(file, func);
 
     const first = subject_type_instance.GetKey(subject_type_instance.Keys[0]);
