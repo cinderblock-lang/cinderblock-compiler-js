@@ -27,7 +27,9 @@ export class WriterVariableStatement extends WriterStatement {
   }
 
   C(func: WriterFunction): string {
-    return `${this.#type.Declare(this.#name)} = ${this.#assignment.C(func)};`;
+    const type = this.#type.Declare(this.#name);
+    const assignment = this.#assignment.C(func, this);
+    return `${type} = ${assignment};`;
   }
 }
 
@@ -45,7 +47,7 @@ export class WriterAssignStatement extends WriterStatement {
 
   C(func: WriterFunction): string {
     const access = `${this.#subject}->${this.#name}`;
-    return `${access} = ${this.#assignment.C(func)};`;
+    return `${access} = ${this.#assignment.C(func, this)};`;
   }
 }
 
@@ -58,7 +60,7 @@ export class WriterSideEffect extends WriterStatement {
   }
 
   C(func: WriterFunction): string {
-    return `${this.#assignment.C(func)};`;
+    return `${this.#assignment.C(func, this)};`;
   }
 }
 
@@ -71,7 +73,7 @@ export class WriterReturnStatement extends WriterStatement {
   }
 
   C(func: WriterFunction): string {
-    return `return ${this.#assignment.C(func)};`;
+    return `return ${this.#assignment.C(func, this)};`;
   }
 }
 

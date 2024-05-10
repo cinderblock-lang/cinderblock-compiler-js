@@ -1,9 +1,10 @@
 import { LinkedComponent } from "../linked-ast/component";
 import { WriterEntity, WriterFunction } from "./entity";
+import { WriterStatement } from "./statement";
 import { WriterType } from "./type";
 
 export abstract class WriterExpression {
-  abstract C(func: WriterFunction): string;
+  abstract C(func: WriterFunction, statement: WriterStatement): string;
 }
 
 export class WriterAccessExpression extends WriterExpression {
@@ -16,8 +17,8 @@ export class WriterAccessExpression extends WriterExpression {
     this.#name = name;
   }
 
-  C(func: WriterFunction): string {
-    return `${this.#target.C(func)}->${this.#name}`;
+  C(func: WriterFunction, statement: WriterStatement): string {
+    return `${this.#target.C(func, statement)}->${this.#name}`;
   }
 }
 
@@ -37,10 +38,11 @@ export class WriterTernayExpression extends WriterExpression {
     this.#on_else = on_else;
   }
 
-  C(func: WriterFunction): string {
-    return `${this.#check.C(func)} ? ${this.#on_if.C(func)} : ${this.#on_else.C(
-      func
-    )}`;
+  C(func: WriterFunction, statement: WriterStatement): string {
+    const check = this.#check.C(func, statement);
+    const on_if = this.#on_if.C(func, statement);
+    const on_else = this.#on_else.C(func, statement);
+    return `${check} ? ${on_if} : ${on_else}`;
   }
 }
 
@@ -60,8 +62,10 @@ export class WriterOperatorExpression extends WriterExpression {
     this.#operator = operator;
   }
 
-  C(func: WriterFunction): string {
-    return `${this.#left.C(func)} ${this.#operator} ${this.#right.C(func)}`;
+  C(func: WriterFunction, statement: WriterStatement): string {
+    const left = this.#left.C(func, statement);
+    const right = this.#right.C(func, statement);
+    return `${left} ${this.#operator} ${right}`;
   }
 }
 
@@ -75,9 +79,9 @@ export class WriterInvokationExpression extends WriterExpression {
     this.#parameters = parameters;
   }
 
-  C(func: WriterFunction): string {
-    const params = this.#parameters.map((p) => p.C(func)).join(", ");
-    return `${this.#subject.C(func)}(${params})`;
+  C(func: WriterFunction, statement: WriterStatement): string {
+    const params = this.#parameters.map((p) => p.C(func, statement)).join(", ");
+    return `${this.#subject.C(func, statement)}(${params})`;
   }
 }
 
