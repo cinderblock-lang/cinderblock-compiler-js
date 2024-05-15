@@ -16,6 +16,10 @@ export default class Library {
     this.#cache_dir = cache_dir;
   }
 
+  get #is_local() {
+    return this.#url.startsWith("file:");
+  }
+
   async #ensure_dir(path: string) {
     try {
       await Fs.mkdir(path, { recursive: true });
@@ -37,17 +41,16 @@ export default class Library {
   }
 
   async #get_file(url: string, path: string) {
-    await this.#ensure_dir(Path.dirname(path));
-
-    if (url.startsWith("file:")) {
-      await Fs.copyFile(
-        Path.resolve(this.#project_root, url.replace("file:", "")),
-        path
+    if (this.#is_local) {
+      const location = Path.resolve(
+        this.#project_root,
+        url.replace("file:", "")
       );
 
-      return await Fs.readFile(path, "utf-8");
+      return await Fs.readFile(location, "utf-8");
     }
 
+    await this.#ensure_dir(Path.dirname(path));
     const stream = FsOld.createWriteStream(path);
 
     return new Promise<string>((res) => {
@@ -63,8 +66,6 @@ export default class Library {
   }
 
   async #config() {
-    await this.#ensure_dir(this.#path);
-
     const file = await this.#get_file(
       this.#join_url(this.#url, "cinder.json"),
       Path.join(this.#path, "cinder.json")
@@ -103,7 +104,6 @@ export default class Library {
 
   async EnsureCloned(no_cache?: boolean) {
     if (this.#url.startsWith("file:")) {
-      await this.#clone();
       return;
     }
 
@@ -129,6 +129,10 @@ export default class Library {
   async GetSource() {
     const data = await this.#config();
 
-    return new Source(data.files, this.#path);
+    const base_url = this.#is_local
+      ? Path.resolve(this.#project_root, this.#url.replace("file:", ""))
+      : this.#url;
+
+    return new Source(data.files, base_url);
   }
 }

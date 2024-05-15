@@ -134,15 +134,19 @@ Expression.Register({
         "Attempting an invokation without a referenced function"
       );
 
-    token_group = token_group.Next;
     let parameters: Array<Expression> = [];
-    while (token_group.Text !== ")") {
-      let result: Expression;
-      [token_group, result] = Expression.Parse(token_group, [",", ")"]);
-      parameters = [...parameters, result];
-    }
+    if (token_group.Next.Text !== ")") {
+      while (token_group.Text !== ")") {
+        token_group = token_group.Next;
+        let result: Expression;
+        [token_group, result] = Expression.Parse(token_group, [",", ")"]);
+        parameters = [...parameters, result];
+      }
 
-    token_group = token_group.Next;
+      token_group = token_group.Next;
+    } else {
+      token_group = token_group.Skip(2);
+    }
 
     return [token_group, new InvokationExpression(start, prefix, parameters)];
   },

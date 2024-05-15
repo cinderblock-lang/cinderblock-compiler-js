@@ -6,17 +6,15 @@ import Fs from "fs/promises";
 
 export default class CinderblockFile extends File {
   readonly #dto: Dto.CinderBlockFile;
-  readonly #display_name: string;
 
-  constructor(dto: Dto.CinderBlockFile, display_name: string) {
+  constructor(dto: Dto.CinderBlockFile) {
     super();
     this.#dto = dto;
-    this.#display_name = display_name;
   }
 
   async GetAst(input: CodeBase): Promise<CodeBase> {
     const code = await Fs.readFile(this.#dto, "utf-8");
-    const tokens = Tokenise(code, this.#display_name);
+    const tokens = Tokenise(code, this.#dto);
     return input.With(tokens);
   }
 }

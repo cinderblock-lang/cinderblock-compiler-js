@@ -76,7 +76,7 @@ export class CodeBase {
   }
 
   GetNamespace(name: string) {
-    return this.#data.find((n) => n.Name === name);
+    return this.#data.find((n) => n && n.Name === name);
   }
 
   get Linked() {

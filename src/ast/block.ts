@@ -53,7 +53,7 @@ export class Block {
       [token_group, expression] = Expression.Parse(token_group, [";"]);
 
       return [
-        progress_single_line ? token_group.Next : token_group,
+        token_group,
         new Block(new ReturnStatement(token_group.CodeLocation, expression)),
       ];
     }
@@ -68,6 +68,6 @@ export class Block {
       result.push(r);
     }
 
-    return [token_group.Next, new Block(...result)];
+    return [token_group, new Block(...result)];
   }
 }
