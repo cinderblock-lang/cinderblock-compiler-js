@@ -2,7 +2,7 @@ import { LinkedParameterExpression } from "../linked-ast/expression/parameter";
 import { LinkedParameter } from "../linked-ast/parameter";
 import { CodeLocation } from "../location/code-location";
 import { ParserError } from "../parser/error";
-import { TokenGroup } from "../parser/token";
+import { TokenGroup } from "../parser/token-group";
 import { Context } from "./context";
 import { ContextResponse } from "./context-response";
 import { SubItem } from "./sub-item";

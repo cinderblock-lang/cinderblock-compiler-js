@@ -1,8 +1,7 @@
 import { LinkedProperty } from "../linked-ast/property";
 import { CodeLocation } from "../location/code-location";
-import { TokenGroup } from "../parser/token";
+import { TokenGroup } from "../parser/token-group";
 import { Context } from "./context";
-import { ContextResponse } from "./context-response";
 import { SubItem } from "./sub-item";
 import { Type } from "./type/base";
 

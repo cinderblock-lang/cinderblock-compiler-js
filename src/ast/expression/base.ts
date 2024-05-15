@@ -1,10 +1,9 @@
 import { LinkedExpression } from "../../linked-ast/expression/base";
 import { ParserError } from "../../parser/error";
-import { TokenGroup } from "../../parser/token";
+import { TokenGroup } from "../../parser/token-group";
 import { Component } from "../component";
 import { Context } from "../context";
 import { ContextResponse } from "../context-response";
-import { Type } from "../type/base";
 
 export interface IBaseable {
   Priority: number;

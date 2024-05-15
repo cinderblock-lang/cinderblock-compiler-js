@@ -1,5 +1,6 @@
 import { CodeLocation } from "../location/code-location";
-import { Token, TokenGroup } from "./token";
+import { TokenGroup } from "./token-group";
+import { Token } from "./token";
 
 export class ParserError {
   readonly #location: CodeLocation;

@@ -1,5 +1,5 @@
 import { LinkedPropertyCollection } from "../linked-ast/property-collection";
-import { TokenGroup } from "../parser/token";
+import { TokenGroup } from "../parser/token-group";
 import { Context } from "./context";
 import { Property } from "./property";
 

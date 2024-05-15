@@ -3,7 +3,7 @@ import { LinkedEntityExpression } from "../linked-ast/expression/entity";
 import { LinkedType } from "../linked-ast/type/base";
 import { LinkerError } from "../linker/error";
 import { CodeLocation } from "../location/code-location";
-import { TokenGroup } from "../parser/token";
+import { TokenGroup } from "../parser/token-group";
 import { Component } from "./component";
 import { Context } from "./context";
 import { ContextResponse } from "./context-response";

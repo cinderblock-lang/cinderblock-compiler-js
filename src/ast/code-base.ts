@@ -33,7 +33,7 @@ import "./type/schema";
 import "./type/use";
 
 import { Namespace } from "./namespace";
-import { TokenGroup } from "../parser/token";
+import { TokenGroup } from "../parser/token-group";
 import { Component } from "./component";
 import { Context } from "./context";
 import { LinkerError } from "../linker/error";

@@ -89,7 +89,7 @@ Entity.Register({
     [token_group, body] = Block.Parse(token_group);
 
     return [
-      token_group,
+      token_group.Next,
       new FunctionEntity(
         token_group.CodeLocation,
         options,

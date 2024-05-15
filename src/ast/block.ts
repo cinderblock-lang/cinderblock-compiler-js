@@ -1,14 +1,12 @@
-import { TokenGroup } from "../parser/token";
+import { TokenGroup } from "../parser/token-group";
 import { Statement } from "./statement/base";
 import { ReturnStatement } from "./statement/return";
 import { Expression } from "./expression/base";
 import { LinkedBlock } from "../linked-ast/block";
-import { LinkedStatement } from "../linked-ast/statement/base";
 import { LinkerError } from "../linker/error";
 import { ContextResponse } from "./context-response";
 import { Context } from "./context";
 import { LinkedType } from "../linked-ast/type/base";
-import { Type } from "./type/base";
 
 export class Block {
   readonly #components: Array<Statement>;

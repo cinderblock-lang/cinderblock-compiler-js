@@ -1,6 +1,6 @@
 import { LinkedType } from "../../linked-ast/type/base";
 import { ParserError } from "../../parser/error";
-import { TokenGroup } from "../../parser/token";
+import { TokenGroup } from "../../parser/token-group";
 import { Component } from "../component";
 import { Context } from "../context";
 import { ContextResponse } from "../context-response";

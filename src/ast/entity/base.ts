@@ -1,6 +1,6 @@
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
-import { TokenGroup } from "../../parser/token";
+import { TokenGroup } from "../../parser/token-group";
 import { Component } from "../component";
 
 export type EntityOptions = {

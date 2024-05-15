@@ -1,10 +1,9 @@
 import { LinkedStatement } from "../../linked-ast/statement/base";
 import { ParserError } from "../../parser/error";
-import { TokenGroup } from "../../parser/token";
+import { TokenGroup } from "../../parser/token-group";
 import { Component } from "../component";
 import { Context } from "../context";
 import { ContextResponse } from "../context-response";
-import { Scope } from "../scope";
 
 export interface IBaseable {
   Is(token_group: TokenGroup): boolean;

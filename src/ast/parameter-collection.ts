@@ -1,5 +1,5 @@
 import { LinkedParameterCollection } from "../linked-ast/parameter-collection";
-import { TokenGroup } from "../parser/token";
+import { TokenGroup } from "../parser/token-group";
 import { Context } from "./context";
 import { ContextResponse } from "./context-response";
 import { Parameter } from "./parameter";
