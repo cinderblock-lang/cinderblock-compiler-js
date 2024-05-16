@@ -43,11 +43,11 @@ Expression.Register({
         "Is checks must have a left hand side"
       );
 
-    const [after_right, right] = Type.Parse(token_group);
-
-    return [
-      after_right,
-      new IsExpression(token_group.CodeLocation, prefix, right),
-    ];
+    return token_group.Build(
+      {
+        right: (token_group) => Type.Parse(token_group),
+      },
+      ({ right }) => new IsExpression(token_group.CodeLocation, prefix, right)
+    );
   },
 });

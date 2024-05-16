@@ -51,7 +51,7 @@ export class CodeBase {
       this.#data = [];
       while (!tokens.Done) {
         let namespace: Namespace;
-        [tokens, namespace] = Namespace.Parse(tokens);
+        [tokens, namespace] = Namespace.Parse(tokens).Destructured;
         this.#data = [...this.#data, namespace];
       }
     } else {
@@ -63,7 +63,7 @@ export class CodeBase {
     let result: Array<Namespace> = [];
     while (!tokens.Done) {
       let namespace: Namespace;
-      [tokens, namespace] = Namespace.Parse(tokens);
+      [tokens, namespace] = Namespace.Parse(tokens).Destructured;
       result = [...result, namespace];
       tokens = tokens.Next;
     }

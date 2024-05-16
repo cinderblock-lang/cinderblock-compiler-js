@@ -2,6 +2,7 @@ import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Context } from "../context";
 import { LinkerError } from "../../linker/error";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 
 export class ReferenceExpression extends Expression {
   readonly #name: string;
@@ -35,9 +36,11 @@ Expression.Register({
     return true;
   },
   Extract(token_group, prefix, look_for) {
-    return [
-      token_group.Next,
-      new ReferenceExpression(token_group.CodeLocation, token_group.Text),
-    ];
+    return token_group.Build(
+      {
+        name: (token_group) => TokenGroupResponse.TextItem(token_group),
+      },
+      ({ name }) => new ReferenceExpression(token_group.CodeLocation, name)
+    );
   },
 });

@@ -127,27 +127,22 @@ Expression.Register({
     return token_group.Text === "(" && !!prefix;
   },
   Extract(token_group, prefix) {
-    const start = token_group.CodeLocation;
     if (!prefix)
       throw new ParserError(
         token_group.CodeLocation,
         "Attempting an invokation without a referenced function"
       );
 
-    let parameters: Array<Expression> = [];
-    if (token_group.Next.Text !== ")") {
-      while (token_group.Text !== ")") {
-        token_group = token_group.Next;
-        let result: Expression;
-        [token_group, result] = Expression.Parse(token_group, [",", ")"]);
-        parameters = [...parameters, result];
-      }
-
-      token_group = token_group.Next;
-    } else {
-      token_group = token_group.Skip(2);
-    }
-
-    return [token_group, new InvokationExpression(start, prefix, parameters)];
+    return token_group.Build(
+      {
+        parameters: (token_group) =>
+          token_group.Next.UntilLookback(
+            (token_group) => Expression.Parse(token_group, [",", ")"]),
+            ")"
+          ),
+      },
+      ({ parameters }) =>
+        new InvokationExpression(token_group.CodeLocation, prefix, parameters)
+    );
   },
 });

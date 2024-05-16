@@ -2,6 +2,7 @@ import { LinkedAssignStatement } from "../../linked-ast/statement/assign";
 import { LinkedStructType } from "../../linked-ast/type/struct";
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 import { Context } from "../context";
 import { Expression } from "../expression/base";
 import { Statement } from "./base";
@@ -62,16 +63,17 @@ Statement.Register({
     return token_group.Text === "assign";
   },
   Extract(token_group) {
-    const name = token_group.Next.Text;
-    token_group.Skip(2).Expect("=");
-
-    const [after_expression, expression] = Expression.Parse(
-      token_group.Skip(3)
+    return token_group.Build(
+      {
+        name: (token_group) => TokenGroupResponse.TextItem(token_group.Next),
+        expression: (token_group) => {
+          token_group.Expect("=");
+          token_group = token_group.Next;
+          return Expression.Parse(token_group);
+        },
+      },
+      ({ name, expression }) =>
+        new AssignStatement(token_group.CodeLocation, name, expression)
     );
-
-    return [
-      after_expression,
-      new AssignStatement(token_group.CodeLocation, name, expression),
-    ];
   },
 });

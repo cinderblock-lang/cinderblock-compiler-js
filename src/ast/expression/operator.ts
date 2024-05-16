@@ -3,6 +3,7 @@ import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
 import { Context } from "../context";
 import { LinkedOperatorExpression } from "../../linked-ast/expression/operator";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 
 export const Operators = [
   "+",
@@ -75,16 +76,29 @@ Expression.Register({
         "Operators must have a left hand side"
       );
 
-    const operator = token_group.Text;
-    if (!IsOperator(operator))
-      throw new ParserError(token_group.CodeLocation, "Not a valid operator");
+    return token_group.Build(
+      {
+        operator: (token_group) => {
+          const result = token_group.Text;
+          token_group = token_group.Next;
 
-    let right: Expression;
-    [token_group, right] = Expression.Parse(token_group.Next, look_for);
+          if (!IsOperator(result))
+            throw new ParserError(
+              token_group.CodeLocation,
+              "Not a valid operator"
+            );
 
-    return [
-      token_group,
-      new OperatorExpression(token_group.CodeLocation, prefix, operator, right),
-    ];
+          return new TokenGroupResponse(token_group, result);
+        },
+        right: (token_group) => Expression.Parse(token_group, look_for),
+      },
+      ({ operator, right }) =>
+        new OperatorExpression(
+          token_group.CodeLocation,
+          prefix,
+          operator,
+          right
+        )
+    );
   },
 });

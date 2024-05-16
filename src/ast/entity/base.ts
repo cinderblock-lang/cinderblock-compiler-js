@@ -1,6 +1,7 @@
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
 import { TokenGroup } from "../../parser/token-group";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 import { Component } from "../component";
 
 export type EntityOptions = {
@@ -13,7 +14,7 @@ export interface IBaseable {
   Extract(
     token_group: TokenGroup,
     options: EntityOptions
-  ): [TokenGroup, Entity];
+  ): TokenGroupResponse<Entity>;
 }
 
 export abstract class Entity extends Component {
@@ -38,7 +39,7 @@ export abstract class Entity extends Component {
   static Parse(
     token_group: TokenGroup,
     options?: EntityOptions
-  ): [TokenGroup, Entity] {
+  ): TokenGroupResponse<Entity> {
     if (token_group.Text === "export")
       return this.Parse(token_group.Next, {
         exported: true,

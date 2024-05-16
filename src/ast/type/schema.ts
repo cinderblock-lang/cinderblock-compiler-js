@@ -66,15 +66,16 @@ Type.Register({
     return token_group.Text === "schema";
   },
   Extract(token_group) {
-    token_group.Expect("schema");
-    token_group.Next.Expect("{");
-    const [after_properties, properties] = PropertyCollection.Parse(
-      token_group.Skip(2)
+    return token_group.Build(
+      {
+        properties: (token_group) => {
+          token_group = token_group.Next;
+          token_group.Expect("{");
+          token_group = token_group.Next;
+          return PropertyCollection.Parse(token_group);
+        },
+      },
+      ({ properties }) => new SchemaType(token_group.CodeLocation, properties)
     );
-
-    return [
-      after_properties,
-      new SchemaType(token_group.CodeLocation, properties),
-    ];
   },
 });

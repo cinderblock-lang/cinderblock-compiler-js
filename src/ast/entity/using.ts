@@ -1,4 +1,5 @@
 import { CodeLocation } from "../../location/code-location";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 import { Entity, EntityOptions } from "./base";
 
 export class UsingEntity extends Entity {
@@ -19,20 +20,16 @@ Entity.Register({
     return token_group.Text === "using";
   },
   Extract(token_group, options) {
-    token_group = token_group.Next;
-    let name = token_group.Text;
-    token_group = token_group.Next;
-
-    while (token_group.Text !== ";") {
-      name += token_group.Text;
-      token_group = token_group.Next;
-      name += token_group.Text;
-      token_group = token_group.Next;
-    }
-
-    return [
-      token_group.Next,
-      new UsingEntity(token_group.CodeLocation, options, name),
-    ];
+    return token_group.Build(
+      {
+        name: (token_group) =>
+          token_group.Next.Until(
+            (token_group) => TokenGroupResponse.TextItem(token_group),
+            ";"
+          ),
+      },
+      ({ name }) =>
+        new UsingEntity(token_group.CodeLocation, options, name.join(""))
+    );
   },
 });

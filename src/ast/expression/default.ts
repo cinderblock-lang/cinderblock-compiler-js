@@ -1,6 +1,7 @@
 import { LinkedDefaultExpression } from "../../linked-ast/expression/default";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 import { Context } from "../context";
 import { ContextResponse } from "../context-response";
 import { Type } from "../type/base";
@@ -30,14 +31,19 @@ Expression.Register({
     return token_group.Text === "default";
   },
   Extract(token_group, prefix) {
-    const input_tokens = token_group.Next;
-    const [output_tokens, subject] = Type.Parse(input_tokens);
-    if (output_tokens.Text !== ")")
-      throw new ParserError(output_tokens.CodeLocation, "Expected a ) token");
-
-    return [
-      output_tokens.Next,
-      new DefaultExpression(token_group.CodeLocation, subject),
-    ];
+    return token_group.Build(
+      {
+        subject: (token_group) => {
+          token_group = token_group.Next;
+          token_group.Expect("(");
+          token_group = token_group.Next;
+          const result = Type.Parse(token_group);
+          token_group = result.Context;
+          token_group.Expect(")");
+          return new TokenGroupResponse(token_group.Next, result.Response);
+        },
+      },
+      ({ subject }) => new DefaultExpression(token_group.CodeLocation, subject)
+    );
   },
 });

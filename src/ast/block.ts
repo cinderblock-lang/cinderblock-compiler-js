@@ -7,6 +7,7 @@ import { LinkerError } from "../linker/error";
 import { ContextResponse } from "./context-response";
 import { Context } from "./context";
 import { LinkedType } from "../linked-ast/type/base";
+import { TokenGroupResponse } from "../parser/token-group-response";
 
 export class Block {
   readonly #components: Array<Statement>;
@@ -42,18 +43,17 @@ export class Block {
     return result;
   }
 
-  static Parse(
-    token_group: TokenGroup,
-    progress_single_line = true
-  ): [TokenGroup, Block] {
+  static Parse(token_group: TokenGroup): TokenGroupResponse<Block> {
     if (token_group.Text !== "{") {
       let expression: Expression;
-      [token_group, expression] = Expression.Parse(token_group, [";"]);
+      [token_group, expression] = Expression.Parse(token_group, [
+        ";",
+      ]).Destructured;
 
-      return [
+      return new TokenGroupResponse(
         token_group,
-        new Block(new ReturnStatement(token_group.CodeLocation, expression)),
-      ];
+        new Block(new ReturnStatement(token_group.CodeLocation, expression))
+      );
     }
 
     const result: Array<Statement> = [];
@@ -61,11 +61,10 @@ export class Block {
 
     while (token_group.Text !== "}") {
       let r: Statement;
-      [token_group, r] = Statement.Parse(token_group);
-      token_group = token_group.Next;
+      [token_group, r] = Statement.Parse(token_group).Destructured;
       result.push(r);
     }
 
-    return [token_group, new Block(...result)];
+    return new TokenGroupResponse(token_group, new Block(...result));
   }
 }

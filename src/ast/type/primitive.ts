@@ -6,6 +6,7 @@ import { Context } from "../context";
 import { ContextResponse } from "../context-response";
 import { LinkedPrimitiveType } from "../../linked-ast/type/primitive";
 import { LinkerError } from "../../linker/error";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 
 export class PrimitiveType extends Type {
   readonly #name: PrimitiveName;
@@ -51,14 +52,21 @@ Type.Register({
     return IsPrimitiveName(token_group.Text);
   },
   Extract(token_group) {
-    const name = token_group.Text;
+    return token_group.Build(
+      {
+        name: (token_group) => {
+          const name = token_group.Text;
 
-    if (!IsPrimitiveName(name))
-      throw new ParserError(token_group.CodeLocation, "Invalid primitive name");
+          if (!IsPrimitiveName(name))
+            throw new ParserError(
+              token_group.CodeLocation,
+              "Invalid primitive name"
+            );
 
-    return [
-      token_group.Next,
-      new PrimitiveType(token_group.CodeLocation, name),
-    ];
+          return new TokenGroupResponse(token_group.Next, name);
+        },
+      },
+      ({ name }) => new PrimitiveType(token_group.CodeLocation, name)
+    );
   },
 });

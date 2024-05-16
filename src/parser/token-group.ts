@@ -68,21 +68,33 @@ export class TokenGroup {
     return new TokenGroupResponse(context, result);
   }
 
-  Map<TItem, TResult>(
-    input: TItem[],
-    mapper: (
-      context: TokenGroup,
-      item: TItem,
-      index: number
-    ) => TokenGroupResponse<TResult>
+  Until<TResult>(
+    mapper: (context: TokenGroup) => TokenGroupResponse<TResult>,
+    ...look_for: Array<string>
   ) {
-    return input.reduce((ctx, n, i) => {
-      const result = mapper(ctx.Context, n, i);
+    let result: Array<TResult> = [];
+    let token_group: TokenGroup = this;
+    while (!look_for.includes(token_group.Text)) {
+      const response = mapper(token_group);
+      token_group = response.Context;
+      result = [...result, response.Response];
+    }
 
-      return new TokenGroupResponse(result.Context, [
-        ...ctx.Response,
-        result.Response,
-      ]);
-    }, new TokenGroupResponse(this, [] as Array<TResult>));
+    return new TokenGroupResponse(token_group.Next, result);
+  }
+
+  UntilLookback<TResult>(
+    mapper: (context: TokenGroup) => TokenGroupResponse<TResult>,
+    ...look_for: Array<string>
+  ) {
+    let result: Array<TResult> = [];
+    let token_group: TokenGroup = this;
+    while (!look_for.includes(token_group.Previous.Text)) {
+      const response = mapper(token_group);
+      token_group = response.Context;
+      result = [...result, response.Response];
+    }
+
+    return new TokenGroupResponse(token_group.Next, result);
   }
 }

@@ -16,4 +16,12 @@ export class TokenGroupResponse<T> {
   get Response() {
     return this.#response;
   }
+
+  get Destructured(): [TokenGroup, T] {
+    return [this.#context, this.#response];
+  }
+
+  static TextItem(token_group: TokenGroup) {
+    return new TokenGroupResponse(token_group.Next, token_group.Text);
+  }
 }

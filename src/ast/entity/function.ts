@@ -1,6 +1,7 @@
 import { LinkedEntity } from "../../linked-ast/entity/base";
 import { LinkedFunctionEntity } from "../../linked-ast/entity/function";
 import { CodeLocation } from "../../location/code-location";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 import { Block } from "../block";
 import { Context } from "../context";
 import { ContextResponse } from "../context-response";
@@ -71,33 +72,32 @@ Entity.Register({
     return token_group.Text === "fn";
   },
   Extract(token_group, options) {
-    const name = token_group.Next.Text;
-    token_group = token_group.Skip(2);
+    return token_group.Build(
+      {
+        name: (token_group) => {
+          token_group = token_group.Next;
+          return TokenGroupResponse.TextItem(token_group);
+        },
+        parameters: (token_group) => {
+          token_group.Expect("(");
+          return ParameterCollection.Parse(token_group);
+        },
+        returns: (token_group) => {
+          if (token_group.Text === ":") return Type.Parse(token_group.Next);
 
-    token_group.Expect("(");
-    token_group = token_group.Next;
-
-    let parameters: ParameterCollection;
-    [token_group, parameters] = ParameterCollection.Parse(token_group);
-
-    let returns: undefined | Type = undefined;
-    if (token_group.Text === ":") {
-      [token_group, returns] = Type.Parse(token_group.Next);
-    }
-
-    let body: Block;
-    [token_group, body] = Block.Parse(token_group);
-
-    return [
-      token_group.Next,
-      new FunctionEntity(
-        token_group.CodeLocation,
-        options,
-        name,
-        parameters,
-        body,
-        returns
-      ),
-    ];
+          return new TokenGroupResponse(token_group, undefined);
+        },
+        body: (token_group) => Block.Parse(token_group),
+      },
+      ({ name, parameters, body, returns }) =>
+        new FunctionEntity(
+          token_group.CodeLocation,
+          options,
+          name,
+          parameters,
+          body,
+          returns
+        )
+    );
   },
 });

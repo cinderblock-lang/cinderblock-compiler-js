@@ -2,7 +2,6 @@ import { Expression } from "./base";
 import { CodeLocation } from "../../location/code-location";
 import { Context } from "../context";
 import { LinkedBracketsExpression } from "../../linked-ast/expression/brackets";
-import { ContextResponse } from "../context-response";
 
 export class BracketsExpression extends Expression {
   readonly #expression: Expression;
@@ -27,11 +26,11 @@ Expression.Register({
     return token_group.Text === "(" && !prefix;
   },
   Extract(token_group, prefix) {
-    const [result_tokens, input] = Expression.Parse(token_group.Next, [")"]);
-
-    return [
-      result_tokens,
-      new BracketsExpression(token_group.CodeLocation, input),
-    ];
+    return token_group.Build(
+      {
+        input: (token_group) => Expression.Parse(token_group.Next, [")"]),
+      },
+      ({ input }) => new BracketsExpression(token_group.CodeLocation, input)
+    );
   },
 });

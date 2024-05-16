@@ -40,23 +40,24 @@ Expression.Register({
     return token_group.Text === "if";
   },
   Extract(token_group, prefix) {
-    token_group = token_group.Next;
-    token_group.Expect("(");
+    return token_group.Build(
+      {
+        check: (token_group) => {
+          token_group = token_group.Next;
+          token_group.Expect("(");
+          return Expression.Parse(token_group.Next, [")"]);
+        },
+        if_block: (token_group) => Block.Parse(token_group),
+        else_block: (token_group) => {
+          if (token_group.Text === ";") token_group = token_group.Next;
 
-    let check: Expression;
-    [token_group, check] = Expression.Parse(token_group.Next, [")"]);
-
-    let if_block: Block;
-    [token_group, if_block] = Block.Parse(token_group.Next);
-
-    token_group.Expect("else");
-
-    let else_block: Block;
-    [token_group, else_block] = Block.Parse(token_group.Next, false);
-
-    return [
-      token_group,
-      new IfExpression(token_group.CodeLocation, check, if_block, else_block),
-    ];
+          token_group.Expect("else");
+          token_group = token_group.Next;
+          return Block.Parse(token_group);
+        },
+      },
+      ({ check, if_block, else_block }) =>
+        new IfExpression(token_group.CodeLocation, check, if_block, else_block)
+    );
   },
 });

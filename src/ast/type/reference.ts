@@ -1,5 +1,6 @@
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 import { Context } from "../context";
 import { Type } from "./base";
 
@@ -30,10 +31,11 @@ Type.Register({
     return true;
   },
   Extract(token_group) {
-    const name = token_group.Text;
-    return [
-      token_group.Next,
-      new ReferenceType(token_group.CodeLocation, name),
-    ];
+    return token_group.Build(
+      {
+        name: (token_group) => TokenGroupResponse.TextItem(token_group),
+      },
+      ({ name }) => new ReferenceType(token_group.CodeLocation, name)
+    );
   },
 });

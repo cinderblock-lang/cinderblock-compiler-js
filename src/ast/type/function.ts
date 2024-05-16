@@ -48,18 +48,20 @@ Type.Register({
     return token_group.Text === "(";
   },
   Extract(token_group) {
-    token_group.Expect("(");
-    const [after_parameters, parameters] = ParameterCollection.Parse(
-      token_group.Next
+    return token_group.Build(
+      {
+        parameters: (token_group) => {
+          token_group = token_group.Next;
+          return ParameterCollection.Parse(token_group);
+        },
+        returns: (token_group) => {
+          token_group.Expect("->");
+          token_group = token_group.Next;
+          return Type.Parse(token_group);
+        },
+      },
+      ({ parameters, returns }) =>
+        new FunctionType(token_group.CodeLocation, parameters, returns)
     );
-
-    after_parameters.Expect("->");
-
-    const [after_returns, returns] = Type.Parse(after_parameters.Next);
-
-    return [
-      after_returns,
-      new FunctionType(token_group.CodeLocation, parameters, returns),
-    ];
   },
 });

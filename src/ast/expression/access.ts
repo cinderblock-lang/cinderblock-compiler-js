@@ -3,6 +3,7 @@ import { LinkedStructType } from "../../linked-ast/type/struct";
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 import { Context } from "../context";
 import { Expression } from "./base";
 import { ReferenceExpression } from "./reference";
@@ -83,11 +84,15 @@ Expression.Register({
         "Attempting an access without a left hand side"
       );
 
-    const accessed = token_group.Next;
-
-    return [
-      accessed.Next,
-      new AccessExpression(accessed.CodeLocation, prefix, accessed.Text),
-    ];
+    return token_group.Build(
+      {
+        accessed: (token_group) => {
+          token_group = token_group.Next;
+          return TokenGroupResponse.TextItem(token_group);
+        },
+      },
+      ({ accessed }) =>
+        new AccessExpression(token_group.CodeLocation, prefix, accessed)
+    );
   },
 });

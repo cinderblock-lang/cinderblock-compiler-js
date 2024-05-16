@@ -3,6 +3,7 @@ import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
 import { Context } from "../context";
 import { LinkedLiteralExpression } from "../../linked-ast/expression/literal";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 
 export type LiteralType =
   | "string"
@@ -39,10 +40,13 @@ Expression.Register({
     return token_group.Text === "true" || token_group.Text === "false";
   },
   Extract(token_group, prefix) {
-    return [
-      token_group.Next,
-      new LiteralExpression(token_group.CodeLocation, "bool", token_group.Text),
-    ];
+    return token_group.Build(
+      {
+        name: (token_group) => TokenGroupResponse.TextItem(token_group),
+      },
+      ({ name }) =>
+        new LiteralExpression(token_group.CodeLocation, "bool", name)
+    );
   },
 });
 
@@ -52,10 +56,13 @@ Expression.Register({
     return token_group.Text === "null";
   },
   Extract(token_group, prefix) {
-    return [
-      token_group.Next,
-      new LiteralExpression(token_group.CodeLocation, "null", token_group.Text),
-    ];
+    return token_group.Build(
+      {
+        name: (token_group) => TokenGroupResponse.TextItem(token_group),
+      },
+      ({ name }) =>
+        new LiteralExpression(token_group.CodeLocation, "null", name)
+    );
   },
 });
 
@@ -65,10 +72,12 @@ Expression.Register({
     return !!token_group.Text.match(/^[0-9]+i$/gm);
   },
   Extract(token_group, prefix) {
-    return [
-      token_group.Next,
-      new LiteralExpression(token_group.CodeLocation, "int", token_group.Text),
-    ];
+    return token_group.Build(
+      {
+        name: (token_group) => TokenGroupResponse.TextItem(token_group),
+      },
+      ({ name }) => new LiteralExpression(token_group.CodeLocation, "int", name)
+    );
   },
 });
 
@@ -78,10 +87,12 @@ Expression.Register({
     return !!token_group.Text.match(/^0b[0-9]+$/gm);
   },
   Extract(token_group, prefix) {
-    return [
-      token_group.Next,
-      new LiteralExpression(token_group.CodeLocation, "int", token_group.Text),
-    ];
+    return token_group.Build(
+      {
+        name: (token_group) => TokenGroupResponse.TextItem(token_group),
+      },
+      ({ name }) => new LiteralExpression(token_group.CodeLocation, "int", name)
+    );
   },
 });
 
@@ -91,32 +102,30 @@ Expression.Register({
     return !!token_group.Text.match(/^[0-9]+$/gm);
   },
   Extract(token_group, prefix) {
-    const start = token_group.Text;
-    token_group.Next.Expect(".");
+    return token_group.Build(
+      {
+        name: (token_group) => {
+          const start = token_group.Text;
+          token_group = token_group.Next;
+          token_group.Expect(".");
+          token_group = token_group.Next;
+          return new TokenGroupResponse(
+            token_group.Next,
+            [start, token_group.Text].join(".")
+          );
+        },
+      },
+      ({ name }) => {
+        if (name.endsWith("f"))
+          return new LiteralExpression(token_group.CodeLocation, "float", name);
+        else if (name.endsWith("d"))
+          return new LiteralExpression(token_group.CodeLocation, "float", name);
 
-    const after_dot = token_group.Skip(2);
-    if (after_dot.Text.match(/^[0-9]+f$/gm))
-      return [
-        after_dot.Next,
-        new LiteralExpression(
+        throw new ParserError(
           token_group.CodeLocation,
-          "float",
-          start + "." + after_dot.Text
-        ),
-      ];
-    if (after_dot.Text.match(/^[0-9]+d$/gm))
-      return [
-        after_dot.Next,
-        new LiteralExpression(
-          token_group.CodeLocation,
-          "double",
-          start + "." + after_dot.Text
-        ),
-      ];
-
-    throw new ParserError(
-      token_group.CodeLocation,
-      "Could not parse float. Remember to put a suffix for integral types."
+          "Could not parse float. Remember to put a suffix for integral types."
+        );
+      }
     );
   },
 });
@@ -127,14 +136,13 @@ Expression.Register({
     return token_group.Text.startsWith('"') && token_group.Text.endsWith('"');
   },
   Extract(token_group, prefix) {
-    return [
-      token_group.Next,
-      new LiteralExpression(
-        token_group.CodeLocation,
-        "string",
-        token_group.Text
-      ),
-    ];
+    return token_group.Build(
+      {
+        name: (token_group) => TokenGroupResponse.TextItem(token_group),
+      },
+      ({ name }) =>
+        new LiteralExpression(token_group.CodeLocation, "string", name)
+    );
   },
 });
 
@@ -144,9 +152,12 @@ Expression.Register({
     return token_group.Text.startsWith("'") && token_group.Text.endsWith("'");
   },
   Extract(token_group, prefix) {
-    return [
-      token_group.Next,
-      new LiteralExpression(token_group.CodeLocation, "char", token_group.Text),
-    ];
+    return token_group.Build(
+      {
+        name: (token_group) => TokenGroupResponse.TextItem(token_group),
+      },
+      ({ name }) =>
+        new LiteralExpression(token_group.CodeLocation, "char", name)
+    );
   },
 });

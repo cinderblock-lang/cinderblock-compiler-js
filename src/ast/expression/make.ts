@@ -50,13 +50,13 @@ Expression.Register({
     return token_group.Text === "make";
   },
   Extract(token_group, prefix) {
-    const location = token_group.CodeLocation;
-    let type: Type;
-    [token_group, type] = Type.Parse(token_group.Next);
-
-    let using: Block;
-    [token_group, using] = Block.Parse(token_group);
-
-    return [token_group.Next, new MakeExpression(location, type, using)];
+    return token_group.Build(
+      {
+        type: (token_group) => Type.Parse(token_group.Next),
+        using: (token_group) => Block.Parse(token_group),
+      },
+      ({ type, using }) =>
+        new MakeExpression(token_group.CodeLocation, type, using)
+    );
   },
 });

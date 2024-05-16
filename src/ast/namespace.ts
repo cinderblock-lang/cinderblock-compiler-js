@@ -4,6 +4,7 @@ import { LinkedType } from "../linked-ast/type/base";
 import { LinkerError } from "../linker/error";
 import { CodeLocation } from "../location/code-location";
 import { TokenGroup } from "../parser/token-group";
+import { TokenGroupResponse } from "../parser/token-group-response";
 import { Component } from "./component";
 import { Context } from "./context";
 import { ContextResponse } from "./context-response";
@@ -91,30 +92,21 @@ export class Namespace extends Component {
     return undefined;
   }
 
-  static Parse(token_group: TokenGroup): [TokenGroup, Namespace] {
-    const start = token_group.CodeLocation;
-    token_group.Expect("namespace");
-
-    token_group = token_group.Next;
-
-    let name = token_group.Text;
-    token_group = token_group.Next;
-
-    while (token_group.Text !== "{") {
-      name += token_group.Text;
-      token_group = token_group.Next;
-      name += token_group.Text;
-      token_group = token_group.Next;
-    }
-
-    token_group = token_group.Next;
-    let entities: Array<Entity> = [];
-    while (token_group.Text !== "}") {
-      let result: Entity;
-      [token_group, result] = Entity.Parse(token_group);
-      entities = [...entities, result];
-    }
-
-    return [token_group, new Namespace(start, name, entities)];
+  static Parse(token_group: TokenGroup): TokenGroupResponse<Namespace> {
+    return token_group.Build(
+      {
+        name: (token_group) => {
+          token_group.Expect("namespace");
+          return token_group.Next.Until(
+            (token_group) => TokenGroupResponse.TextItem(token_group),
+            "{"
+          );
+        },
+        entities: (token_group) =>
+          token_group.Until((token_group) => Entity.Parse(token_group), "}"),
+      },
+      ({ name, entities }) =>
+        new Namespace(token_group.CodeLocation, name.join(""), entities)
+    );
   }
 }

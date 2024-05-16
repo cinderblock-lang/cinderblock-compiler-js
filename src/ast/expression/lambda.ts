@@ -6,6 +6,7 @@ import { ParameterCollection } from "../parameter-collection";
 import { Context } from "../context";
 import { ContextResponse } from "../context-response";
 import { LinkedLambdaExpression } from "../../linked-ast/expression/lambda";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 
 export class LambdaExpression extends Expression {
   readonly #parameters: ParameterCollection;
@@ -50,27 +51,32 @@ Expression.Register({
     return token_group.Text === "fn";
   },
   Extract(token_group, prefix) {
-    const location = token_group.CodeLocation;
-    token_group.Next.Expect("(");
-    let parameters: ParameterCollection;
-    [token_group, parameters] = ParameterCollection.Parse(
-      token_group.Next.Next
+    return token_group.Build(
+      {
+        parameters: (token_group) => {
+          token_group = token_group.Next;
+          token_group.Expect("(");
+          token_group = token_group.Next;
+          return ParameterCollection.Parse(token_group);
+        },
+        returns: (token_group) => {
+          if (token_group.Text === ":") return Type.Parse(token_group.Next);
+
+          return new TokenGroupResponse(token_group, undefined);
+        },
+        body: (token_group) => {
+          token_group.Expect("->");
+          token_group = token_group.Next;
+          return Block.Parse(token_group);
+        },
+      },
+      ({ parameters, returns, body }) =>
+        new LambdaExpression(
+          token_group.CodeLocation,
+          parameters,
+          body,
+          returns
+        )
     );
-
-    let returns: Type | undefined;
-    [token_group, returns] =
-      token_group.Text === ":"
-        ? Type.Parse(token_group.Next)
-        : ([token_group, undefined] as const);
-
-    token_group.Expect("->");
-
-    let body: Block;
-    [token_group, body] = Block.Parse(token_group.Next);
-
-    return [
-      token_group.Previous,
-      new LambdaExpression(location, parameters, body, returns),
-    ];
   },
 });

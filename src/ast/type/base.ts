@@ -1,6 +1,7 @@
 import { LinkedType } from "../../linked-ast/type/base";
 import { ParserError } from "../../parser/error";
 import { TokenGroup } from "../../parser/token-group";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 import { Component } from "../component";
 import { Context } from "../context";
 import { ContextResponse } from "../context-response";
@@ -8,7 +9,7 @@ import { ContextResponse } from "../context-response";
 export interface IBaseable {
   Priority: number;
   Is(token_group: TokenGroup): boolean;
-  Extract(token_group: TokenGroup): [TokenGroup, Type];
+  Extract(token_group: TokenGroup): TokenGroupResponse<Type>;
 }
 
 export abstract class Type extends Component {
@@ -22,7 +23,7 @@ export abstract class Type extends Component {
     );
   }
 
-  static Parse(token_group: TokenGroup): [TokenGroup, Type] {
+  static Parse(token_group: TokenGroup): TokenGroupResponse<Type> {
     for (const possible of this.#possible)
       if (possible.Is(token_group)) return possible.Extract(token_group);
 

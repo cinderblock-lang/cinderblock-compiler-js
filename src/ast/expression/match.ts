@@ -11,6 +11,7 @@ import { LinkerError } from "../../linker/error";
 import { LinkedParameter } from "../../linked-ast/parameter";
 import { LinkedEnumType } from "../../linked-ast/type/enum";
 import { LinkedParameterExpression } from "../../linked-ast/expression/parameter";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 
 export class MatchExpression extends Expression {
   readonly #subject: Expression;
@@ -89,31 +90,42 @@ Expression.Register({
     return token_group.Text === "match";
   },
   Extract(token_group, prefix) {
-    const location = token_group.CodeLocation;
-    token_group.Next.Expect("(");
-    let subject: Expression;
-    [token_group, subject] = Expression.Parse(token_group.Skip(2), ["as"]);
+    return token_group.Build(
+      {
+        subject: (token_group) => {
+          token_group = token_group.Next;
+          token_group.Expect("(");
+          token_group = token_group.Next;
+          return Expression.Parse(token_group, ["as"]);
+        },
+        as: (token_group) => TokenGroupResponse.TextItem(token_group),
+        using: (token_group) => {
+          token_group.Expect(")");
+          token_group = token_group.Next;
+          token_group.Expect("{");
+          token_group = token_group.Next;
+          return token_group.Until((token_group) => {
+            const name = token_group.Text;
+            token_group = token_group.Next;
+            token_group.Expect(":");
+            token_group = token_group.Next;
+            let block: Block;
+            [token_group, block] = Block.Parse(token_group).Destructured;
 
-    token_group = token_group.Next;
-    const as = token_group.Text;
-
-    token_group = token_group.Skip(2);
-    token_group.Expect("{");
-    token_group = token_group.Next;
-
-    const using: Record<string, Block> = {};
-    while (token_group.Text !== "}") {
-      const name = token_group.Text;
-      token_group = token_group.Next;
-      token_group.Expect(":");
-      let block: Block;
-      [token_group, block] = Block.Parse(token_group.Next);
-
-      using[name] = block;
-    }
-
-    token_group = token_group.Next;
-
-    return [token_group, new MatchExpression(location, subject, as, using)];
+            return new TokenGroupResponse(token_group, [name, block] as const);
+          }, "}");
+        },
+      },
+      ({ subject, as, using }) =>
+        new MatchExpression(
+          token_group.CodeLocation,
+          subject,
+          as,
+          using.reduce(
+            (c, [name, block]) => ({ ...c, [name]: block }),
+            {} as Record<string, Block>
+          )
+        )
+    );
   },
 });

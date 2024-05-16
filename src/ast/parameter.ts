@@ -3,6 +3,7 @@ import { LinkedParameter } from "../linked-ast/parameter";
 import { CodeLocation } from "../location/code-location";
 import { ParserError } from "../parser/error";
 import { TokenGroup } from "../parser/token-group";
+import { TokenGroupResponse } from "../parser/token-group-response";
 import { Context } from "./context";
 import { ContextResponse } from "./context-response";
 import { SubItem } from "./sub-item";
@@ -37,33 +38,23 @@ export class Parameter extends SubItem {
     );
   }
 
-  static Parse(token_group: TokenGroup): [TokenGroup, Parameter] {
-    const name = token_group.Text;
+  static Parse(token_group: TokenGroup): TokenGroupResponse<Parameter> {
+    return token_group.Build(
+      {
+        name: (token_group) => TokenGroupResponse.TextItem(token_group),
+        optional: (token_group) => {
+          if (token_group.Text === "?")
+            return new TokenGroupResponse(token_group.Next, true);
 
-    let optional = false;
-    token_group = token_group.Next;
-    if (token_group.Text === "?") {
-      token_group = token_group.Next;
-      optional = true;
-    }
-
-    if (token_group.Text !== ":") {
-      throw new ParserError(
-        token_group.CodeLocation,
-        "A parameter type must be supplied"
-      );
-      // return [
-      //   token_group,
-      //   new Parameter(token_group.CodeLocation, name, undefined, optional),
-      // ];
-    }
-
-    let type: Type;
-    [token_group, type] = Type.Parse(token_group.Next);
-
-    return [
-      token_group.Next,
-      new Parameter(token_group.CodeLocation, name, type, optional),
-    ];
+          return new TokenGroupResponse(token_group, false);
+        },
+        type: (token_group) => {
+          token_group.Expect(":");
+          return Type.Parse(token_group.Next);
+        },
+      },
+      ({ name, optional, type }) =>
+        new Parameter(token_group.CodeLocation, name, type, optional)
+    );
   }
 }

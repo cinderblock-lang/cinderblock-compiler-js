@@ -27,11 +27,15 @@ Statement.Register({
     return token_group.Text === "side";
   },
   Extract(token_group) {
-    const [after_expression, expression] = Expression.Parse(token_group.Next);
-
-    return [
-      after_expression,
-      new SideStatement(token_group.CodeLocation, expression),
-    ];
+    return token_group.Build(
+      {
+        expression: (token_group) => {
+          token_group = token_group.Next;
+          return Expression.Parse(token_group);
+        },
+      },
+      ({ expression }) =>
+        new SideStatement(token_group.CodeLocation, expression)
+    );
   },
 });

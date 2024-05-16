@@ -1,6 +1,7 @@
 import { LinkedSubExpression } from "../../linked-ast/expression/sub";
 import { LinkedSubStatement } from "../../linked-ast/statement/sub";
 import { CodeLocation } from "../../location/code-location";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 import { Context } from "../context";
 import { ContextResponse } from "../context-response";
 import { Expression } from "../expression/base";
@@ -50,14 +51,17 @@ Statement.Register({
     return token_group.Next.Text === "->";
   },
   Extract(token_group) {
-    const name = token_group.Text;
-    const [after_expression, expression] = Expression.Parse(
-      token_group.Skip(2)
+    return token_group.Build(
+      {
+        name: (token_group) => TokenGroupResponse.TextItem(token_group.Next),
+        expression: (token_group) => {
+          token_group.Expect("->");
+          token_group = token_group.Next;
+          return Expression.Parse(token_group);
+        },
+      },
+      ({ name, expression }) =>
+        new SubStatement(token_group.CodeLocation, name, expression)
     );
-
-    return [
-      after_expression,
-      new SubStatement(token_group.CodeLocation, name, expression),
-    ];
   },
 });

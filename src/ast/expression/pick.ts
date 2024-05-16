@@ -6,6 +6,7 @@ import { Context } from "../context";
 import { LinkedPickExpression } from "../../linked-ast/expression/pick";
 import { LinkedEnumType } from "../../linked-ast/type/enum";
 import { LinkerError } from "../../linker/error";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 
 export class PickExpression extends Expression {
   readonly #enum: Type;
@@ -49,21 +50,18 @@ Expression.Register({
     return token_group.Text === "pick";
   },
   Extract(token_group, prefix, look_for) {
-    const location = token_group.CodeLocation;
-    let target: Type;
-    [token_group, target] = Type.Parse(token_group.Next);
-
-    token_group.Expect(".");
-
-    token_group = token_group.Next;
-    const key = token_group.Text;
-
-    let block: Block;
-    [token_group, block] = Block.Parse(token_group.Next);
-
-    return [
-      token_group.Previous,
-      new PickExpression(location, target, key, block),
-    ];
+    return token_group.Build(
+      {
+        target: (token_group) => Type.Parse(token_group.Next),
+        key: (token_group) => {
+          token_group.Expect(".");
+          token_group = token_group.Next;
+          return TokenGroupResponse.TextItem(token_group);
+        },
+        block: (token_group) => Block.Parse(token_group),
+      },
+      ({ target, key, block }) =>
+        new PickExpression(token_group.CodeLocation, target, key, block)
+    );
   },
 });

@@ -2,6 +2,7 @@ import { LinkedEntity } from "../../linked-ast/entity/base";
 import { LinkedCFunction } from "../../linked-ast/entity/c-function";
 import { CodeLocation } from "../../location/code-location";
 import { ParserError } from "../../parser/error";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 import { PrimitiveName } from "../../parser/types";
 import { Block } from "../block";
 import { Context } from "../context";
@@ -68,66 +69,63 @@ Entity.Register({
     return token_group.Text === "cfn";
   },
   Extract(token_group, options) {
-    token_group = token_group.Next;
-    token_group.Expect("[");
+    return token_group.Build(
+      {
+        includes: (token_group) => {
+          token_group = token_group.Next;
+          token_group.Expect("[");
+          token_group = token_group.Next;
+          return token_group.Until((token_group) => {
+            const candidate = token_group.Text;
+            if (candidate.startsWith('"<'))
+              return new TokenGroupResponse(
+                token_group.Next,
+                candidate.substring(1, candidate.length - 1)
+              );
+            return new TokenGroupResponse(token_group.Next, candidate);
+          }, "]");
+        },
+        name: (token_group) => {
+          return new TokenGroupResponse(token_group.Next, token_group.Text);
+        },
+        parameters: (token_group) => {
+          token_group.Expect("(");
+          token_group = token_group.Next;
+          return ParameterCollection.Parse(token_group);
+        },
+        returns: (token_group) => {
+          token_group.Expect(":");
+          token_group = token_group.Next;
 
-    let includes: Array<string> = [];
-    if (token_group.Next.Text !== "]") {
-      while (token_group.Text !== "]") {
-        token_group = token_group.Next;
-        const candidate = token_group.Text;
-        if (candidate.startsWith('"<'))
-          includes = [
-            ...includes,
-            candidate.substring(1, candidate.length - 1),
-          ];
-        else includes = [...includes, candidate];
-        token_group = token_group.Next;
-      }
-    } else {
-      token_group = token_group.Next;
-    }
+          return new TokenGroupResponse(
+            token_group.Next,
+            new PrimitiveType(
+              token_group.CodeLocation,
+              PrimitiveName.parse(token_group.Text)
+            )
+          );
+        },
+        body: (token_group) => {
+          let body: string = token_group.Text;
+          if (!body.startsWith("`") || !body.endsWith("`"))
+            throw new ParserError(
+              token_group.CodeLocation,
+              "Expected a back-tick string"
+            );
 
-    token_group = token_group.Next;
-    const name = token_group.Text;
-    token_group = token_group.Next;
-
-    token_group.Expect("(");
-    token_group = token_group.Next;
-
-    let parameters: ParameterCollection;
-    [token_group, parameters] = ParameterCollection.Parse(token_group);
-
-    token_group.Expect(":");
-    token_group = token_group.Next;
-    const type_name = token_group.Text;
-
-    const returns = new PrimitiveType(
-      token_group.CodeLocation,
-      PrimitiveName.parse(type_name)
+          return new TokenGroupResponse(token_group.Next, body);
+        },
+      },
+      ({ includes, name, parameters, body, returns }) =>
+        new CFunction(
+          token_group.CodeLocation,
+          options,
+          includes,
+          name,
+          parameters,
+          body.substring(1, body.length - 1),
+          returns
+        )
     );
-    token_group = token_group.Next;
-
-    let body: string = token_group.Text;
-    if (!body.startsWith("`") || !body.endsWith("`"))
-      throw new ParserError(
-        token_group.CodeLocation,
-        "Expected a back-tick string"
-      );
-
-    token_group = token_group.Next;
-
-    return [
-      token_group,
-      new CFunction(
-        token_group.CodeLocation,
-        options,
-        includes,
-        name,
-        parameters,
-        body.substring(1, body.length - 1),
-        returns
-      ),
-    ];
   },
 });

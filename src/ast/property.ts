@@ -1,6 +1,7 @@
 import { LinkedProperty } from "../linked-ast/property";
 import { CodeLocation } from "../location/code-location";
 import { TokenGroup } from "../parser/token-group";
+import { TokenGroupResponse } from "../parser/token-group-response";
 import { Context } from "./context";
 import { SubItem } from "./sub-item";
 import { Type } from "./type/base";
@@ -19,23 +20,23 @@ export class Property extends SubItem {
     );
   }
 
-  static Parse(token_group: TokenGroup): [TokenGroup, Property] {
-    const name = token_group.Text;
+  static Parse(token_group: TokenGroup) {
+    return token_group.Build(
+      {
+        name: (token_group) => TokenGroupResponse.TextItem(token_group),
+        optional: (token_group) => {
+          if (token_group.Text === "?")
+            return new TokenGroupResponse(token_group.Next, true);
 
-    let optional = false;
-    token_group = token_group.Next;
-    if (token_group.Text === "?") {
-      token_group = token_group.Next;
-      optional = true;
-    }
-
-    token_group.Expect(":");
-
-    const [after_type, type] = Type.Parse(token_group.Next);
-
-    return [
-      after_type,
-      new Property(token_group.CodeLocation, name, type, optional),
-    ];
+          return new TokenGroupResponse(token_group, false);
+        },
+        type: (token_group) => {
+          token_group.Expect(":");
+          return Type.Parse(token_group.Next);
+        },
+      },
+      ({ name, optional, type }) =>
+        new Property(token_group.CodeLocation, name, type, optional)
+    );
   }
 }

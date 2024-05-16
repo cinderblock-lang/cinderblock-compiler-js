@@ -23,17 +23,16 @@ export class ParameterCollection {
     );
   }
 
-  static Parse(token_group: TokenGroup): [TokenGroup, ParameterCollection] {
-    const result: Array<Parameter> = [];
-    if (token_group.Text === ")")
-      return [token_group.Next, new ParameterCollection()];
-
-    while (token_group.Previous.Text !== ")") {
-      const [t, r] = Parameter.Parse(token_group);
-      token_group = t;
-      result.push(r);
-    }
-
-    return [token_group, new ParameterCollection(...result)];
+  static Parse(token_group: TokenGroup) {
+    return token_group.Build(
+      {
+        items: (token_group) =>
+          token_group.Until((token_group) => {
+            if (token_group.Text === ",") token_group = token_group.Next;
+            return Parameter.Parse(token_group);
+          }, ")"),
+      },
+      ({ items }) => new ParameterCollection(...items)
+    );
   }
 }

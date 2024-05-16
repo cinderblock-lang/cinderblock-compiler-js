@@ -1,6 +1,7 @@
 import { LinkedExpression } from "../../linked-ast/expression/base";
 import { ParserError } from "../../parser/error";
 import { TokenGroup } from "../../parser/token-group";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 import { Component } from "../component";
 import { Context } from "../context";
 import { ContextResponse } from "../context-response";
@@ -16,7 +17,7 @@ export interface IBaseable {
     token_group: TokenGroup,
     prefix: Expression | undefined,
     look_for: Array<string>
-  ): [TokenGroup, Expression];
+  ): TokenGroupResponse<Expression>;
 }
 
 export abstract class Expression extends Component {
@@ -34,14 +35,14 @@ export abstract class Expression extends Component {
     token_group: TokenGroup,
     look_for: Array<string> = [";"],
     prefix?: Expression
-  ): [TokenGroup, Expression] {
+  ): TokenGroupResponse<Expression> {
     if (look_for.includes(token_group.Text))
       if (!prefix)
         throw new ParserError(
           token_group.CodeLocation,
           "Unexpected end of expression"
         );
-      else return [token_group.Next, prefix];
+      else return new TokenGroupResponse(token_group.Next, prefix);
 
     for (const possible of this.#possible)
       if (possible.Is(token_group, prefix, look_for)) {
@@ -50,10 +51,10 @@ export abstract class Expression extends Component {
           token_group,
           prefix,
           look_for
-        );
+        ).Destructured;
 
         if (look_for.includes(token_group.Text))
-          return [token_group, expression];
+          return new TokenGroupResponse(token_group, expression);
         else return Expression.Parse(token_group, look_for, expression);
       }
 

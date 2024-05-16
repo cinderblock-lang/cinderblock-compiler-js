@@ -1,5 +1,6 @@
 import { LinkerError } from "../../linker/error";
 import { CodeLocation } from "../../location/code-location";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 import { Context } from "../context";
 import { ContextResponse } from "../context-response";
 import { Type } from "./base";
@@ -40,20 +41,14 @@ Type.Register({
     return token_group.Text === "use";
   },
   Extract(token_group) {
-    const start = token_group.CodeLocation;
-    token_group.Expect("use");
-
-    let constraints: Array<Type> = [];
-    while (token_group.Text !== "=") {
-      token_group = token_group.Next;
-      let result: Type;
-      [token_group, result] = Type.Parse(token_group);
-      token_group.Expect("=", "|");
-      constraints = [...constraints, result];
-    }
-
-    const name = token_group.Next.Text;
-
-    return [token_group.Skip(2), new UseType(start, name, constraints)];
+    return token_group.Build(
+      {
+        constraints: (token_group) =>
+          token_group.Until((token_group) => Type.Parse(token_group.Next), "="),
+        name: (token_group) => TokenGroupResponse.TextItem(token_group),
+      },
+      ({ constraints, name }) =>
+        new UseType(token_group.CodeLocation, name, constraints)
+    );
   },
 });

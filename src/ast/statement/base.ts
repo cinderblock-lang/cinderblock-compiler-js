@@ -1,13 +1,14 @@
 import { LinkedStatement } from "../../linked-ast/statement/base";
 import { ParserError } from "../../parser/error";
 import { TokenGroup } from "../../parser/token-group";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 import { Component } from "../component";
 import { Context } from "../context";
 import { ContextResponse } from "../context-response";
 
 export interface IBaseable {
   Is(token_group: TokenGroup): boolean;
-  Extract(token_group: TokenGroup): [TokenGroup, Statement];
+  Extract(token_group: TokenGroup): TokenGroupResponse<Statement>;
 }
 
 export abstract class Statement extends Component {
@@ -19,7 +20,7 @@ export abstract class Statement extends Component {
     this.#possible = [...this.#possible, instance];
   }
 
-  static Parse(token_group: TokenGroup): [TokenGroup, Statement] {
+  static Parse(token_group: TokenGroup): TokenGroupResponse<Statement> {
     for (const possible of Statement.#possible)
       if (possible.Is(token_group)) return possible.Extract(token_group);
 
