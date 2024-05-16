@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc",
     "test": "npm run build && node --test ./dist/**/*.test.js",
-    "package": "pkg .",
+    "package": "npm run build && npm run test && pkg .",
     "test:hello-world": "npm run build && cd ../cinderblock-tests/hello-world && cinderblock compile",
     "test:chained-operators": "npm run build && cd ../cinderblock-tests/chained-operators && cinderblock compile",
     "test:if-expressions": "npm run build && cd ../cinderblock-tests/if-expressions && cinderblock compile",

@@ -42,6 +42,14 @@ export class CFunction extends FunctionEntity {
     this.#returns = returns;
   }
 
+  get Returns() {
+    return this.#returns;
+  }
+
+  get Body() {
+    return this.#content;
+  }
+
   Linked(context: Context): ContextResponse<LinkedEntity> {
     return context.EnterFunction(this).Build(
       {

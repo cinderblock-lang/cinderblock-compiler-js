@@ -23,6 +23,10 @@ export class ParameterCollection {
     );
   }
 
+  get Parameters() {
+    return [...this.#components];
+  }
+
   static Parse(token_group: TokenGroup) {
     return token_group.Build(
       {
