@@ -35,10 +35,7 @@ export class PropertyCollection {
     return token_group.Build(
       {
         items: (token_group) =>
-          token_group.Until((token_group) => {
-            if (token_group.Text === ";") token_group = token_group.Next;
-            return Property.Parse(token_group);
-          }, "}"),
+          token_group.Until((token_group) => Property.Parse(token_group), "}"),
       },
       ({ items }) => new PropertyCollection(...items)
     );

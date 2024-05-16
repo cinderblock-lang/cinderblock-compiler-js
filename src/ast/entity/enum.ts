@@ -79,7 +79,7 @@ Entity.Register({
         },
         properties: (token_group) => {
           token_group.Expect("{");
-          return PropertyCollection.Parse(token_group);
+          return PropertyCollection.Parse(token_group.Next);
         },
       },
       ({ name, properties }) =>

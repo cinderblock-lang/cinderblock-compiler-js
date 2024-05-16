@@ -32,7 +32,11 @@ export class Property extends SubItem {
         },
         type: (token_group) => {
           token_group.Expect(":");
-          return Type.Parse(token_group.Next);
+          let type: Type;
+          [token_group, type] = Type.Parse(token_group.Next).Destructured;
+
+          token_group.Expect(";");
+          return new TokenGroupResponse(token_group.Next, type);
         },
       },
       ({ name, optional, type }) =>
