@@ -25,6 +25,14 @@ export class LiteralExpression extends Expression {
     this.#value = value;
   }
 
+  get Type() {
+    return this.#type;
+  }
+
+  get Value() {
+    return this.#value;
+  }
+
   Linked(context: Context) {
     return context.Build(
       {},

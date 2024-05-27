@@ -1,0 +1,13 @@
+namespace App {
+  fn FunctionTest(): int {
+    message -> 24i;
+
+    return message;
+  }
+
+  export unsafe fn main(): int {
+    message -> FunctionTest();
+
+    return message;
+  }
+}

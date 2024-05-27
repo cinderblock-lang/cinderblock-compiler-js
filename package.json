@@ -4,17 +4,17 @@
   "description": "A new programming language",
   "scripts": {
     "build": "tsc",
-    "test": "npm run build && node --test ./dist/**/*.test.js",
-    "package": "npm run build && npm run test && pkg .",
-    "test:hello-world": "npm run build && cd ../cinderblock-tests/hello-world && cinderblock compile",
-    "test:chained-operators": "npm run build && cd ../cinderblock-tests/chained-operators && cinderblock compile",
-    "test:if-expressions": "npm run build && cd ../cinderblock-tests/if-expressions && cinderblock compile",
-    "test:embedded-c": "npm run build && cd ../cinderblock-tests/embedded-c && cinderblock compile",
-    "test:function-overloading": "npm run build && cd ../cinderblock-tests/function-overloading && cinderblock compile",
-    "test:lambdas": "npm run build && cd ../cinderblock-tests/lambdas && cinderblock compile",
-    "test:partial-invokation": "npm run build && cd ../cinderblock-tests/partial-invokation && cinderblock compile",
-    "test:enums": "npm run build && cd ../cinderblock-tests/enums && cinderblock compile",
-    "test:effuse": "npm run build && cd ../effuse-cinderblock && cinderblock workspace compile"
+    "test": "node --test --import tsx ./src/**/*.test.ts",
+    "package": "npm run test && npm run build && pkg .",
+    "test:all": "npm run build && cd ./tests && OS=darwin ./test.sh",
+    "test:hello-world": "npm run build && cd ./tests/hello-world && node ../../bin/index.js compile",
+    "test:chained-operators": "npm run build && cd ./tests/chained-operators && node ../../bin/index.js compile",
+    "test:if-expressions": "npm run build && cd ./tests/if-expressions && node ../../bin/index.js compile",
+    "test:embedded-c": "npm run build && cd ./tests/embedded-c && node ../bin/index.js compile",
+    "test:function-overloading": "npm run build && cd ./tests/function-overloading && node ../../bin/index.js compile",
+    "test:lambdas": "npm run build && cd ./tests/lambdas && node ../../bin/index.js compile",
+    "test:partial-invokation": "npm run build && cd ./tests/partial-invokation && node ../../bin/index.js compile",
+    "test:enums": "npm run build && cd ./tests/enums && node ../../bin/index.js compile"
   },
   "private": true,
   "bin": {
@@ -33,7 +33,8 @@
   "devDependencies": {
     "@types/node": "^20.8.10",
     "pkg": "^5.8.1",
-    "typescript": "^5.2.2"
+    "tsx": "^4.11.0",
+    "typescript": "^5.4.5"
   },
   "dependencies": {
     "yargs": "^17.7.2",

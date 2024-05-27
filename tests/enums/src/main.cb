@@ -1,0 +1,40 @@
+namespace Console {
+  export cfn ["<stdio.h>"] Log(subject: string): int `
+    printf(subject);
+    return 0;
+  `
+}
+
+namespace App {
+  using Console;
+
+  struct ItemOne {
+    name: string;
+  }
+
+  struct ItemTwo {
+    fullname: string;
+  }
+
+  enum Test {
+    one: ItemOne;
+    two: ItemTwo;
+  }
+
+  fn TestItem(item: Test): string {
+    return match (item as matched) {
+      one: matched.name;
+      two: matched.fullname;
+    };
+  }
+
+  export unsafe fn main(): int {
+    one_test -> pick Test.one make ItemOne { assign name = "Test Name"; };
+    two_test -> pick Test.two make ItemTwo { assign fullname = "Test Full Name"; };
+
+    side one_test.TestItem().Log();
+    side two_test.TestItem().Log();
+
+    return 0i;
+  }
+}

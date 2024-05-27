@@ -1,0 +1,9 @@
+namespace App {
+  export fn main(): int {
+
+    test -> 1i;
+
+    other -> test + 3i;
+    return other;
+  }
+}

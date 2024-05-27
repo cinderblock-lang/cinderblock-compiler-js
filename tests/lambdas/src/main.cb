@@ -1,0 +1,13 @@
+namespace App {
+  fn LambdaTest(): () -> int {
+    number -> 30i;
+
+    return fn () -> number;
+  }
+
+  export unsafe fn main(): int {
+    get_number -> LambdaTest();
+
+    return get_number();
+  }
+}

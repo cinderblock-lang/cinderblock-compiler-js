@@ -16,6 +16,10 @@ export class Block {
     this.#components = components;
   }
 
+  get Statements() {
+    return this.#components;
+  }
+
   Linked(context: Context) {
     return context.Build(
       {
@@ -65,6 +69,6 @@ export class Block {
       result.push(r);
     }
 
-    return new TokenGroupResponse(token_group, new Block(...result));
+    return new TokenGroupResponse(token_group.Next, new Block(...result));
   }
 }

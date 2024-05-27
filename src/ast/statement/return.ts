@@ -1,5 +1,6 @@
 import { LinkedReturnStatement } from "../../linked-ast/statement/return";
 import { CodeLocation } from "../../location/code-location";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 import { Context } from "../context";
 import { ContextResponse } from "../context-response";
 import { Expression } from "../expression/base";
@@ -11,6 +12,10 @@ export class ReturnStatement extends Statement {
   constructor(ctx: CodeLocation, value: Expression) {
     super(ctx);
     this.#value = value;
+  }
+
+  get Value() {
+    return this.#value;
   }
 
   ReturnType(context: Context) {
@@ -37,7 +42,9 @@ Statement.Register({
       {
         expression: (token_group) => {
           token_group = token_group.Next;
-          return Expression.Parse(token_group);
+          let result: Expression;
+          [token_group, result] = Expression.Parse(token_group).Destructured;
+          return new TokenGroupResponse(token_group.Next, result);
         },
       },
       ({ expression }) =>

@@ -57,7 +57,9 @@ Statement.Register({
         expression: (token_group) => {
           token_group.Expect("->");
           token_group = token_group.Next;
-          return Expression.Parse(token_group);
+          let result: Expression;
+          [token_group, result] = Expression.Parse(token_group).Destructured;
+          return new TokenGroupResponse(token_group.Next, result);
         },
       },
       ({ name, expression }) =>

@@ -1,0 +1,19 @@
+namespace App {
+  cfn [] get_char(subject: string, index: int): char `return subject[index];`
+
+  fn length(s: string): int {
+    checker ->
+      fn (i: int): int ->
+        if (s.get_char(i) > 0i) i;
+        else checker(i + 1i);
+    
+    return checker(0i);
+  }
+
+  export fn main(): int {
+    subject -> "test";
+    index -> 1i;
+    current -> false;
+    return index < subject.length() - 1i && current == true;
+  }
+}

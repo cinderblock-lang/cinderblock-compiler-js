@@ -1,0 +1,10 @@
+namespace App {
+  fn Test(hello: int, world: int): int {
+    return hello + world;
+  }
+
+  export unsafe fn main(): int {
+    world -> Test(4i);
+    return world(8i);
+  }
+}

@@ -1,5 +1,6 @@
 import { LinkedSideStatement } from "../../linked-ast/statement/side";
 import { CodeLocation } from "../../location/code-location";
+import { TokenGroupResponse } from "../../parser/token-group-response";
 import { Context } from "../context";
 import { Expression } from "../expression/base";
 import { Statement } from "./base";
@@ -31,7 +32,9 @@ Statement.Register({
       {
         expression: (token_group) => {
           token_group = token_group.Next;
-          return Expression.Parse(token_group);
+          let result: Expression;
+          [token_group, result] = Expression.Parse(token_group).Destructured;
+          return new TokenGroupResponse(token_group.Next, result);
         },
       },
       ({ expression }) =>

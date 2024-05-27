@@ -3,11 +3,18 @@ import { Parameter } from "../ast/parameter";
 import { Type } from "../ast/type/base";
 import { Property } from "../ast/property";
 import { ParameterCollection } from "../ast/parameter-collection";
+import { Statement } from "../ast/statement/base";
+import { Block } from "../ast/block";
 
 type ParameterSpec = {
   name: string;
   optional: boolean;
   tester: (type: Type) => void;
+};
+
+type StatementSpec<T extends Statement> = {
+  type: new (...args: any) => T;
+  tester: (statement: T) => void;
 };
 
 export default class AssertExtra {
@@ -32,6 +39,25 @@ export default class AssertExtra {
       assert.equal(parameter.Name, name);
       assert.equal(parameter.Optional, optional);
       tester(parameter.Type);
+    }
+  }
+
+  static BlockWith<TSpec extends Array<Statement>>(
+    subject: any,
+    spec: {
+      [TKey in keyof TSpec]: StatementSpec<TSpec[TKey]>;
+    }
+  ) {
+    AssertExtra.InstanceOf(subject, Block);
+    const statements = subject.Statements;
+    if (statements.length !== spec.length)
+      throw new Error("Wrong statments length");
+    for (let i = 0; i < spec.length; i++) {
+      const statement = statements[i];
+      const { type, tester } = spec[i];
+
+      AssertExtra.InstanceOf(statement, type);
+      tester(statement);
     }
   }
 

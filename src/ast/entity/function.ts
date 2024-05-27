@@ -38,6 +38,14 @@ export class FunctionEntity extends Entity {
     return this.#name;
   }
 
+  get Returns() {
+    return this.#returns;
+  }
+
+  get Content() {
+    return this.#content;
+  }
+
   #get_returns(context: Context) {
     return (
       this.#returns?.Linked(context.WithoutInvokation()) ??
@@ -80,10 +88,12 @@ Entity.Register({
         },
         parameters: (token_group) => {
           token_group.Expect("(");
-          return ParameterCollection.Parse(token_group);
+          return ParameterCollection.Parse(token_group.Next);
         },
         returns: (token_group) => {
-          if (token_group.Text === ":") return Type.Parse(token_group.Next);
+          if (token_group.Text === ":") {
+            return Type.Parse(token_group.Next);
+          }
 
           return new TokenGroupResponse(token_group, undefined);
         },

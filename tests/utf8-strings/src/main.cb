@@ -1,0 +1,18 @@
+namespace Console {
+    export cfn ["<stdio.h>"] Log(subject: string): int `
+      printf(subject);
+      return 0;
+    `
+}
+
+namespace App {
+  using Console;
+
+  export unsafe fn main(): int {
+    message -> "私のお読さんは美しです";
+
+    side Log(message);
+
+    return 0i;
+  }
+}

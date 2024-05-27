@@ -1,0 +1,13 @@
+namespace App {
+  export unsafe fn main(): int {
+    current -> 3i;
+
+    return if (true && current > 4i) {
+      return current;
+    } else if (current > 7i) {
+      return current;
+    } else {
+      return 0i;
+    };
+  }
+}

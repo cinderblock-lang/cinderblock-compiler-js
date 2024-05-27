@@ -1,0 +1,27 @@
+namespace test.io {
+  export unsafe fn fetch(data: int): int {
+    return data + 5i;
+  }
+
+  export struct Error {
+    number: int;
+  }
+
+  export unsafe fn fetch(data: Error): int {
+    return data.number + 10i;
+  }
+}
+
+namespace App {
+  using test.io;
+
+  export unsafe fn main(): int {
+    error -> make Error {
+      assign number = 1i;
+    };
+
+    plain -> 1i;
+
+    return error.fetch() + plain.fetch();
+  }
+}
