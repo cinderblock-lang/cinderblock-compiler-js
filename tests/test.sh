@@ -1,5 +1,5 @@
 #! /bin/bash
-cinderblock="node ../bin/index.js"
+cinderblock="node ../../bin/index.js"
 errors=false;
 operating_system="${OS:-linux}"
 
