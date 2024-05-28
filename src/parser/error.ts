@@ -2,11 +2,12 @@ import { CodeLocation } from "../location/code-location";
 import { TokenGroup } from "./token-group";
 import { Token } from "./token";
 
-export class ParserError {
+export class ParserError extends Error {
   readonly #location: CodeLocation;
   readonly #message: string;
 
   constructor(location: CodeLocation | undefined, message: string) {
+    super(message);
     this.#location = location ?? new CodeLocation("", -1, -1, -1, -1);
     this.#message = message;
   }

@@ -35,6 +35,10 @@ export class SchemaEntity extends TypeEntity {
     return this.#properties.Resolve(key);
   }
 
+  get Keys() {
+    return this.#properties.Keys;
+  }
+
   Linked(context: Context) {
     const invoked_with = context.GetCurrentParameter();
     if (!invoked_with)
@@ -78,7 +82,7 @@ Entity.Register({
           token_group = token_group.Next;
           return TokenGroupResponse.TextItem(token_group);
         },
-        properties: (token_group) => PropertyCollection.Parse(token_group),
+        properties: (token_group) => PropertyCollection.Parse(token_group.Next),
       },
       ({ name, properties }) =>
         new SchemaEntity(token_group.CodeLocation, options, name, properties)
