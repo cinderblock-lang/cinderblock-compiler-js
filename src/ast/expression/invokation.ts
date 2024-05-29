@@ -29,6 +29,14 @@ export class InvokationExpression extends Expression {
     this.#parameters = parameters;
   }
 
+  get Subject() {
+    return this.#subject;
+  }
+
+  get Parameters() {
+    return [...this.#parameters];
+  }
+
   Linked(context: Context): ContextResponse<LinkedExpression> {
     if (
       this.#subject instanceof AccessExpression &&
@@ -137,7 +145,10 @@ Expression.Register({
       {
         parameters: (token_group) =>
           token_group.Next.Until(
-            (token_group) => Expression.Parse(token_group, [",", ")"]),
+            (token_group) =>
+              token_group.Text === ","
+                ? Expression.Parse(token_group.Next, [",", ")"])
+                : Expression.Parse(token_group, [",", ")"]),
             ")"
           ),
       },
