@@ -136,7 +136,7 @@ Expression.Register({
     return token_group.Build(
       {
         parameters: (token_group) =>
-          token_group.Next.UntilLookback(
+          token_group.Next.Until(
             (token_group) => Expression.Parse(token_group, [",", ")"]),
             ")"
           ),

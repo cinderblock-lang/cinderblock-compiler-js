@@ -65,7 +65,6 @@ export class CodeBase {
       let namespace: Namespace;
       [tokens, namespace] = Namespace.Parse(tokens).Destructured;
       result = [...result, namespace];
-      tokens = tokens.Next;
     }
 
     return new CodeBase(...result, ...this.#data);

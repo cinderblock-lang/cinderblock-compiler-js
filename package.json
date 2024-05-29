@@ -10,7 +10,7 @@
     "test:hello-world": "npm run build && cd ./tests/hello-world && node ../../bin/index.js compile",
     "test:chained-operators": "npm run build && cd ./tests/chained-operators && node ../../bin/index.js compile",
     "test:if-expressions": "npm run build && cd ./tests/if-expressions && node ../../bin/index.js compile",
-    "test:embedded-c": "npm run build && cd ./tests/embedded-c && node ../bin/index.js compile",
+    "test:embedded-c": "npm run build && cd ./tests/embedded-c && node ../../bin/index.js compile",
     "test:function-overloading": "npm run build && cd ./tests/function-overloading && node ../../bin/index.js compile",
     "test:lambdas": "npm run build && cd ./tests/lambdas && node ../../bin/index.js compile",
     "test:partial-invokation": "npm run build && cd ./tests/partial-invokation && node ../../bin/index.js compile",

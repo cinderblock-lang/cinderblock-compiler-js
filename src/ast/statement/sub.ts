@@ -53,7 +53,7 @@ Statement.Register({
   Extract(token_group) {
     return token_group.Build(
       {
-        name: (token_group) => TokenGroupResponse.TextItem(token_group.Next),
+        name: (token_group) => TokenGroupResponse.TextItem(token_group),
         expression: (token_group) => {
           token_group.Expect("->");
           token_group = token_group.Next;

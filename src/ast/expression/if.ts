@@ -47,7 +47,7 @@ Expression.Register({
           token_group.Expect("(");
           return Expression.Parse(token_group.Next, [")"]);
         },
-        if_block: (token_group) => Block.Parse(token_group),
+        if_block: (token_group) => Block.Parse(token_group.Next),
         else_block: (token_group) => {
           if (token_group.Text === ";") token_group = token_group.Next;
 

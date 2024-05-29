@@ -96,7 +96,12 @@ Expression.Register({
           token_group = token_group.Next;
           token_group.Expect("(");
           token_group = token_group.Next;
-          return Expression.Parse(token_group, ["as"]);
+          let result: Expression;
+          [token_group, result] = Expression.Parse(token_group, [
+            "as",
+          ]).Destructured;
+
+          return new TokenGroupResponse(token_group.Next, result);
         },
         as: (token_group) => TokenGroupResponse.TextItem(token_group),
         using: (token_group) => {
@@ -111,6 +116,7 @@ Expression.Register({
             token_group = token_group.Next;
             let block: Block;
             [token_group, block] = Block.Parse(token_group).Destructured;
+            if (token_group.Text === ";") token_group = token_group.Next;
 
             return new TokenGroupResponse(token_group, [name, block] as const);
           }, "}");
