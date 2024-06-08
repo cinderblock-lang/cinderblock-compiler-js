@@ -9,6 +9,7 @@ import Gcc from "./gcc";
 import { ParserError } from "../parser/error";
 import { LinkerError } from "../linker/error";
 import { WriterFile } from "../writer/file";
+import { UninitialisedError } from "../linker/uninitialised-error";
 
 export default class Project {
   readonly #dir: string;
@@ -90,6 +91,11 @@ export default class Project {
     } catch (err: unknown) {
       if (err instanceof ParserError) {
         console.log(`Parser Error:\n${err.Location}\n\n${err.Message}`);
+        process.exit(1);
+      }
+
+      if (err instanceof UninitialisedError) {
+        console.log(`Uninitialised Error:\n${err.Location}\n\n${err.Message}`);
         process.exit(1);
       }
 

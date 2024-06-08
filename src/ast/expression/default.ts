@@ -30,7 +30,7 @@ Expression.Register({
   Is(token_group, prefix) {
     return token_group.Text === "default";
   },
-  Extract(token_group, prefix) {
+  Extract(token_group) {
     return token_group.Build(
       {
         subject: (token_group) => {

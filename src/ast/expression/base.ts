@@ -1,4 +1,5 @@
 import { LinkedExpression } from "../../linked-ast/expression/base";
+import { TokeniserContext } from "../../parser/context";
 import { ParserError } from "../../parser/error";
 import { TokenGroup } from "../../parser/token-group";
 import { TokenGroupResponse } from "../../parser/token-group-response";
@@ -15,6 +16,7 @@ export interface IBaseable {
   ): boolean;
   Extract(
     token_group: TokenGroup,
+    ctx: TokeniserContext,
     prefix: Expression | undefined,
     look_for: Array<string>
   ): TokenGroupResponse<Expression>;
@@ -33,6 +35,7 @@ export abstract class Expression extends Component {
 
   static Parse(
     token_group: TokenGroup,
+    ctx: TokeniserContext,
     look_for: Array<string> = [";"],
     prefix?: Expression
   ): TokenGroupResponse<Expression> {
@@ -49,13 +52,14 @@ export abstract class Expression extends Component {
         let expression: Expression;
         [token_group, expression] = possible.Extract(
           token_group,
+          ctx,
           prefix,
           look_for
         ).Destructured;
 
         if (look_for.includes(token_group.Text))
           return new TokenGroupResponse(token_group, expression);
-        else return Expression.Parse(token_group, look_for, expression);
+        else return Expression.Parse(token_group, ctx, look_for, expression);
       }
 
     throw new ParserError(

@@ -6,7 +6,8 @@
     "build": "tsc",
     "test": "node --test --import tsx ./src/**/*.test.ts",
     "package": "npm run test && npm run build && pkg .",
-    "test:all": "npm run build && cd ./tests && OS=darwin ./test.sh",
+    "test:all": "npm run build && cd ./tests && ./test.sh",
+    "test:all-osx": "npm run build && cd ./tests && OS=darwin ./test.sh",
     "test:hello-world": "npm run build && cd ./tests/hello-world && node ../../bin/index.js compile",
     "test:chained-operators": "npm run build && cd ./tests/chained-operators && node ../../bin/index.js compile",
     "test:if-expressions": "npm run build && cd ./tests/if-expressions && node ../../bin/index.js compile",
@@ -14,7 +15,8 @@
     "test:function-overloading": "npm run build && cd ./tests/function-overloading && node ../../bin/index.js compile",
     "test:lambdas": "npm run build && cd ./tests/lambdas && node ../../bin/index.js compile",
     "test:partial-invokation": "npm run build && cd ./tests/partial-invokation && node ../../bin/index.js compile",
-    "test:enums": "npm run build && cd ./tests/enums && node ../../bin/index.js compile"
+    "test:enums": "npm run build && cd ./tests/enums && node ../../bin/index.js compile",
+    "test:effuse": "npm run build && cd ../effuse-cinderblock && cinderblock workspace compile"
   },
   "private": true,
   "bin": {

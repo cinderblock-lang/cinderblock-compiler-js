@@ -39,21 +39,21 @@ Expression.Register({
   Is(token_group, prefix) {
     return token_group.Text === "if";
   },
-  Extract(token_group, prefix) {
+  Extract(token_group, ctx) {
     return token_group.Build(
       {
         check: (token_group) => {
           token_group = token_group.Next;
           token_group.Expect("(");
-          return Expression.Parse(token_group.Next, [")"]);
+          return Expression.Parse(token_group.Next, ctx, [")"]);
         },
-        if_block: (token_group) => Block.Parse(token_group.Next),
+        if_block: (token_group) => Block.Parse(token_group.Next, ctx),
         else_block: (token_group) => {
           if (token_group.Text === ";") token_group = token_group.Next;
 
           token_group.Expect("else");
           token_group = token_group.Next;
-          return Block.Parse(token_group);
+          return Block.Parse(token_group, ctx);
         },
       },
       ({ check, if_block, else_block }) =>

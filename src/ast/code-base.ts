@@ -87,14 +87,16 @@ export class CodeBase {
         "Could not resolve App namespace"
       );
 
+    const main = app.GetMain();
     const context = new Context(
       this,
       app,
       new Scope({}, {}, undefined),
-      new Callstack([], [], 0)
+      new Callstack([], [], 0),
+      main.Unsafe
     );
 
-    const result = app.GetMain().Linked(context, true);
+    const result = main.Linked(context, true);
     return result.Response;
   }
 }

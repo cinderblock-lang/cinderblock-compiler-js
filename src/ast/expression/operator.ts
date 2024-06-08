@@ -66,10 +66,10 @@ export class OperatorExpression extends Expression {
 
 Expression.Register({
   Priority: 2,
-  Is(token_group, prefix) {
+  Is(token_group) {
     return IsOperator(token_group.Text);
   },
-  Extract(token_group, prefix, look_for) {
+  Extract(token_group, ctx, prefix, look_for) {
     if (!prefix)
       throw new ParserError(
         token_group.CodeLocation,
@@ -90,7 +90,7 @@ Expression.Register({
 
           return new TokenGroupResponse(token_group, result);
         },
-        right: (token_group) => Expression.Parse(token_group, look_for),
+        right: (token_group) => Expression.Parse(token_group, ctx, look_for),
       },
       ({ operator, right }) =>
         new OperatorExpression(

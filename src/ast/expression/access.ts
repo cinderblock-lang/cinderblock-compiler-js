@@ -77,7 +77,7 @@ Expression.Register({
   Is(token_group) {
     return token_group.Text === ".";
   },
-  Extract(token_group, prefix) {
+  Extract(token_group, _, prefix) {
     if (!prefix)
       throw new ParserError(
         token_group.CodeLocation,

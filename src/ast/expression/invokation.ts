@@ -134,7 +134,7 @@ Expression.Register({
   Is(token_group, prefix) {
     return token_group.Text === "(" && !!prefix;
   },
-  Extract(token_group, prefix) {
+  Extract(token_group, ctx, prefix) {
     if (!prefix)
       throw new ParserError(
         token_group.CodeLocation,
@@ -147,8 +147,8 @@ Expression.Register({
           token_group.Next.Until(
             (token_group) =>
               token_group.Text === ","
-                ? Expression.Parse(token_group.Next, [",", ")"])
-                : Expression.Parse(token_group, [",", ")"]),
+                ? Expression.Parse(token_group.Next, ctx, [",", ")"])
+                : Expression.Parse(token_group, ctx, [",", ")"]),
             ")"
           ),
       },

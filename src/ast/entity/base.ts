@@ -1,4 +1,5 @@
 import { CodeLocation } from "../../location/code-location";
+import { TokeniserContext } from "../../parser/context";
 import { ParserError } from "../../parser/error";
 import { TokenGroup } from "../../parser/token-group";
 import { TokenGroupResponse } from "../../parser/token-group-response";
@@ -13,7 +14,8 @@ export interface IBaseable {
   Is(token_group: TokenGroup): boolean;
   Extract(
     token_group: TokenGroup,
-    options: EntityOptions
+    options: EntityOptions,
+    ctx: TokeniserContext
   ): TokenGroupResponse<Entity>;
 }
 
@@ -32,22 +34,27 @@ export abstract class Entity extends Component {
     return this.#options.exported;
   }
 
+  get Unsafe() {
+    return this.#options.unsafe;
+  }
+
   static Register(instance: IBaseable): void {
     this.#possible = [...this.#possible, instance];
   }
 
   static Parse(
     token_group: TokenGroup,
+    ctx: TokeniserContext,
     options?: EntityOptions
   ): TokenGroupResponse<Entity> {
     if (token_group.Text === "export")
-      return this.Parse(token_group.Next, {
+      return this.Parse(token_group.Next, ctx, {
         exported: true,
         unsafe: options?.unsafe ?? false,
       });
 
     if (token_group.Text === "unsafe")
-      return this.Parse(token_group.Next, {
+      return this.Parse(token_group.Next, ctx.WithUnsafety(true), {
         exported: options?.exported ?? false,
         unsafe: true,
       });
@@ -57,7 +64,7 @@ export abstract class Entity extends Component {
         return possible.Extract(token_group, {
           exported: options?.exported ?? false,
           unsafe: options?.unsafe ?? false,
-        });
+        }, ctx);
 
     throw new ParserError(
       token_group.CodeLocation,

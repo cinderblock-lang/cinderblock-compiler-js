@@ -27,7 +27,10 @@ export class LinkedSubStatement extends LinkedStatement {
 
   get Type() {
     if (!this.#equals)
-      throw new UninitialisedError(this.CodeLocation, "Could not resolve type");
+      throw new UninitialisedError(
+        this.CodeLocation,
+        "Sub statement is referenced before it is resolved"
+      );
     return this.#equals.Type;
   }
 

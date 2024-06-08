@@ -25,10 +25,10 @@ Expression.Register({
   Is(token_group, prefix) {
     return token_group.Text === "(" && !prefix;
   },
-  Extract(token_group, prefix) {
+  Extract(token_group, ctx) {
     return token_group.Build(
       {
-        input: (token_group) => Expression.Parse(token_group.Next, [")"]),
+        input: (token_group) => Expression.Parse(token_group.Next, ctx, [")"]),
       },
       ({ input }) => new BracketsExpression(token_group.CodeLocation, input)
     );

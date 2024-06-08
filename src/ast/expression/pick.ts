@@ -46,10 +46,10 @@ export class PickExpression extends Expression {
 
 Expression.Register({
   Priority: 3,
-  Is(token_group, prefix) {
+  Is(token_group) {
     return token_group.Text === "pick";
   },
-  Extract(token_group, prefix, look_for) {
+  Extract(token_group, ctx) {
     return token_group.Build(
       {
         target: (token_group) => Type.Parse(token_group.Next),
@@ -58,7 +58,7 @@ Expression.Register({
           token_group = token_group.Next;
           return TokenGroupResponse.TextItem(token_group);
         },
-        block: (token_group) => Block.Parse(token_group),
+        block: (token_group) => Block.Parse(token_group, ctx),
       },
       ({ target, key, block }) =>
         new PickExpression(token_group.CodeLocation, target, key, block)

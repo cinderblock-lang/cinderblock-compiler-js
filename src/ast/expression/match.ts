@@ -89,7 +89,7 @@ Expression.Register({
   Is(token_group, prefix) {
     return token_group.Text === "match";
   },
-  Extract(token_group, prefix) {
+  Extract(token_group, ctx) {
     return token_group.Build(
       {
         subject: (token_group) => {
@@ -97,7 +97,7 @@ Expression.Register({
           token_group.Expect("(");
           token_group = token_group.Next;
           let result: Expression;
-          [token_group, result] = Expression.Parse(token_group, [
+          [token_group, result] = Expression.Parse(token_group, ctx, [
             "as",
           ]).Destructured;
 
@@ -115,7 +115,7 @@ Expression.Register({
             token_group.Expect(":");
             token_group = token_group.Next;
             let block: Block;
-            [token_group, block] = Block.Parse(token_group).Destructured;
+            [token_group, block] = Block.Parse(token_group, ctx).Destructured;
             if (token_group.Text === ";") token_group = token_group.Next;
 
             return new TokenGroupResponse(token_group, [name, block] as const);

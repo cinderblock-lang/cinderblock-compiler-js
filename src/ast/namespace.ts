@@ -3,6 +3,7 @@ import { LinkedEntityExpression } from "../linked-ast/expression/entity";
 import { LinkedType } from "../linked-ast/type/base";
 import { LinkerError } from "../linker/error";
 import { CodeLocation } from "../location/code-location";
+import { TokeniserContext } from "../parser/context";
 import { TokenGroup } from "../parser/token-group";
 import { TokenGroupResponse } from "../parser/token-group-response";
 import { Component } from "./component";
@@ -51,7 +52,11 @@ export class Namespace extends Component {
     context: Context
   ): ContextResponse<LinkedExpression> | undefined {
     for (const entity of this.#contents) {
-      if (entity instanceof FunctionEntity && entity.Name === name) {
+      if (
+        entity instanceof FunctionEntity &&
+        entity.Name === name &&
+        (!entity.Unsafe || context.Unsafe)
+      ) {
         try {
           const response = entity.Linked(context);
           return new ContextResponse(
@@ -93,19 +98,25 @@ export class Namespace extends Component {
   }
 
   static Parse(token_group: TokenGroup): TokenGroupResponse<Namespace> {
+    let name: Array<string>;
+    token_group.Expect("namespace");
+    [token_group, name] = token_group.Next.Until(
+      (token_group) => TokenGroupResponse.TextItem(token_group),
+      "{"
+    ).Destructured;
     return token_group.Build(
       {
-        name: (token_group) => {
-          token_group.Expect("namespace");
-          return token_group.Next.Until(
-            (token_group) => TokenGroupResponse.TextItem(token_group),
-            "{"
-          );
-        },
         entities: (token_group) =>
-          token_group.Until((token_group) => Entity.Parse(token_group), "}"),
+          token_group.Until(
+            (token_group) =>
+              Entity.Parse(
+                token_group,
+                new TokeniserContext(name.join(""), false)
+              ),
+            "}"
+          ),
       },
-      ({ name, entities }) =>
+      ({ entities }) =>
         new Namespace(token_group.CodeLocation, name.join(""), entities)
     );
   }

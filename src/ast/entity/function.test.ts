@@ -7,6 +7,7 @@ import assert from "node:assert";
 import AssertExtra from "../../test-utils/assert-extra";
 import { ReturnStatement } from "../statement/return";
 import { LiteralExpression } from "../expression/literal";
+import { TokeniserContext } from "../../parser/context";
 
 describe("FunctionEntity.Parser", () => {
   it("Parses a basic function", () => {
@@ -14,7 +15,10 @@ describe("FunctionEntity.Parser", () => {
 
     const tokens = Tokenise(code, "test.cb");
 
-    const [token_group, result] = Entity.Parse(tokens).Destructured;
+    const [token_group, result] = Entity.Parse(
+      tokens,
+      new TokeniserContext("Test", true)
+    ).Destructured;
 
     AssertExtra.InstanceOf(result, FunctionEntity);
     assert.equal(token_group.Done, true);
@@ -42,7 +46,10 @@ describe("FunctionEntity.Parser", () => {
 
     const tokens = Tokenise(code, "test.cb");
 
-    const [token_group, result] = Entity.Parse(tokens).Destructured;
+    const [token_group, result] = Entity.Parse(
+      tokens,
+      new TokeniserContext("Test", true)
+    ).Destructured;
 
     AssertExtra.InstanceOf(result, FunctionEntity);
     assert.equal(token_group.Text, "another");

@@ -5,11 +5,13 @@ import AssertExtra from "../../test-utils/assert-extra";
 import { InvokationExpression } from "./invokation";
 import { ReferenceExpression } from "./reference";
 import assert from "node:assert";
+import { TokeniserContext } from "../../parser/context";
 
 describe("Invokation.Parser", () => {
   it("Parses a basic invokation", () => {
     const [token_group, result] = Expression.Parse(
-      Tokenise(`test();`, "test.cb")
+      Tokenise(`test();`, "test.cb"),
+      new TokeniserContext("Test", true)
     ).Destructured;
 
     AssertExtra.InstanceOf(result, InvokationExpression);
@@ -22,7 +24,8 @@ describe("Invokation.Parser", () => {
 
   it("Parses function a function parameter", () => {
     const [token_group, result] = Expression.Parse(
-      Tokenise(`test(hello);`, "test.cb")
+      Tokenise(`test(hello);`, "test.cb"),
+      new TokeniserContext("Test", true)
     ).Destructured;
 
     AssertExtra.InstanceOf(result, InvokationExpression);
@@ -38,7 +41,8 @@ describe("Invokation.Parser", () => {
 
   it("Parses multiple function parameters", () => {
     const [token_group, result] = Expression.Parse(
-      Tokenise(`test(hello, world);`, "test.cb")
+      Tokenise(`test(hello, world);`, "test.cb"),
+      new TokeniserContext("Test", true)
     ).Destructured;
 
     AssertExtra.InstanceOf(result, InvokationExpression);

@@ -5,6 +5,7 @@ import { describe, it } from "node:test";
 import { Tokenise } from "../../parser";
 import assert from "node:assert";
 import AssertExtra from "../../test-utils/assert-extra";
+import { TokeniserContext } from "../../parser/context";
 
 describe("CFunction.Parser", () => {
   it("Parses a c function", () => {
@@ -12,7 +13,10 @@ describe("CFunction.Parser", () => {
 
     const tokens = Tokenise(code, "test.cb");
 
-    const [token_group, result] = Entity.Parse(tokens).Destructured;
+    const [token_group, result] = Entity.Parse(
+      tokens,
+      new TokeniserContext("Test", true)
+    ).Destructured;
 
     AssertExtra.InstanceOf(result, CFunction);
     assert.equal(token_group.Done, true);
@@ -30,7 +34,10 @@ describe("CFunction.Parser", () => {
 
     const tokens = Tokenise(code, "test.cb");
 
-    const [token_group, result] = Entity.Parse(tokens).Destructured;
+    const [token_group, result] = Entity.Parse(
+      tokens,
+      new TokeniserContext("Test", true)
+    ).Destructured;
 
     AssertExtra.InstanceOf(result, CFunction);
     assert.equal(token_group.Done, true);
@@ -65,7 +72,10 @@ describe("CFunction.Parser", () => {
 
     const tokens = Tokenise(code, "test.cb");
 
-    const [token_group, result] = Entity.Parse(tokens).Destructured;
+    const [token_group, result] = Entity.Parse(
+      tokens,
+      new TokeniserContext("Test", true)
+    ).Destructured;
 
     AssertExtra.InstanceOf(result, CFunction);
     assert.equal(token_group.Done, true);

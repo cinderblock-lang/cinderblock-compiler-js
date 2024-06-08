@@ -46,14 +46,14 @@ export class MakeExpression extends Expression {
 
 Expression.Register({
   Priority: 3,
-  Is(token_group, prefix) {
+  Is(token_group) {
     return token_group.Text === "make";
   },
-  Extract(token_group, prefix) {
+  Extract(token_group, ctx) {
     return token_group.Build(
       {
         type: (token_group) => Type.Parse(token_group.Next),
-        using: (token_group) => Block.Parse(token_group),
+        using: (token_group) => Block.Parse(token_group, ctx),
       },
       ({ type, using }) =>
         new MakeExpression(token_group.CodeLocation, type, using)

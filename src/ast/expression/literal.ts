@@ -94,7 +94,7 @@ Expression.Register({
   Is(token_group) {
     return !!token_group.Text.match(/^0b[0-9]+$/gm);
   },
-  Extract(token_group, prefix) {
+  Extract(token_group) {
     return token_group.Build(
       {
         name: (token_group) => TokenGroupResponse.TextItem(token_group),
@@ -109,7 +109,7 @@ Expression.Register({
   Is(token_group) {
     return !!token_group.Text.match(/^[0-9]+$/gm);
   },
-  Extract(token_group, prefix) {
+  Extract(token_group) {
     return token_group.Build(
       {
         name: (token_group) => {
@@ -143,7 +143,7 @@ Expression.Register({
   Is(token_group) {
     return token_group.Text.startsWith('"') && token_group.Text.endsWith('"');
   },
-  Extract(token_group, prefix) {
+  Extract(token_group) {
     return token_group.Build(
       {
         name: (token_group) => TokenGroupResponse.TextItem(token_group),
@@ -159,7 +159,7 @@ Expression.Register({
   Is(token_group) {
     return token_group.Text.startsWith("'") && token_group.Text.endsWith("'");
   },
-  Extract(token_group, prefix) {
+  Extract(token_group) {
     return token_group.Build(
       {
         name: (token_group) => TokenGroupResponse.TextItem(token_group),

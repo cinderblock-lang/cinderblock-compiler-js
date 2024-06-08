@@ -8,6 +8,7 @@ import { ContextResponse } from "./context-response";
 import { Context } from "./context";
 import { LinkedType } from "../linked-ast/type/base";
 import { TokenGroupResponse } from "../parser/token-group-response";
+import { TokeniserContext } from "../parser/context";
 
 export class Block {
   readonly #components: Array<Statement>;
@@ -47,10 +48,13 @@ export class Block {
     return result;
   }
 
-  static Parse(token_group: TokenGroup): TokenGroupResponse<Block> {
+  static Parse(
+    token_group: TokenGroup,
+    ctx: TokeniserContext
+  ): TokenGroupResponse<Block> {
     if (token_group.Text !== "{") {
       let expression: Expression;
-      [token_group, expression] = Expression.Parse(token_group, [
+      [token_group, expression] = Expression.Parse(token_group, ctx, [
         ";",
       ]).Destructured;
 
@@ -65,7 +69,7 @@ export class Block {
 
     while (token_group.Text !== "}") {
       let r: Statement;
-      [token_group, r] = Statement.Parse(token_group).Destructured;
+      [token_group, r] = Statement.Parse(token_group, ctx).Destructured;
       result.push(r);
     }
 

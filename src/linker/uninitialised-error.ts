@@ -7,7 +7,7 @@ export class UninitialisedError extends Error {
   readonly #message: string;
 
   constructor(location: CodeLocation | undefined, message: string) {
-    super(`Uninitialised error`);
+    super(`Parser Error:\n${location}\n\n${message}`);
     this.#location = location ?? new CodeLocation("", -1, -1, -1, -1);
     this.#message = message;
   }

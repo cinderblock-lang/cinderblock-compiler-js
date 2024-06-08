@@ -7,22 +7,29 @@ import { Context } from "../context";
 import { ContextResponse } from "../context-response";
 import { LinkedLambdaExpression } from "../../linked-ast/expression/lambda";
 import { TokenGroupResponse } from "../../parser/token-group-response";
+import { LinkerError } from "../../linker/error";
 
 export class LambdaExpression extends Expression {
   readonly #parameters: ParameterCollection;
   readonly #body: Block;
   readonly #returns: Type | undefined;
+  readonly #namespace: string;
+  readonly #unsafe: boolean;
 
   constructor(
     ctx: CodeLocation,
     parameters: ParameterCollection,
     body: Block,
-    returns: Type | undefined
+    returns: Type | undefined,
+    namespace: string,
+    unsafe: boolean
   ) {
     super(ctx);
     this.#parameters = parameters;
     this.#body = body;
     this.#returns = returns;
+    this.#namespace = namespace;
+    this.#unsafe = unsafe;
   }
 
   #get_returns(context: Context) {
@@ -30,7 +37,7 @@ export class LambdaExpression extends Expression {
   }
 
   Linked(context: Context) {
-    return context.Build(
+    return context.WithLambda(this.#namespace, this.#unsafe).Build(
       {
         params: (c) => this.#parameters.Linked(c),
         body: (c) => this.#body.Linked(c),
@@ -50,7 +57,7 @@ Expression.Register({
   Is(token_group, prefix) {
     return token_group.Text === "fn";
   },
-  Extract(token_group, prefix) {
+  Extract(token_group, ctx) {
     return token_group.Build(
       {
         parameters: (token_group) => {
@@ -67,7 +74,7 @@ Expression.Register({
         body: (token_group) => {
           token_group.Expect("->");
           token_group = token_group.Next;
-          return Block.Parse(token_group);
+          return Block.Parse(token_group, ctx);
         },
       },
       ({ parameters, returns, body }) =>
@@ -75,7 +82,9 @@ Expression.Register({
           token_group.CodeLocation,
           parameters,
           body,
-          returns
+          returns,
+          ctx.Namespace,
+          ctx.Unsafe
         )
     );
   },

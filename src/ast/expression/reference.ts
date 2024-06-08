@@ -32,10 +32,10 @@ export class ReferenceExpression extends Expression {
 
 Expression.Register({
   Priority: 0,
-  Is(token_group, prefix) {
+  Is() {
     return true;
   },
-  Extract(token_group, prefix, look_for) {
+  Extract(token_group) {
     return token_group.Build(
       {
         name: (token_group) => TokenGroupResponse.TextItem(token_group),

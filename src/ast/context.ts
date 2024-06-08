@@ -15,17 +15,20 @@ export class Context {
   readonly #namespace: Namespace;
   readonly #scope: Scope;
   readonly #callstack: Callstack;
+  readonly #allow_unsafe: boolean;
 
   constructor(
     code_base: CodeBase,
     namespace: Namespace,
     scope: Scope,
-    callstack: Callstack
+    callstack: Callstack,
+    allow_unsafe: boolean
   ) {
     this.#code_base = code_base;
     this.#namespace = namespace;
     this.#scope = scope;
     this.#callstack = callstack;
+    this.#allow_unsafe = allow_unsafe;
   }
 
   GetNamespace(name: string) {
@@ -40,12 +43,23 @@ export class Context {
     return namespace;
   }
 
+  WithLambda(namespace: string, unsafe: boolean) {
+    return new Context(
+      this.#code_base,
+      this.GetNamespace(namespace),
+      this.#scope,
+      this.#callstack,
+      unsafe
+    );
+  }
+
   PrepareInvokation(args: Array<LinkedExpression>) {
     return new Context(
       this.#code_base,
       this.#namespace,
       this.#scope,
-      this.#callstack.PrepareInvokation(args)
+      this.#callstack.PrepareInvokation(args),
+      this.#allow_unsafe
     );
   }
 
@@ -54,7 +68,8 @@ export class Context {
       this.#code_base,
       this.#namespace,
       this.#scope,
-      new Callstack([], [], 0)
+      new Callstack([], [], 0),
+      this.#allow_unsafe
     );
   }
 
@@ -63,7 +78,8 @@ export class Context {
       this.#code_base,
       this.#namespace,
       this.#scope,
-      this.#callstack.WithParameterIndex(index)
+      this.#callstack.WithParameterIndex(index),
+      this.#allow_unsafe
     );
   }
 
@@ -80,8 +96,13 @@ export class Context {
       this.#code_base,
       namespace,
       this.#scope.EnterFunction(func),
-      this.#callstack.EnterFunction(func)
+      this.#callstack.EnterFunction(func),
+      func.Unsafe
     );
+  }
+
+  get Unsafe() {
+    return this.#allow_unsafe;
   }
 
   WithType(name: string, type: LinkedType) {
@@ -89,7 +110,8 @@ export class Context {
       this.#code_base,
       this.#namespace,
       this.#scope.WithType(name, type),
-      this.#callstack
+      this.#callstack,
+      this.#allow_unsafe
     );
   }
 
@@ -98,7 +120,8 @@ export class Context {
       this.#code_base,
       this.#namespace,
       this.#scope.WithObject(name, value),
-      this.#callstack
+      this.#callstack,
+      this.#allow_unsafe
     );
   }
 
@@ -107,7 +130,8 @@ export class Context {
       this.#code_base,
       this.#namespace,
       this.#scope.WithMake(make),
-      this.#callstack
+      this.#callstack,
+      this.#allow_unsafe
     );
   }
 

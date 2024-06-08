@@ -79,7 +79,7 @@ Entity.Register({
   Is(token_group) {
     return token_group.Text === "fn";
   },
-  Extract(token_group, options) {
+  Extract(token_group, options, ctx) {
     return token_group.Build(
       {
         name: (token_group) => {
@@ -97,7 +97,7 @@ Entity.Register({
 
           return new TokenGroupResponse(token_group, undefined);
         },
-        body: (token_group) => Block.Parse(token_group),
+        body: (token_group) => Block.Parse(token_group, ctx),
       },
       ({ name, parameters, body, returns }) =>
         new FunctionEntity(
